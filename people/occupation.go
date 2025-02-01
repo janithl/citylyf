@@ -79,7 +79,7 @@ var occupations = []Occupation{
 
 // getEducationLevel returns education level based on age
 func getEducationLevel(age int) EducationLevel {
-	if age < 19 {
+	if age <= ageOfAdulthood {
 		return Unqualified
 	}
 

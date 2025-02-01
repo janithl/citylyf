@@ -6,11 +6,23 @@ import (
 )
 
 func main() {
-	for i := 0; i < 100; i++ {
+	freeHouses := 100
+	availableJobs := 30
+	var population []people.Person
+
+	for freeHouses > 0 && availableJobs > 0 {
 		h := people.CreateHousehold()
-		fmt.Printf("[The %s Family | $%8d/yearly | $%8d ]:\n", h.FamilyName(), h.AnnualIncome(), h.Wealth())
+		population = append(population, h.Members...)
+		freeHouses -= 1
+		fmt.Printf("%s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
+
 		for j := 0; j < len(h.Members); j++ {
-			fmt.Printf(" |-> %s\n", h.Members[j].String())
+			if h.Members[j].CareerLevel != people.Unemployed {
+				availableJobs -= 1
+				fmt.Printf("%s %s has accepted a job as %s\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation)
+			}
 		}
 	}
+
+	fmt.Printf("Total town population is %d\n", len(population))
 }

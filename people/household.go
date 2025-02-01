@@ -36,7 +36,7 @@ func CreateHousehold() Household {
 	household = append(household, p)
 
 	if p.Relationship == Married {
-		q = createRandomPerson(int(math.Max(18, float64(p.Age()-15))), p.Age()+15)
+		q = createRandomPerson(int(math.Max(ageOfAdulthood, float64(p.Age()-15))), p.Age()+15)
 		q.Relationship = Married
 		if rand.Intn(100) < 80 {
 			q.FamilyName = p.FamilyName
@@ -78,17 +78,20 @@ func createKids(p Person, q Person) []Person {
 	for i := 0; i < numberOfKids; i++ {
 		var kid Person
 
-		if p.Relationship == Married && p.Age() >= 20 {
-			if q.Age() >= 20 {
-				kid = createRandomPerson(0, int(math.Min(float64(p.Age()), float64(q.Age())))-19)
-			}
+		if p.Relationship == Married {
 			if q.Age() == 0 {
-				kid = createRandomPerson(0, p.Age()-19)
+				kid = createRandomPerson(0, p.Age()-ageOfAdulthood)
+			} else {
+				parentMaxAge := p.Age()
+				if q.Age() > p.Age() {
+					parentMaxAge = q.Age()
+				}
+				kid = createRandomPerson(0, parentMaxAge-ageOfAdulthood)
 			}
 		}
 
 		if p.Relationship == Divorced || p.Relationship == Widowed {
-			kid = createRandomPerson(5, p.Age()-19)
+			kid = createRandomPerson(5, p.Age()-ageOfAdulthood)
 		}
 
 		if kid.FirstName != "" {

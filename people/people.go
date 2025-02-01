@@ -32,6 +32,8 @@ func (p *Person) String() string {
 	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %20s %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.AnnualIncome)
 }
 
+const ageOfAdulthood = 18
+
 func createRandomPerson(minAge int, maxAge int) Person {
 	name, familyName, gender := getNameAndGender()
 	meanAge := 37.0
