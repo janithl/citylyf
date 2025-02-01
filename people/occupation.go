@@ -2,6 +2,17 @@ package people
 
 import (
 	"math/rand"
+	"slices"
+)
+
+// EducationLevel defines the levels in a person's education
+type EducationLevel string
+
+const (
+	Unqualified EducationLevel = "Unqualified"
+	HighSchool  EducationLevel = "High School"
+	University  EducationLevel = "University"
+	Postgrad    EducationLevel = "Postgrad"
 )
 
 // CareerLevel defines the levels in a person's career
@@ -17,14 +28,16 @@ const (
 
 // Occupation represents a job and its salary range based on career level
 type Occupation struct {
-	Name        string
-	SalaryRange map[CareerLevel][2]int // Min and max salary for each career level
+	Name            string
+	EducationLevels []EducationLevel
+	SalaryRange     map[CareerLevel][2]int // Min and max salary for each career level
 }
 
 // Predefined occupations and salary ranges
 var occupations = []Occupation{
 	{
-		Name: "Software Engineer",
+		Name:            "Software Engineer",
+		EducationLevels: []EducationLevel{Unqualified, HighSchool, University, Postgrad},
 		SalaryRange: map[CareerLevel][2]int{
 			EntryLevel:     {40000, 60000},
 			MidLevel:       {60000, 90000},
@@ -33,7 +46,8 @@ var occupations = []Occupation{
 		},
 	},
 	{
-		Name: "Teacher",
+		Name:            "Teacher",
+		EducationLevels: []EducationLevel{University, Postgrad},
 		SalaryRange: map[CareerLevel][2]int{
 			EntryLevel:     {30000, 40000},
 			MidLevel:       {40000, 60000},
@@ -42,7 +56,8 @@ var occupations = []Occupation{
 		},
 	},
 	{
-		Name: "Doctor",
+		Name:            "Doctor",
+		EducationLevels: []EducationLevel{University, Postgrad},
 		SalaryRange: map[CareerLevel][2]int{
 			EntryLevel:     {70000, 90000},
 			MidLevel:       {90000, 130000},
@@ -51,7 +66,8 @@ var occupations = []Occupation{
 		},
 	},
 	{
-		Name: "Artist",
+		Name:            "Artist",
+		EducationLevels: []EducationLevel{Unqualified, HighSchool, University, Postgrad},
 		SalaryRange: map[CareerLevel][2]int{
 			EntryLevel:     {20000, 30000},
 			MidLevel:       {30000, 50000},
@@ -61,29 +77,85 @@ var occupations = []Occupation{
 	},
 }
 
+// getEducationLevel returns education level based on age
+func getEducationLevel(age int) EducationLevel {
+	if age < 19 {
+		return Unqualified
+	}
+
+	randomEducation := rand.Intn(100)
+	if age < 24 {
+		if randomEducation < 60 {
+			return HighSchool
+		} else {
+			return Unqualified
+		}
+
+	}
+
+	if randomEducation < 2 {
+		return Postgrad
+	} else if randomEducation < 30 {
+		return University
+	} else if randomEducation < 70 {
+		return HighSchool
+	} else {
+		return Unqualified
+	}
+}
+
 // getRandomOccupationAndSalary randomizes occupation and salary based on age and career level
-func getRandomOccupationAndSalary(age int) (string, CareerLevel, float64) {
-	if age < 16 {
+func getRandomOccupationAndSalary(age int, education EducationLevel) (string, CareerLevel, float64) {
+	if age < 16 || age > 70 {
 		return "", Unemployed, 0
 	}
 
 	// Determine career level based on age
 	var careerLevel CareerLevel
-	switch {
-	case age < 25:
-		careerLevel = EntryLevel
-	case age < 35:
-		careerLevel = MidLevel
-	case age < 50:
-		careerLevel = SeniorLevel
-	case age < 70:
-		careerLevel = ExecutiveLevel
-	default:
-		careerLevel = Unemployed
+	switch education {
+	case Unqualified, HighSchool:
+		switch {
+		case age < 20:
+			careerLevel = EntryLevel
+		case age < 35:
+			careerLevel = MidLevel
+		case age < 50:
+			careerLevel = SeniorLevel
+		default:
+			careerLevel = ExecutiveLevel
+		}
+
+	case University:
+		switch {
+		case age < 22:
+			careerLevel = EntryLevel
+		case age < 30:
+			careerLevel = MidLevel
+		case age < 45:
+			careerLevel = SeniorLevel
+		default:
+			careerLevel = ExecutiveLevel
+		}
+
+	case Postgrad:
+
+		switch {
+		case age < 24:
+			careerLevel = EntryLevel
+		case age < 34:
+			careerLevel = MidLevel
+		case age < 45:
+			careerLevel = SeniorLevel
+		default:
+			careerLevel = ExecutiveLevel
+		}
 	}
 
 	// Randomly select an occupation
-	selectedOccupation := occupations[rand.Intn(len(occupations))]
+	var selectedOccupation Occupation
+	for !slices.Contains(selectedOccupation.EducationLevels, education) {
+		selectedOccupation = occupations[rand.Intn(len(occupations))]
+	}
 
 	// Get salary range for the career level
 	salaryRange := selectedOccupation.SalaryRange[careerLevel]

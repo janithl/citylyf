@@ -8,16 +8,17 @@ import (
 )
 
 type Person struct {
-	ID           int         // Unique identifier for the person
-	FirstName    string      // Name of the person
-	FamilyName   string      // Family name
-	Birthdate    time.Time   // Age of the person
-	Gender       Gender      // Gender of the person
-	Occupation   string      // Job title or role
-	CareerLevel  CareerLevel // Their career level
-	AnnualIncome int         // Annual income
-	Wealth       int         // Total assets or savings
-	Relationship RelationshipStatus
+	ID             int            // Unique identifier for the person
+	FirstName      string         // Name of the person
+	FamilyName     string         // Family name
+	Birthdate      time.Time      // Age of the person
+	Gender         Gender         // Gender of the person
+	EducationLevel EducationLevel // Person's education level
+	Occupation     string         // Job title or role
+	CareerLevel    CareerLevel    // Their career level
+	AnnualIncome   int            // Annual income
+	Wealth         int            // Total assets or savings
+	Relationship   RelationshipStatus
 }
 
 func (p *Person) Age() int {
@@ -28,7 +29,7 @@ func (p *Person) Age() int {
 }
 
 func (p *Person) String() string {
-	return fmt.Sprintf("%20s %20s  %3d %6s %10s %20s %20s %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.CareerLevel, p.Occupation, p.AnnualIncome)
+	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %20s %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.AnnualIncome)
 }
 
 func createRandomPerson(minAge int, maxAge int) Person {
@@ -38,19 +39,21 @@ func createRandomPerson(minAge int, maxAge int) Person {
 		meanAge = 39.0
 	}
 	age := getAge(meanAge, 15, minAge, maxAge)
-	occupation, careerLevel, salary := getRandomOccupationAndSalary(age)
+	education := getEducationLevel(age)
+	occupation, careerLevel, salary := getRandomOccupationAndSalary(age, education)
 	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(age-25), 1)
 
 	return Person{
-		ID:           rand.Intn(9999) + 10000,
-		FirstName:    name,
-		FamilyName:   familyName,
-		Birthdate:    getRandomBirthdate(age),
-		Gender:       gender,
-		Occupation:   occupation,
-		CareerLevel:  careerLevel,
-		AnnualIncome: int(salary),
-		Wealth:       int(savings),
-		Relationship: getRelationshipStatus(age),
+		ID:             rand.Intn(9999) + 10000,
+		FirstName:      name,
+		FamilyName:     familyName,
+		Birthdate:      getRandomBirthdate(age),
+		Gender:         gender,
+		EducationLevel: education,
+		Occupation:     occupation,
+		CareerLevel:    careerLevel,
+		AnnualIncome:   int(salary),
+		Wealth:         int(savings),
+		Relationship:   getRelationshipStatus(age),
 	}
 }
