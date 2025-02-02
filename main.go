@@ -8,18 +8,18 @@ import (
 
 func main() {
 	freeHouses := 100
-	availableJobs := 60
 	lastPopulation := 0
 	unemployed := 0
 	populationGrowth := 0.0
-	negativeGrowth := 0
+	availableJobs := 60
 
 	market := economy.Market{
-		InterestRate:       6.0,
-		LastInflationRate:  0.0,
-		Unemployment:       0.0,
-		CorporateTax:       5.0,
-		GovernmentSpending: 0.0,
+		InterestRate:           6.0,
+		LastInflationRate:      0.0,
+		Unemployment:           0.0,
+		CorporateTax:           5.0,
+		GovernmentSpending:     0.0,
+		MonthsOfNegativeGrowth: 0,
 	}
 
 	var population []people.Person
@@ -49,14 +49,11 @@ func main() {
 
 		if marketGrowth > 0 {
 			availableJobs = 1 + int(float64(availableJobs)*marketGrowth)
-			negativeGrowth = 0
 			fmt.Printf("Growth! %d jobs remain.\n", availableJobs)
-		} else {
-			negativeGrowth += 1
 		}
 
-		// more than 3 months of negative growth, time for jobs to come down
-		if negativeGrowth > 3 {
+		// more than 6 months of negative growth means a recession, time for jobs to come down
+		if market.MonthsOfNegativeGrowth > 6 {
 			availableJobs = int(float64(availableJobs) * 0.66)
 			fmt.Printf("Recession! %d jobs remain.\n", availableJobs)
 		}

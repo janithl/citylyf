@@ -17,8 +17,9 @@ type Market struct {
 	GovernmentSpending float64 // More spending = Higher money supply
 
 	// Historical
-	LastInflationRate   float64 // High inflation leads to money tightening
-	LastMarketSentiment float64 // Random factor (news, global events)
+	LastInflationRate      float64 // High inflation leads to money tightening
+	LastMarketSentiment    float64 // Random factor (news, global events)
+	MonthsOfNegativeGrowth int     // Holds number of months of negative growth for recession
 }
 
 // Random factor (news, global events)
@@ -113,6 +114,12 @@ func (m *Market) MarketGrowth() float64 {
 
 	// Calculate total stock market growth
 	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact
+
+	if totalGrowth > 0 {
+		m.MonthsOfNegativeGrowth = 0
+	} else {
+		m.MonthsOfNegativeGrowth += 1
+	}
 
 	// Ensure the market doesn't collapse below -10% in extreme cases
 	if totalGrowth < MinGrowth {
