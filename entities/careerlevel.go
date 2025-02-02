@@ -10,3 +10,5 @@ const (
 	SeniorLevel    CareerLevel = "Senior Level"
 	ExecutiveLevel CareerLevel = "Executive Level"
 )
+
+var CareerLevels = []CareerLevel{Unemployed, EntryLevel, MidLevel, SeniorLevel, ExecutiveLevel}

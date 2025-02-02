@@ -30,6 +30,15 @@ func (c *Company) CalculateProfit(m Market) float64 {
 	return c.LastProfit
 }
 
+// GetNumberOfJobOpenings returns the number of job openings
+func (c *Company) GetNumberOfJobOpenings() int {
+	openings := 0
+	for i := 0; i < len(entities.CareerLevels); i++ {
+		openings += c.JobOpenings[entities.CareerLevels[i]]
+	}
+	return openings
+}
+
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings(m Market) {
 	baseJobs := map[entities.CareerLevel]int{

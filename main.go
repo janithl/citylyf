@@ -13,12 +13,11 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 	companyId := 0
 	for i := 0; i < len(companies); i++ {
 		if companies[i].Industry == p.Industry {
-
 			openings := companies[i].JobOpenings
 			for j := 0; j < len(openings); j++ {
 				if openings[p.CareerLevel] > 0 {
 					companies[i].JobOpenings[p.CareerLevel] -= 1
-					remaining = companies[i].JobOpenings[p.CareerLevel]
+					remaining = companies[i].GetNumberOfJobOpenings()
 					companyId = companies[i].ID
 				}
 			}
@@ -33,11 +32,11 @@ func main() {
 	populationGrowth := 0.0
 
 	market := economy.Market{
-		InterestRate:           6.0,
+		InterestRate:           5.0,
 		LastInflationRate:      0.0,
 		Unemployment:           0.0,
-		CorporateTax:           5.0,
-		GovernmentSpending:     0.0,
+		CorporateTax:           3.0,
+		GovernmentSpending:     10.0,
 		MonthsOfNegativeGrowth: 0,
 	}
 
@@ -45,7 +44,7 @@ func main() {
 	var companies []economy.Company
 
 	// set up some initial companies
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 16; i++ {
 		newCompany := economy.GenerateRandomCompany(market)
 		companies = append(companies, newCompany)
 		fmt.Printf("%s (%s) founded!\n", newCompany.Name, newCompany.Industry)
@@ -60,7 +59,7 @@ func main() {
 		// assign unemployed people jobs
 		unemployed := 0
 		for j := 0; j < len(population); j++ {
-			if population[j].CareerLevel != entities.Unemployed {
+			if population[j].EmployerID == 0 && population[j].CareerLevel != entities.Unemployed {
 				companyId, remaining := getSuitableJob(companies, market, population[j])
 				if companyId != 0 {
 					population[j].EmployerID = companyId
@@ -68,7 +67,7 @@ func main() {
 				} else {
 					unemployed += 1
 				}
-			} else if population[j].Age() > entities.AgeOfAdulthood {
+			} else if population[j].EmployerID == 0 && population[j].Age() > entities.AgeOfAdulthood {
 				unemployed += 1
 			}
 		}
@@ -79,7 +78,7 @@ func main() {
 		market.Unemployment = 100 * float64(unemployed) / float64(lastPopulation)
 		inflation := market.Inflation(populationGrowth)
 		marketGrowth := market.MarketGrowth()
-		fmt.Printf("Town population is %d (±%.2f%%). Inflation: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, marketGrowth)
+		fmt.Printf("Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, market.Unemployment, marketGrowth)
 
 		if marketGrowth > 0 && rand.Intn(100) < 25 {
 			newCompany := economy.GenerateRandomCompany(market)
