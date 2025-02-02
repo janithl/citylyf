@@ -21,6 +21,8 @@ func (s *Simulation) Tick() {
 	s.Date = nextDate
 }
 
+var CitySimulation Simulation
+
 func NewSimulation(startYear int) Simulation {
 	return Simulation{
 		SimulationSpeed: Mid,

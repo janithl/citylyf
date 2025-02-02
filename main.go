@@ -10,7 +10,6 @@ import (
 )
 
 // TODO
-// Age calculations should be based on in-game time
 // Move people out of the city when they can't find work after a certain time - think about rent/mortgage expenses
 var population []entities.Person
 var companies []economy.Company
@@ -21,7 +20,7 @@ var populationGrowth float64
 var market economy.Market
 
 func main() {
-	simulation := entities.NewSimulation(2020)
+	entities.CitySimulation = entities.NewSimulation(2020)
 
 	freeHouses = 100
 	lastPopulation = 0
@@ -33,7 +32,7 @@ func main() {
 		CorporateTax:           3.0,
 		GovernmentSpending:     10.0,
 		MonthsOfNegativeGrowth: 0,
-		LastCalculation:        simulation.Date,
+		LastCalculation:        entities.CitySimulation.Date,
 	}
 
 	// set up some initial companies
@@ -52,15 +51,16 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
-				simulation.Tick()
-				fmt.Printf("[ Date ] New simulation date is: %s\n", simulation.Date)
+				entities.CitySimulation.Tick()
+				fmt.Println("")
+				fmt.Printf("[ Date ] New simulation date is: %s\n", entities.CitySimulation.Date)
 				moveIn()
 				findJobs()
 
 				// run market calculations every month
-				diff := simulation.Date.Sub(market.LastCalculation)
+				diff := entities.CitySimulation.Date.Sub(market.LastCalculation)
 				if diff.Hours()/24 >= 28 {
-					calculateEconomy(simulation.Date)
+					calculateEconomy()
 				}
 			}
 		}
@@ -119,14 +119,14 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 	return companyId, remaining
 }
 
-func calculateEconomy(calculationTime time.Time) {
+func calculateEconomy() {
 	// calculate impact of population growth on city economy
 	populationGrowth = float64(len(population)-lastPopulation) / float64(lastPopulation)
 	lastPopulation = len(population)
 	market.Unemployment = 100 * float64(unemployed) / float64(lastPopulation)
 	inflation := market.Inflation(populationGrowth)
 	marketGrowth := market.MarketGrowth()
-	market.LastCalculation = calculationTime // update last calculation time
+	market.LastCalculation = entities.CitySimulation.Date // update last calculation time
 
 	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, market.Unemployment, marketGrowth)
 

@@ -25,12 +25,11 @@ type Person struct {
 }
 
 func (p *Person) Age() int {
-	currentDate := time.Now()
-	duration := currentDate.Sub(p.Birthdate)
+	duration := CitySimulation.Date.Sub(p.Birthdate)
 	hoursPerYear := 24 * 365.25
 	return int(duration.Hours() / hoursPerYear)
 }
 
 func (p *Person) String() string {
-	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %25s %5d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
+	return fmt.Sprintf("%20s %20s  %3d (%4d) %6s %10s %15s %20s %25s %5d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Birthdate.Year(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
 }
