@@ -9,17 +9,22 @@ import (
 // Company represents a business entity with jobs
 type Company struct {
 	Name        string
-	Industry    string
-	Revenue     float64
-	Expenses    float64
-	LastProfit  float64
+	Industry    entities.Industry
 	JobOpenings map[entities.CareerLevel]int // Available job positions at each level
+
+	// Historical
+	LastRevenue  float64
+	LastExpenses float64
+	LastProfit   float64
 }
 
 // CalculateProfit computes net profit after taxes
 func (c *Company) CalculateProfit(m Market) float64 {
-	taxedAmount := c.Revenue * m.CorporateTax
-	c.LastProfit = c.Revenue - (c.Expenses + taxedAmount)
+	c.LastExpenses += c.LastExpenses * (m.LastInflationRate / 100)
+	c.LastRevenue += c.LastRevenue * (m.MarketGrowth() / 100)
+
+	taxedAmount := c.LastRevenue * (m.CorporateTax / 100.0)
+	c.LastProfit = c.LastRevenue - (c.LastExpenses + taxedAmount)
 	return c.LastProfit
 }
 

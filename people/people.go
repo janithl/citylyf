@@ -16,7 +16,13 @@ func createRandomPerson(minAge int, maxAge int) entities.Person {
 	age := getAge(meanAge, 15, minAge, maxAge)
 	education := getEducationLevel(age)
 	careerLevel := getCareerLevel(age, education)
-	job, salary := economy.GetIndustryJob(education, careerLevel)
+
+	var job economy.IndustryJob
+	var salary float64
+	if careerLevel != entities.Unemployed {
+		job, salary = economy.GetIndustryJob(education, careerLevel)
+	}
+
 	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(age-25), 1)
 
 	return entities.Person{
