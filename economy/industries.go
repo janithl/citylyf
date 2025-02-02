@@ -17,8 +17,19 @@ type IndustryJob struct {
 // Predefined occupations and salary ranges
 var Jobs = []IndustryJob{
 	{
-		Industry:        entities.Software,
+		Industry:        entities.Technology,
 		Job:             entities.SoftwareEngineer,
+		EducationLevels: []entities.EducationLevel{entities.Unqualified, entities.HighSchool, entities.University, entities.Postgrad},
+		SalaryRange: map[entities.CareerLevel][2]int{
+			entities.EntryLevel:     {40000, 60000},
+			entities.MidLevel:       {60000, 90000},
+			entities.SeniorLevel:    {90000, 120000},
+			entities.ExecutiveLevel: {120000, 150000},
+		},
+	},
+	{
+		Industry:        entities.Technology,
+		Job:             entities.QualityEngineer,
 		EducationLevels: []entities.EducationLevel{entities.Unqualified, entities.HighSchool, entities.University, entities.Postgrad},
 		SalaryRange: map[entities.CareerLevel][2]int{
 			entities.EntryLevel:     {40000, 60000},
@@ -47,6 +58,17 @@ var Jobs = []IndustryJob{
 			entities.MidLevel:       {90000, 130000},
 			entities.SeniorLevel:    {130000, 180000},
 			entities.ExecutiveLevel: {180000, 250000},
+		},
+	},
+	{
+		Industry:        entities.Healthcare,
+		Job:             entities.Nurse,
+		EducationLevels: []entities.EducationLevel{entities.University, entities.Postgrad},
+		SalaryRange: map[entities.CareerLevel][2]int{
+			entities.EntryLevel:     {40000, 60000},
+			entities.MidLevel:       {60000, 100000},
+			entities.SeniorLevel:    {100000, 150000},
+			entities.ExecutiveLevel: {150000, 200000},
 		},
 	},
 	{

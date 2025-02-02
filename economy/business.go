@@ -2,12 +2,14 @@ package economy
 
 import (
 	"citylyf/entities"
+	"fmt"
 	"math"
 	"math/rand"
 )
 
 // Company represents a business entity with jobs
 type Company struct {
+	ID          int
 	Name        string
 	Industry    entities.Industry
 	JobOpenings map[entities.CareerLevel]int // Available job positions at each level
@@ -71,4 +73,30 @@ func (c *Company) DetermineJobOpenings(m Market) {
 		}
 		c.JobOpenings[level] = adjustedJobs
 	}
+}
+
+// GenerateRandomCompany creates a company with random industry and financials
+func GenerateRandomCompany(m Market) Company {
+	// Assign financials based on industry type
+	baseRevenue := rand.Float64()*5_000_000 + 1_000_000 // Revenue between $1M - $6M
+	expenseRatio := rand.Float64()*0.4 + 0.5            // Expenses are 50-90% of revenue
+	expenses := baseRevenue * expenseRatio
+
+	// Generate a random company name
+	companyNames := []string{"Global", "NextGen", "Quantum", "Future", "Vertex", "Synergy", "Omni", "Pinnacle", "Apex", "Horizon"}
+	companySuffix := []string{"Corp", "Industries", "Systems", "Group", "Technologies", "Enterprises"}
+	companyName := fmt.Sprintf("%s %s", companyNames[rand.Intn(len(companyNames))], companySuffix[rand.Intn(len(companySuffix))])
+
+	company := Company{
+		ID:           rand.Intn(999) + 1000,
+		Name:         companyName,
+		Industry:     entities.GetRandomIndustry(),
+		JobOpenings:  make(map[entities.CareerLevel]int),
+		LastRevenue:  baseRevenue,
+		LastExpenses: expenses,
+		LastProfit:   baseRevenue - expenses,
+	}
+	company.CalculateProfit(m)
+
+	return company
 }

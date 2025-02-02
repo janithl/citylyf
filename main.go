@@ -8,8 +8,9 @@ import (
 	"math/rand"
 )
 
-func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Person) int {
-	remaining := -1
+func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Person) (int, int) {
+	remaining := 0
+	companyId := 0
 	for i := 0; i < len(companies); i++ {
 		if companies[i].Industry == p.Industry {
 
@@ -18,11 +19,12 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 				if openings[p.CareerLevel] > 0 {
 					companies[i].JobOpenings[p.CareerLevel] -= 1
 					remaining = companies[i].JobOpenings[p.CareerLevel]
+					companyId = companies[i].ID
 				}
 			}
 		}
 	}
-	return remaining
+	return companyId, remaining
 }
 
 func main() {
@@ -43,22 +45,33 @@ func main() {
 	var population []entities.Person
 	var companies []economy.Company
 
+	// set up some initial companies
+	for i := 0; i < 5; i++ {
+		newCompany := economy.GenerateRandomCompany(market)
+		companies = append(companies, newCompany)
+		fmt.Printf("%s (%s) founded!\n", newCompany.Name, newCompany.Industry)
+	}
+
 	for freeHouses > 0 {
 		h := people.CreateHousehold()
-		population = append(population, h.Members...)
 		freeHouses -= 1
 		fmt.Printf("%s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
 
 		for j := 0; j < len(h.Members); j++ {
 			if h.Members[j].CareerLevel != entities.Unemployed {
-				remaining := getSuitableJob(companies, market, h.Members[j])
-				if remaining > -1 {
+				companyId, remaining := getSuitableJob(companies, market, h.Members[j])
+				if companyId != 0 {
+					h.Members[j].EmployerID = companyId
 					fmt.Printf(">>> %s %s has accepted a job as %s, %d jobs remain\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation, remaining)
+				} else {
+					unemployed += 1
 				}
 			} else if h.Members[j].Age() > entities.AgeOfAdulthood {
 				unemployed += 1
 			}
 		}
+
+		population = append(population, h.Members...)
 
 		// calculate impact of population growth on city economy
 		populationGrowth = float64(len(population)-lastPopulation) / float64(lastPopulation)
@@ -69,31 +82,18 @@ func main() {
 		fmt.Printf("Town population is %d (±%.2f%%). Inflation: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, marketGrowth)
 
 		if marketGrowth > 0 && rand.Intn(100) < 25 {
-			newCompany := economy.Company{
-				Name:         fmt.Sprintf("Such a Place %d", len(companies)),
-				Industry:     entities.Software,
-				LastRevenue:  100_000,
-				LastExpenses: 75_000,
-				LastProfit:   25_000,
-				JobOpenings:  make(map[entities.CareerLevel]int),
-			}
+			newCompany := economy.GenerateRandomCompany(market)
 			companies = append(companies, newCompany)
-
-			fmt.Printf("Growth! 1 company started %s\n", newCompany.Name)
+			fmt.Printf("Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 		}
 
-		// more than 6 months of negative growth means a recession, time for jobs to come down
-		// if market.MonthsOfNegativeGrowth > 6 {
-		// 	availableJobs = int(float64(availableJobs) * 0.66)
-		// 	fmt.Printf("Recession! %d jobs remain.\n", availableJobs)
-		// }
 		for k := 0; k < len(companies); k++ {
 			companies[k].CalculateProfit(market)
 			companies[k].DetermineJobOpenings(market)
 		}
 	}
 
-	fmt.Printf("Total town population is %d\n", len(population))
+	fmt.Printf("Total town population is %d (%.2f%% unemployment)\n", len(population), market.Unemployment)
 	for i := 0; i < len(population); i++ {
 		fmt.Println(population[i].String())
 	}

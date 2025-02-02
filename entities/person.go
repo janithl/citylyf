@@ -18,6 +18,7 @@ type Person struct {
 	Occupation     Job            // Job title or role
 	Industry       Industry       // Industry of the job
 	CareerLevel    CareerLevel    // Their career level
+	EmployerID     int            // Their employer id
 	AnnualIncome   int            // Annual income
 	Wealth         int            // Total assets or savings
 	Relationship   RelationshipStatus
@@ -31,5 +32,5 @@ func (p *Person) Age() int {
 }
 
 func (p *Person) String() string {
-	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %20s %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.AnnualIncome)
+	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %20s %4d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
 }
