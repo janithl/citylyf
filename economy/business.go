@@ -1,7 +1,7 @@
 package economy
 
 import (
-	"citylyf/people"
+	"citylyf/entities"
 	"math"
 	"math/rand"
 )
@@ -13,7 +13,7 @@ type Company struct {
 	Revenue     float64
 	Expenses    float64
 	LastProfit  float64
-	JobOpenings map[people.CareerLevel]int // Available job positions at each level
+	JobOpenings map[entities.CareerLevel]int // Available job positions at each level
 }
 
 // CalculateProfit computes net profit after taxes
@@ -25,11 +25,11 @@ func (c *Company) CalculateProfit(m Market) float64 {
 
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings(m Market) {
-	baseJobs := map[people.CareerLevel]int{
-		people.EntryLevel:     rand.Intn(10) + 5, // 5-15 jobs
-		people.MidLevel:       rand.Intn(5) + 2,  // 2-7 jobs
-		people.SeniorLevel:    rand.Intn(3) + 1,  // 1-4 jobs
-		people.ExecutiveLevel: rand.Intn(2),      // 0-1 jobs
+	baseJobs := map[entities.CareerLevel]int{
+		entities.EntryLevel:     rand.Intn(10) + 5, // 5-15 jobs
+		entities.MidLevel:       rand.Intn(5) + 2,  // 2-7 jobs
+		entities.SeniorLevel:    rand.Intn(3) + 1,  // 1-4 jobs
+		entities.ExecutiveLevel: rand.Intn(2),      // 0-1 jobs
 	}
 
 	// Adjust based on economic conditions

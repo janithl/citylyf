@@ -1,6 +1,7 @@
 package people
 
 import (
+	"citylyf/entities"
 	"math/rand"
 )
 
@@ -163,24 +164,16 @@ var namesFemale = []string{
 	"Koren",
 }
 
-func getNameAndGender() (string, string, Gender) {
-	randomGender := rand.Intn(100)
-	gender := Other
-	switch {
-	case randomGender < 49:
-		gender = Male
-	case randomGender < 98:
-		gender = Female
-	}
-
-	namesCombined := append(namesMale, namesFemale...)
+func getNameAndGender() (string, string, entities.Gender) {
+	gender := entities.GetRandomGender()
 
 	var name string
-	if gender == Male {
+	if gender == entities.Male {
 		name = namesMale[rand.Intn(len(namesMale))]
-	} else if gender == Female {
+	} else if gender == entities.Female {
 		name = namesFemale[rand.Intn(len(namesFemale))]
 	} else {
+		namesCombined := append(namesMale, namesFemale...)
 		name = namesCombined[rand.Intn(len(namesCombined))]
 	}
 

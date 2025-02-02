@@ -1,4 +1,4 @@
-package people
+package entities
 
 import (
 	"math/rand"
@@ -14,7 +14,7 @@ const (
 	Widowed  RelationshipStatus = "Widowed"
 )
 
-func getRelationshipStatus(age int) RelationshipStatus {
+func GetRelationshipStatus(age int) RelationshipStatus {
 	if age < AgeOfAdulthood {
 		return Single
 	}

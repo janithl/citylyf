@@ -1,12 +1,13 @@
 package people
 
 import (
+	"citylyf/entities"
 	"math"
 	"math/rand"
 )
 
 type Household struct {
-	Members []Person // Family members
+	Members []entities.Person // Family members
 }
 
 func (h *Household) FamilyName() string {
@@ -29,15 +30,15 @@ func (h *Household) Wealth() int {
 }
 
 func CreateHousehold() Household {
-	var p, q Person
-	var household []Person
+	var p, q entities.Person
+	var household []entities.Person
 
 	p = createRandomPerson(16, 100)
 	household = append(household, p)
 
-	if p.Relationship == Married {
-		q = createRandomPerson(int(math.Max(AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
-		q.Relationship = Married
+	if p.Relationship == entities.Married {
+		q = createRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
+		q.Relationship = entities.Married
 		if rand.Intn(100) < 80 {
 			q.FamilyName = p.FamilyName
 		}
@@ -55,8 +56,8 @@ func CreateHousehold() Household {
 	}
 }
 
-func createKids(p Person, q Person) []Person {
-	var kids []Person
+func createKids(p entities.Person, q entities.Person) []entities.Person {
+	var kids []entities.Person
 	numberOfKids := 0
 
 	randomKids := rand.Intn(100)
@@ -76,26 +77,26 @@ func createKids(p Person, q Person) []Person {
 	}
 
 	for i := 0; i < numberOfKids; i++ {
-		var kid Person
+		var kid entities.Person
 
-		if p.Relationship == Married {
+		if p.Relationship == entities.Married {
 			if q.Age() == 0 {
-				kid = createRandomPerson(0, p.Age()-AgeOfAdulthood)
+				kid = createRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
 			} else {
 				parentMaxAge := p.Age()
 				if q.Age() > p.Age() {
 					parentMaxAge = q.Age()
 				}
-				kid = createRandomPerson(0, parentMaxAge-AgeOfAdulthood)
+				kid = createRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
 			}
 		}
 
-		if p.Relationship == Divorced || p.Relationship == Widowed {
-			kid = createRandomPerson(5, p.Age()-AgeOfAdulthood)
+		if p.Relationship == entities.Divorced || p.Relationship == entities.Widowed {
+			kid = createRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
 		}
 
 		if kid.FirstName != "" {
-			kid.Relationship = Single
+			kid.Relationship = entities.Single
 			kid.FamilyName = p.FamilyName
 			kids = append(kids, kid)
 		}

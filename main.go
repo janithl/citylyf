@@ -2,6 +2,7 @@ package main
 
 import (
 	"citylyf/economy"
+	"citylyf/entities"
 	"citylyf/people"
 	"fmt"
 )
@@ -22,7 +23,7 @@ func main() {
 		MonthsOfNegativeGrowth: 0,
 	}
 
-	var population []people.Person
+	var population []entities.Person
 
 	for freeHouses > 0 && availableJobs > 0 {
 		h := people.CreateHousehold()
@@ -31,10 +32,10 @@ func main() {
 		fmt.Printf("%s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
 
 		for j := 0; j < len(h.Members); j++ {
-			if h.Members[j].CareerLevel != people.Unemployed && availableJobs > 0 {
+			if h.Members[j].CareerLevel != entities.Unemployed && availableJobs > 0 {
 				availableJobs -= 1
 				fmt.Printf("%s %s has accepted a job as %s, %d jobs remain\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation, availableJobs)
-			} else if h.Members[j].Age() > people.AgeOfAdulthood {
+			} else if h.Members[j].Age() > entities.AgeOfAdulthood {
 				unemployed += 1
 			}
 		}
