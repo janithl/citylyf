@@ -7,15 +7,20 @@ import (
 
 type Market struct {
 	InterestRate       float64 // Higher interest rates = bad for stocks
-	LastInflationRate  float64 // High inflation leads to money tightening
 	Unemployment       float64 // High unemployment reduces market confidence
 	CorporateTax       float64 // High corporate tax = lower stock growth
 	GovernmentSpending float64 // More spending = Higher money supply
+
+	// Historical
+	LastInflationRate   float64 // High inflation leads to money tightening
+	LastMarketSentiment float64 // Random factor (news, global events)
 }
 
 // Random factor (news, global events)
 func (m *Market) MarketSentiment() float64 {
-	return (rand.Float64() * 4) - 2 // Random factor (-2% to +2%)
+	sentiment := (rand.Float64() * 4) - 2 // Random factor (-2% to +2%)
+	m.LastMarketSentiment = sentiment
+	return sentiment
 }
 
 // Supply-chain disruptions (0 = normal, higher = worse)
@@ -84,5 +89,36 @@ func (m *Market) Inflation(populationGrowth float64) float64 {
 		totalInflation = 20 // Hyperinflation capped at 20%
 	}
 
+	m.LastInflationRate = totalInflation
 	return totalInflation
+}
+
+// MarketGrowth adjusts the stock index based on economic conditions
+func (m *Market) MarketGrowth() float64 {
+	baseGrowth := 2.0 // Expected annual growth in % (adjusted by economic conditions)
+
+	// Interest Rate Effect: High rates slow down growth
+	interestImpact := -math.Pow(m.InterestRate/5, 2)
+
+	// Inflation Effect: Moderate (2-3%) is good, but high (>6%) is bad
+	inflationImpact := -math.Pow((m.LastInflationRate-2)/3, 2)
+
+	// Unemployment Effect: More unemployment → Less consumer spending → Weaker market
+	unemploymentImpact := -m.Unemployment / 5
+
+	// Corporate Tax Effect: Higher tax rates = Lower stock growth
+	taxImpact := -m.CorporateTax / 30
+
+	// Market Sentiment: Random external factors (news, global events, speculation)
+	marketSentimentImpact := m.LastMarketSentiment
+
+	// Calculate total stock market growth
+	totalGrowth := baseGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact
+
+	// Ensure the market doesn't collapse below -10% in extreme cases
+	if totalGrowth < -10 {
+		totalGrowth = -10
+	}
+
+	return totalGrowth
 }

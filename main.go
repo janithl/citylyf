@@ -8,13 +8,14 @@ import (
 
 func main() {
 	freeHouses := 100
-	availableJobs := 30
+	availableJobs := 60
 	lastPopulation := 0
 	unemployed := 0
 	populationGrowth := 0.0
+	negativeGrowth := 0
 
 	market := economy.Market{
-		InterestRate:       5.0,
+		InterestRate:       6.0,
 		LastInflationRate:  0.0,
 		Unemployment:       0.0,
 		CorporateTax:       5.0,
@@ -30,10 +31,10 @@ func main() {
 		fmt.Printf("%s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
 
 		for j := 0; j < len(h.Members); j++ {
-			if h.Members[j].CareerLevel != people.Unemployed {
+			if h.Members[j].CareerLevel != people.Unemployed && availableJobs > 0 {
 				availableJobs -= 1
-				fmt.Printf("%s %s has accepted a job as %s\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation)
-			} else {
+				fmt.Printf("%s %s has accepted a job as %s, %d jobs remain\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation, availableJobs)
+			} else if h.Members[j].Age() > people.AgeOfAdulthood {
 				unemployed += 1
 			}
 		}
@@ -43,8 +44,22 @@ func main() {
 		lastPopulation = len(population)
 		market.Unemployment = 100 * float64(unemployed) / float64(lastPopulation)
 		inflation := market.Inflation(populationGrowth)
-		market.LastInflationRate = inflation
-		fmt.Printf("Town population is %d (±%.2f%%). Inflation is at %.2f%%\n", len(population), populationGrowth, inflation)
+		marketGrowth := market.MarketGrowth()
+		fmt.Printf("Town population is %d (±%.2f%%). Inflation: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, marketGrowth)
+
+		if marketGrowth > 0 {
+			availableJobs = 1 + int(float64(availableJobs)*marketGrowth)
+			negativeGrowth = 0
+			fmt.Printf("Growth! %d jobs remain.\n", availableJobs)
+		} else {
+			negativeGrowth += 1
+		}
+
+		// more than 3 months of negative growth, time for jobs to come down
+		if negativeGrowth > 3 {
+			availableJobs = int(float64(availableJobs) * 0.66)
+			fmt.Printf("Recession! %d jobs remain.\n", availableJobs)
+		}
 	}
 
 	fmt.Printf("Total town population is %d\n", len(population))

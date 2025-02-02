@@ -15,7 +15,7 @@ const (
 )
 
 func getRelationshipStatus(age int) RelationshipStatus {
-	if age < ageOfAdulthood {
+	if age < AgeOfAdulthood {
 		return Single
 	}
 
