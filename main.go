@@ -30,7 +30,6 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 func main() {
 	freeHouses := 100
 	lastPopulation := 0
-	unemployed := 0
 	populationGrowth := 0.0
 
 	market := economy.Market{
@@ -46,7 +45,7 @@ func main() {
 	var companies []economy.Company
 
 	// set up some initial companies
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		newCompany := economy.GenerateRandomCompany(market)
 		companies = append(companies, newCompany)
 		fmt.Printf("%s (%s) founded!\n", newCompany.Name, newCompany.Industry)
@@ -56,22 +55,23 @@ func main() {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("%s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
+		population = append(population, h.Members...)
 
-		for j := 0; j < len(h.Members); j++ {
-			if h.Members[j].CareerLevel != entities.Unemployed {
-				companyId, remaining := getSuitableJob(companies, market, h.Members[j])
+		// assign unemployed people jobs
+		unemployed := 0
+		for j := 0; j < len(population); j++ {
+			if population[j].CareerLevel != entities.Unemployed {
+				companyId, remaining := getSuitableJob(companies, market, population[j])
 				if companyId != 0 {
-					h.Members[j].EmployerID = companyId
-					fmt.Printf(">>> %s %s has accepted a job as %s, %d jobs remain\n", h.Members[j].FirstName, h.Members[j].FamilyName, h.Members[j].Occupation, remaining)
+					population[j].EmployerID = companyId
+					fmt.Printf(">>> %s %s has accepted a job as %s, %d jobs remain\n", population[j].FirstName, population[j].FamilyName, population[j].Occupation, remaining)
 				} else {
 					unemployed += 1
 				}
-			} else if h.Members[j].Age() > entities.AgeOfAdulthood {
+			} else if population[j].Age() > entities.AgeOfAdulthood {
 				unemployed += 1
 			}
 		}
-
-		population = append(population, h.Members...)
 
 		// calculate impact of population growth on city economy
 		populationGrowth = float64(len(population)-lastPopulation) / float64(lastPopulation)
@@ -93,11 +93,11 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Total town population is %d (%.2f%% unemployment)\n", len(population), market.Unemployment)
 	for i := 0; i < len(population); i++ {
 		fmt.Println(population[i].String())
 	}
 	for j := 0; j < len(companies); j++ {
 		fmt.Println(companies[j])
 	}
+	fmt.Printf("Total town population is %d (%.2f%% unemployment)\n", len(population), market.Unemployment)
 }

@@ -32,5 +32,5 @@ func (p *Person) Age() int {
 }
 
 func (p *Person) String() string {
-	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %20s %4d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
+	return fmt.Sprintf("%20s %20s  %3d %6s %10s %15s %20s %25s %5d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
 }
