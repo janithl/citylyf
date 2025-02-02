@@ -3,6 +3,7 @@ package economy
 import (
 	"math"
 	"math/rand"
+	"time"
 )
 
 const BaseMoneySupplyGrowth = 3.0 // Normal money supply growth (%)
@@ -17,9 +18,10 @@ type Market struct {
 	GovernmentSpending float64 // More spending = Higher money supply
 
 	// Historical
-	LastInflationRate      float64 // High inflation leads to money tightening
-	LastMarketSentiment    float64 // Random factor (news, global events)
-	MonthsOfNegativeGrowth int     // Holds number of months of negative growth for recession
+	LastCalculation        time.Time // last time the market was calculated
+	LastInflationRate      float64   // High inflation leads to money tightening
+	LastMarketSentiment    float64   // Random factor (news, global events)
+	MonthsOfNegativeGrowth int       // Holds number of months of negative growth for recession
 }
 
 // Random factor (news, global events)
