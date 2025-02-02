@@ -33,7 +33,7 @@ func (p *Person) String() string {
 }
 
 const AgeOfAdulthood = 18
-const ageOfRetirement = 70
+const AgeOfRetirement = 70
 
 func createRandomPerson(minAge int, maxAge int) Person {
 	name, familyName, gender := getNameAndGender()

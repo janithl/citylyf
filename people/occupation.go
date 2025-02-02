@@ -106,7 +106,7 @@ func getEducationLevel(age int) EducationLevel {
 
 // getRandomOccupationAndSalary randomizes occupation and salary based on age and career level
 func getRandomOccupationAndSalary(age int, education EducationLevel) (string, CareerLevel, float64) {
-	if age < AgeOfAdulthood || age > ageOfRetirement {
+	if age < AgeOfAdulthood || age > AgeOfRetirement {
 		return "", Unemployed, 0
 	}
 

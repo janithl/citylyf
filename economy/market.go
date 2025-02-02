@@ -5,6 +5,11 @@ import (
 	"math/rand"
 )
 
+const BaseMoneySupplyGrowth = 3.0 // Normal money supply growth (%)
+const BaseInflation = 2.0         // Normal baseline inflation (%)
+const BaseMarketGrowth = 2.0      // Expected annual growth in % (adjusted by economic conditions)
+const MinGrowth = -10.0           // Minimum allowed negative growth
+
 type Market struct {
 	InterestRate       float64 // Higher interest rates = bad for stocks
 	Unemployment       float64 // High unemployment reduces market confidence
@@ -28,8 +33,6 @@ func (m *Market) SupplyShock() float64 {
 	return rand.Float64() * 3 // 0% - 3%
 }
 
-const baseGrowth = 3.0 // Normal money supply growth (%)
-
 // MoneySupplyGrowth calculates money supply growth based on economic conditions
 func (m *Market) MoneySupplyGrowth() float64 {
 
@@ -46,7 +49,7 @@ func (m *Market) MoneySupplyGrowth() float64 {
 	confidenceImpact := m.MarketSentiment() * 0.3
 
 	// Calculate total money supply growth
-	totalGrowth := baseGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
+	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
 
 	// Ensure realistic money supply growth
 	if totalGrowth < 0 {
@@ -58,8 +61,6 @@ func (m *Market) MoneySupplyGrowth() float64 {
 
 	return totalGrowth
 }
-
-const baseInflation = 2.0 // Normal baseline inflation (%)
 
 // Inflation calculates inflation based on economic conditions
 func (m *Market) Inflation(populationGrowth float64) float64 {
@@ -79,7 +80,7 @@ func (m *Market) Inflation(populationGrowth float64) float64 {
 	supplyImpact := m.SupplyShock() * 1.2
 
 	// Total inflation calculation
-	totalInflation := baseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact
+	totalInflation := BaseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact
 
 	// Ensure inflation stays reasonable
 	if totalInflation < -1 {
@@ -95,8 +96,6 @@ func (m *Market) Inflation(populationGrowth float64) float64 {
 
 // MarketGrowth adjusts the stock index based on economic conditions
 func (m *Market) MarketGrowth() float64 {
-	baseGrowth := 2.0 // Expected annual growth in % (adjusted by economic conditions)
-
 	// Interest Rate Effect: High rates slow down growth
 	interestImpact := -math.Pow(m.InterestRate/5, 2)
 
@@ -113,11 +112,11 @@ func (m *Market) MarketGrowth() float64 {
 	marketSentimentImpact := m.LastMarketSentiment
 
 	// Calculate total stock market growth
-	totalGrowth := baseGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact
+	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact
 
 	// Ensure the market doesn't collapse below -10% in extreme cases
-	if totalGrowth < -10 {
-		totalGrowth = -10
+	if totalGrowth < MinGrowth {
+		totalGrowth = MinGrowth
 	}
 
 	return totalGrowth
