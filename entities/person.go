@@ -20,7 +20,7 @@ type Person struct {
 	CareerLevel    CareerLevel    // Their career level
 	EmployerID     int            // Their employer id
 	AnnualIncome   int            // Annual income
-	Wealth         int            // Total assets or savings
+	Savings        int            // Total personal savings
 	Relationship   RelationshipStatus
 }
 

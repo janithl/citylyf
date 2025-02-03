@@ -14,6 +14,7 @@ const (
 type Simulation struct {
 	SimulationSpeed SimulationSpeed
 	Date            time.Time
+	CityData        CityData
 }
 
 func (s *Simulation) Tick() {
@@ -27,5 +28,9 @@ func NewSimulation(startYear int) Simulation {
 	return Simulation{
 		SimulationSpeed: Mid,
 		Date:            time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC),
+		CityData: CityData{
+			Population: 0,
+			Households: []Household{},
+		},
 	}
 }

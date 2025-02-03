@@ -37,7 +37,7 @@ func createRandomPerson(minAge int, maxAge int) entities.Person {
 		Industry:       job.Industry,
 		CareerLevel:    careerLevel,
 		AnnualIncome:   int(salary),
-		Wealth:         int(savings),
+		Savings:        int(savings),
 		Relationship:   entities.GetRelationshipStatus(age),
 	}
 }

@@ -14,11 +14,9 @@ import (
 
 // TODO
 // Move people out of the city when they can't find work after a certain time - think about rent/mortgage expenses
-var population []entities.Person
 var companies []economy.Company
 var freeHouses int
 var lastPopulation int
-var unemployed int
 var populationGrowth float64
 var market economy.Market
 
@@ -29,7 +27,7 @@ func main() {
 	lastPopulation = 0
 	populationGrowth = 0.0
 	market = economy.Market{
-		InterestRate:           5.0,
+		InterestRate:           7.0,
 		LastInflationRate:      0.0,
 		Unemployment:           0.0,
 		CorporateTax:           3.0,
@@ -86,24 +84,22 @@ func moveIn() {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
-		population = append(population, h.Members...)
+		entities.CitySimulation.CityData.MoveIn(h)
 	}
 }
 
+// assign unemployed people jobs
 func findJobs() {
-	// assign unemployed people jobs
-	unemployed = 0
-	for j := 0; j < len(population); j++ {
-		if population[j].EmployerID == 0 && population[j].CareerLevel != entities.Unemployed {
-			companyId, remaining := getSuitableJob(companies, market, population[j])
-			if companyId != 0 {
-				population[j].EmployerID = companyId
-				fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n", population[j].FirstName, population[j].FamilyName, population[j].Occupation, remaining)
-			} else {
-				unemployed += 1
+	h := entities.CitySimulation.CityData.Households
+	for i := 0; i < len(h); i++ {
+		for j := 0; j < len(h[i].Members); j++ {
+			if h[i].Members[j].EmployerID == 0 && h[i].Members[j].CareerLevel != entities.Unemployed {
+				companyId, remaining := getSuitableJob(companies, market, h[i].Members[j])
+				if companyId != 0 {
+					h[i].Members[j].EmployerID = companyId
+					fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n", h[i].Members[j].FirstName, h[i].Members[j].FamilyName, h[i].Members[j].Occupation, remaining)
+				}
 			}
-		} else if population[j].EmployerID == 0 && population[j].Age() > entities.AgeOfAdulthood {
-			unemployed += 1
 		}
 	}
 }
@@ -128,14 +124,18 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 
 func calculateEconomy() {
 	// calculate impact of population growth on city economy
-	populationGrowth = float64(len(population)-lastPopulation) / float64(lastPopulation)
-	lastPopulation = len(population)
-	market.Unemployment = 100 * float64(unemployed) / float64(lastPopulation)
+	population := entities.CitySimulation.CityData.Population
+	populationGrowth = float64(population-lastPopulation) / float64(lastPopulation)
+	lastPopulation = entities.CitySimulation.CityData.Population
+
+	entities.CitySimulation.CityData.CalculateUnemployment()
+	market.Unemployment = entities.CitySimulation.CityData.UnemploymentRate()
+
 	inflation := market.Inflation(populationGrowth)
 	marketGrowth := market.MarketGrowth()
 	market.LastCalculation = entities.CitySimulation.Date // update last calculation time
 
-	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", len(population), populationGrowth, inflation, market.Unemployment, marketGrowth)
+	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", population, populationGrowth, inflation, market.Unemployment, marketGrowth)
 
 	if marketGrowth > 0 && rand.Intn(100) < 50 {
 		newCompany := economy.GenerateRandomCompany(market)
@@ -151,7 +151,7 @@ func calculateEconomy() {
 
 func printFinalState(printJson bool) {
 	if printJson {
-		popJson, err := json.Marshal(population)
+		cityDataJson, err := json.Marshal(entities.CitySimulation.CityData)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -162,16 +162,19 @@ func printFinalState(printJson bool) {
 			return
 		}
 
-		fmt.Println("[ JSON ] Population: ", string(popJson))
+		fmt.Println("[ JSON ] Population: ", string(cityDataJson))
 		fmt.Println("[ JSON ] Companies: ", string(compJson))
 	} else {
-		for i := 0; i < len(population); i++ {
-			fmt.Println(population[i].String())
+		h := entities.CitySimulation.CityData.Households
+		for i := 0; i < len(h); i++ {
+			for j := 0; j < len(h[i].Members); j++ {
+				fmt.Println(h[i].Members[j].String())
+			}
 		}
-		for j := 0; j < len(companies); j++ {
-			fmt.Println(companies[j])
+		for k := 0; k < len(companies); k++ {
+			fmt.Println(companies[k])
 		}
 	}
 
-	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", len(population), market.Unemployment)
+	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.CitySimulation.CityData.Population, market.Unemployment)
 }

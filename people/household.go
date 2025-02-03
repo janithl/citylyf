@@ -7,54 +7,34 @@ import (
 	"github.com/janithl/citylyf/entities"
 )
 
-type Household struct {
-	Members []entities.Person // Family members
-}
-
-func (h *Household) FamilyName() string {
-	return h.Members[0].FamilyName
-}
-
-func (h *Household) AnnualIncome() int {
-	income := 0
-	for i := 0; i < len(h.Members); i++ {
-		income += h.Members[i].AnnualIncome
-	}
-	return income
-}
-func (h *Household) Wealth() int {
-	wealth := 0
-	for i := 0; i < len(h.Members); i++ {
-		wealth += h.Members[i].Wealth
-	}
-	return wealth
-}
-
-func CreateHousehold() Household {
+func CreateHousehold() entities.Household {
 	var p, q entities.Person
-	var household []entities.Person
+	household := entities.Household{
+		Members:    []entities.Person{},
+		MoveInDate: entities.CitySimulation.Date,
+	}
 
 	p = createRandomPerson(16, 100)
-	household = append(household, p)
+	household.Members = append(household.Members, p)
+	household.Savings = p.Savings
 
 	if p.Relationship == entities.Married {
 		q = createRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
 		q.Relationship = entities.Married
+		household.Savings += q.Savings
 		if rand.Intn(100) < 80 {
 			q.FamilyName = p.FamilyName
 		}
 
-		household = append(household, q)
+		household.Members = append(household.Members, q)
 	}
 
 	if rand.Intn(100) < 58 {
 		kids := createKids(p, q)
-		household = append(household, kids...)
+		household.Members = append(household.Members, kids...)
 	}
 
-	return Household{
-		Members: household,
-	}
+	return household
 }
 
 func createKids(p entities.Person, q entities.Person) []entities.Person {
