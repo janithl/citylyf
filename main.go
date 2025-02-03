@@ -22,7 +22,7 @@ var populationGrowth float64
 var market economy.Market
 
 func main() {
-	entities.CitySimulation = entities.NewSimulation(2020)
+	entities.Sim = entities.NewSimulation(2020)
 
 	freeHouses = 100
 	lastPopulation = 0
@@ -34,7 +34,7 @@ func main() {
 		CorporateTax:           3.0,
 		GovernmentSpending:     10.0,
 		MonthsOfNegativeGrowth: 0,
-		LastCalculation:        entities.CitySimulation.Date,
+		LastCalculation:        entities.Sim.Date,
 	}
 
 	// set up some initial companies
@@ -53,15 +53,15 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
-				entities.CitySimulation.Tick()
+				entities.Sim.Tick()
 				fmt.Println("")
-				fmt.Printf("[ Date ] New simulation date is: %s\n", entities.CitySimulation.Date)
+				fmt.Printf("[ Date ] New simulation date is: %s\n", entities.Sim.Date)
 				moveIn()
 				findJobs()
 				moveOut()
 
 				// run market calculations every month
-				diff := entities.CitySimulation.Date.Sub(market.LastCalculation)
+				diff := entities.Sim.Date.Sub(market.LastCalculation)
 				if diff.Hours()/24 >= 28 {
 					calculateEconomy()
 				}
@@ -87,13 +87,13 @@ func moveIn() {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
-		entities.CitySimulation.CityData.MoveIn(h)
+		entities.Sim.People.MoveIn(h)
 	}
 }
 
 // people move out if there are no jobs
 func moveOut() {
-	h := entities.CitySimulation.CityData.Households
+	h := entities.Sim.People.Households
 	// traverse in reverse order to avoid index shifting
 	for i := len(h) - 1; i >= 0; i-- {
 		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
@@ -107,7 +107,7 @@ func moveOut() {
 
 // assign unemployed people jobs
 func findJobs() {
-	h := entities.CitySimulation.CityData.Households
+	h := entities.Sim.People.Households
 	for i := 0; i < len(h); i++ {
 		for j := 0; j < len(h[i].Members); j++ {
 			if h[i].Members[j].IsEmployable() && !h[i].Members[j].IsEmployed() {
@@ -141,16 +141,16 @@ func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Pe
 
 func calculateEconomy() {
 	// calculate impact of population growth on city economy
-	population := entities.CitySimulation.CityData.Population
+	population := entities.Sim.People.Population
 	populationGrowth = float64(population-lastPopulation) / float64(lastPopulation)
-	lastPopulation = entities.CitySimulation.CityData.Population
+	lastPopulation = entities.Sim.People.Population
 
-	entities.CitySimulation.CityData.CalculateUnemployment()
-	market.Unemployment = entities.CitySimulation.CityData.UnemploymentRate()
+	entities.Sim.People.CalculateUnemployment()
+	market.Unemployment = entities.Sim.People.UnemploymentRate()
 
 	inflation := market.Inflation(populationGrowth)
 	marketGrowth := market.MarketGrowth()
-	market.LastCalculation = entities.CitySimulation.Date // update last calculation time
+	market.LastCalculation = entities.Sim.Date // update last calculation time
 
 	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", population, populationGrowth, inflation, market.Unemployment, marketGrowth)
 
@@ -168,7 +168,7 @@ func calculateEconomy() {
 
 func printFinalState(printJson bool) {
 	if printJson {
-		cityDataJson, err := json.Marshal(entities.CitySimulation.CityData)
+		cityDataJson, err := json.Marshal(entities.Sim.People)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -182,7 +182,7 @@ func printFinalState(printJson bool) {
 		fmt.Println("[ JSON ] Population: ", string(cityDataJson))
 		fmt.Println("[ JSON ] Companies: ", string(compJson))
 	} else {
-		h := entities.CitySimulation.CityData.Households
+		h := entities.Sim.People.Households
 		for i := 0; i < len(h); i++ {
 			for j := 0; j < len(h[i].Members); j++ {
 				fmt.Println(h[i].Members[j].String())
@@ -193,5 +193,5 @@ func printFinalState(printJson bool) {
 		}
 	}
 
-	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.CitySimulation.CityData.Population, market.Unemployment)
+	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.Sim.People.Population, market.Unemployment)
 }

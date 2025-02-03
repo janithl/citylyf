@@ -26,7 +26,7 @@ type Person struct {
 }
 
 func (p *Person) Age() int {
-	duration := CitySimulation.Date.Sub(p.Birthdate)
+	duration := Sim.Date.Sub(p.Birthdate)
 	return int(duration.Hours() / HoursPerYear)
 }
 

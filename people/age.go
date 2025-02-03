@@ -38,7 +38,7 @@ func getAge(mean, stdDev float64, minAge, maxAge int) int {
 
 // getRandomBirthdate generates a random birthdate given the age
 func getRandomBirthdate(age int) time.Time {
-	currentDate := entities.CitySimulation.Date
+	currentDate := entities.Sim.Date
 
 	year := currentDate.Year() - age
 

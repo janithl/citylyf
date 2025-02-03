@@ -1,22 +1,22 @@
 package entities
 
-type CityData struct {
+type People struct {
 	Population  int
 	LabourForce int
 	Unemployed  int
 	Households  []Household
 }
 
-func (c *CityData) UnemploymentRate() float64 {
+func (c *People) UnemploymentRate() float64 {
 	return 100.0 * float64(c.Unemployed) / float64(c.LabourForce)
 }
 
-func (c *CityData) MoveIn(h Household) {
+func (c *People) MoveIn(h Household) {
 	c.Households = append(c.Households, h)
 	c.Population += len(h.Members)
 }
 
-func (c *CityData) CalculateUnemployment() {
+func (c *People) CalculateUnemployment() {
 	labourforce, unemployed := 0, 0
 	for i := 0; i < len(c.Households); i++ {
 		for j := 0; j < len(c.Households[i].Members); j++ {
