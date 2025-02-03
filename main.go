@@ -4,6 +4,8 @@ import (
 	"citylyf/economy"
 	"citylyf/entities"
 	"citylyf/people"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"math/rand"
 	"time"
@@ -66,12 +68,16 @@ func main() {
 		}
 	}()
 
-	// stop simulation after 30s
-	time.Sleep(30000 * time.Millisecond)
+	jsonPtr := flag.Bool("json", false, "should output be in json?")
+	durationPtr := flag.Int("duration", 30, "how many seconds do we run the sim?")
+	flag.Parse()
+
+	// stop simulation after given duration
+	time.Sleep(time.Duration(*durationPtr) * time.Second)
 	ticker.Stop()
 	done <- true
 
-	printFinalState()
+	printFinalState(*jsonPtr)
 }
 
 func moveIn() {
@@ -142,12 +148,29 @@ func calculateEconomy() {
 	}
 }
 
-func printFinalState() {
-	for i := 0; i < len(population); i++ {
-		fmt.Println(population[i].String())
+func printFinalState(printJson bool) {
+	if printJson {
+		popJson, err := json.Marshal(population)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		compJson, err := json.Marshal(companies)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("[ JSON ] Population: ", string(popJson))
+		fmt.Println("[ JSON ] Companies: ", string(compJson))
+	} else {
+		for i := 0; i < len(population); i++ {
+			fmt.Println(population[i].String())
+		}
+		for j := 0; j < len(companies); j++ {
+			fmt.Println(companies[j])
+		}
 	}
-	for j := 0; j < len(companies); j++ {
-		fmt.Println(companies[j])
-	}
+
 	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", len(population), market.Unemployment)
 }
