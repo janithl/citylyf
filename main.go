@@ -93,7 +93,7 @@ func findJobs() {
 	h := entities.CitySimulation.CityData.Households
 	for i := 0; i < len(h); i++ {
 		for j := 0; j < len(h[i].Members); j++ {
-			if h[i].Members[j].EmployerID == 0 && h[i].Members[j].CareerLevel != entities.Unemployed {
+			if h[i].Members[j].IsEmployable() && !h[i].Members[j].IsEmployed() {
 				companyId, remaining := getSuitableJob(companies, market, h[i].Members[j])
 				if companyId != 0 {
 					h[i].Members[j].EmployerID = companyId

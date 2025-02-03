@@ -20,9 +20,9 @@ func (c *CityData) CalculateUnemployment() {
 	labourforce, unemployed := 0, 0
 	for i := 0; i < len(c.Households); i++ {
 		for j := 0; j < len(c.Households[i].Members); j++ {
-			if c.Households[i].Members[j].Age() > AgeOfAdulthood || c.Households[i].Members[j].CareerLevel != Unemployed {
+			if c.Households[i].Members[j].IsEmployable() {
 				labourforce += 1
-				if c.Households[i].Members[j].EmployerID == 0 {
+				if !c.Households[i].Members[j].IsEmployed() {
 					unemployed += 1
 				}
 			}

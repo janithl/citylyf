@@ -30,6 +30,14 @@ func (p *Person) Age() int {
 	return int(duration.Hours() / hoursPerYear)
 }
 
+func (p *Person) IsEmployable() bool {
+	return p.Age() > AgeOfAdulthood || p.CareerLevel != Unemployed
+}
+
+func (p *Person) IsEmployed() bool {
+	return p.EmployerID != 0
+}
+
 func (p *Person) String() string {
 	return fmt.Sprintf("%20s %20s  %3d (%4d) %6s %10s %15s %20s %25s %5d %10d/yearly", p.FirstName, p.FamilyName, p.Age(), p.Birthdate.Year(), p.Gender, p.Relationship, p.EducationLevel, p.CareerLevel, p.Occupation, p.EmployerID, p.AnnualIncome)
 }
