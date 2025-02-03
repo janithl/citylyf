@@ -15,11 +15,9 @@ import (
 
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
-var companies []economy.Company
 var freeHouses int
 var lastPopulation int
 var populationGrowth float64
-var market economy.Market
 
 func main() {
 	entities.Sim = entities.NewSimulation(2020)
@@ -27,20 +25,11 @@ func main() {
 	freeHouses = 100
 	lastPopulation = 0
 	populationGrowth = 0.0
-	market = economy.Market{
-		InterestRate:           5.0,
-		LastInflationRate:      0.0,
-		Unemployment:           0.0,
-		CorporateTax:           3.0,
-		GovernmentSpending:     10.0,
-		MonthsOfNegativeGrowth: 0,
-		LastCalculation:        entities.Sim.Date,
-	}
 
-	// set up some initial companies
+	// set up some initial entities.Sim.Companies
 	for i := 0; i < 16; i++ {
-		newCompany := economy.GenerateRandomCompany(market)
-		companies = append(companies, newCompany)
+		newCompany := economy.GenerateRandomCompany()
+		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
@@ -60,8 +49,8 @@ func main() {
 				findJobs()
 				moveOut()
 
-				// run market calculations every month
-				diff := entities.Sim.Date.Sub(market.LastCalculation)
+				// run entities.Sim.Market calculations every month
+				diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
 				if diff.Hours()/24 >= 28 {
 					calculateEconomy()
 				}
@@ -111,7 +100,7 @@ func findJobs() {
 	for i := 0; i < len(h); i++ {
 		for j := 0; j < len(h[i].Members); j++ {
 			if h[i].Members[j].IsEmployable() && !h[i].Members[j].IsEmployed() {
-				companyId, remaining := getSuitableJob(companies, market, h[i].Members[j])
+				companyId, remaining := getSuitableJob(h[i].Members[j])
 				if companyId != 0 {
 					h[i].Members[j].EmployerID = companyId
 					fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n", h[i].Members[j].FirstName, h[i].Members[j].FamilyName, h[i].Members[j].Occupation, remaining)
@@ -121,17 +110,17 @@ func findJobs() {
 	}
 }
 
-func getSuitableJob(companies []economy.Company, m economy.Market, p entities.Person) (int, int) {
+func getSuitableJob(p entities.Person) (int, int) {
 	remaining := 0
 	companyId := 0
-	for i := 0; i < len(companies); i++ {
-		if companies[i].Industry == p.Industry {
-			openings := companies[i].JobOpenings
+	for i := 0; i < len(entities.Sim.Companies); i++ {
+		if entities.Sim.Companies[i].Industry == p.Industry {
+			openings := entities.Sim.Companies[i].JobOpenings
 			for j := 0; j < len(openings); j++ {
 				if openings[p.CareerLevel] > 0 {
-					companies[i].JobOpenings[p.CareerLevel] -= 1
-					remaining = companies[i].GetNumberOfJobOpenings()
-					companyId = companies[i].ID
+					entities.Sim.Companies[i].JobOpenings[p.CareerLevel] -= 1
+					remaining = entities.Sim.Companies[i].GetNumberOfJobOpenings()
+					companyId = entities.Sim.Companies[i].ID
 				}
 			}
 		}
@@ -146,23 +135,23 @@ func calculateEconomy() {
 	lastPopulation = entities.Sim.People.Population
 
 	entities.Sim.People.CalculateUnemployment()
-	market.Unemployment = entities.Sim.People.UnemploymentRate()
+	entities.Sim.Market.Unemployment = entities.Sim.People.UnemploymentRate()
 
-	inflation := market.Inflation(populationGrowth)
-	marketGrowth := market.MarketGrowth()
-	market.LastCalculation = entities.Sim.Date // update last calculation time
+	inflation := entities.Sim.Market.Inflation(populationGrowth)
+	marketGrowth := entities.Sim.Market.MarketGrowth()
+	entities.Sim.Market.LastCalculation = entities.Sim.Date // update last calculation time
 
-	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", population, populationGrowth, inflation, market.Unemployment, marketGrowth)
+	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, marketGrowth)
 
 	if marketGrowth > 0 && rand.Intn(100) < 50 {
-		newCompany := economy.GenerateRandomCompany(market)
-		companies = append(companies, newCompany)
+		newCompany := economy.GenerateRandomCompany()
+		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
-	for k := 0; k < len(companies); k++ {
-		companies[k].CalculateProfit(market)
-		companies[k].DetermineJobOpenings(market)
+	for k := 0; k < len(entities.Sim.Companies); k++ {
+		entities.Sim.Companies[k].CalculateProfit()
+		entities.Sim.Companies[k].DetermineJobOpenings()
 	}
 }
 
@@ -173,7 +162,7 @@ func printFinalState(printJson bool) {
 			fmt.Println(err)
 			return
 		}
-		compJson, err := json.Marshal(companies)
+		compJson, err := json.Marshal(entities.Sim.Companies)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -188,10 +177,10 @@ func printFinalState(printJson bool) {
 				fmt.Println(h[i].Members[j].String())
 			}
 		}
-		for k := 0; k < len(companies); k++ {
-			fmt.Println(companies[k])
+		for k := 0; k < len(entities.Sim.Companies); k++ {
+			fmt.Println(entities.Sim.Companies[k])
 		}
 	}
 
-	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.Sim.People.Population, market.Unemployment)
+	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.Sim.People.Population, entities.Sim.Market.Unemployment)
 }

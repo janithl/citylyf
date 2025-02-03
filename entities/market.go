@@ -1,4 +1,4 @@
-package economy
+package entities
 
 import (
 	"math"

@@ -15,6 +15,8 @@ type Simulation struct {
 	SimulationSpeed SimulationSpeed
 	Date            time.Time
 	People          People
+	Market          Market
+	Companies       []Company
 }
 
 func (s *Simulation) Tick() {
@@ -25,12 +27,23 @@ func (s *Simulation) Tick() {
 var Sim Simulation
 
 func NewSimulation(startYear int) Simulation {
+	startDate := time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC)
 	return Simulation{
 		SimulationSpeed: Mid,
-		Date:            time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Date:            startDate,
 		People: People{
 			Population: 0,
 			Households: []Household{},
 		},
+		Market: Market{
+			InterestRate:           5.0,
+			LastInflationRate:      0.0,
+			Unemployment:           0.0,
+			CorporateTax:           3.0,
+			GovernmentSpending:     10.0,
+			MonthsOfNegativeGrowth: 0,
+			LastCalculation:        startDate,
+		},
+		Companies: []Company{},
 	}
 }
