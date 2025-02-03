@@ -94,10 +94,11 @@ func moveIn() {
 // people move out if there are no jobs
 func moveOut() {
 	h := entities.CitySimulation.CityData.Households
-	for i := 0; i < len(h); i++ {
+	// traverse in reverse order to avoid index shifting
+	for i := len(h) - 1; i >= 0; i-- {
 		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
 			movedName := h[i].FamilyName()
-			entities.CitySimulation.CityData.Households = slices.Delete(h, i, i+1)
+			h = slices.Delete(h, i, i+1)
 			freeHouses += 1
 			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, freeHouses)
 		}
