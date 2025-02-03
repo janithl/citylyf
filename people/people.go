@@ -1,10 +1,11 @@
 package people
 
 import (
-	"citylyf/economy"
-	"citylyf/entities"
 	"math"
 	"math/rand"
+
+	"github.com/janithl/citylyf/economy"
+	"github.com/janithl/citylyf/entities"
 )
 
 func createRandomPerson(minAge int, maxAge int) entities.Person {

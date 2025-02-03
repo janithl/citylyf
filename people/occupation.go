@@ -1,8 +1,9 @@
 package people
 
 import (
-	"citylyf/entities"
 	"math/rand"
+
+	"github.com/janithl/citylyf/entities"
 )
 
 // getEducationLevel returns education level based on age

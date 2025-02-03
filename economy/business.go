@@ -1,10 +1,11 @@
 package economy
 
 import (
-	"citylyf/entities"
 	"fmt"
 	"math"
 	"math/rand"
+
+	"github.com/janithl/citylyf/entities"
 )
 
 // Company represents a business entity with jobs

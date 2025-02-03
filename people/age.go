@@ -1,10 +1,11 @@
 package people
 
 import (
-	"citylyf/entities"
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/janithl/citylyf/entities"
 )
 
 // getAge generates a random age based on a bell curve

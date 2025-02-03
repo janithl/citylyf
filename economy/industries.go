@@ -1,9 +1,10 @@
 package economy
 
 import (
-	"citylyf/entities"
 	"math/rand"
 	"slices"
+
+	"github.com/janithl/citylyf/entities"
 )
 
 // IndustryJob represents the jobs in an industry

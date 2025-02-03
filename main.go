@@ -1,14 +1,15 @@
 package main
 
 import (
-	"citylyf/economy"
-	"citylyf/entities"
-	"citylyf/people"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/janithl/citylyf/economy"
+	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/people"
 )
 
 // TODO

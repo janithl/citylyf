@@ -1,9 +1,10 @@
 package people
 
 import (
-	"citylyf/entities"
 	"math"
 	"math/rand"
+
+	"github.com/janithl/citylyf/entities"
 )
 
 type Household struct {
