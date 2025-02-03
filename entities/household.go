@@ -19,3 +19,15 @@ func (h *Household) AnnualIncome() int {
 	}
 	return income
 }
+
+// eligible for move out if 1/4 years without income
+func (h *Household) IsEligibleForMoveOut() bool {
+	timeSinceMoveIn := CitySimulation.Date.Sub(h.MoveInDate).Hours() / HoursPerYear
+	noIncome := true
+	for i := 0; i < len(h.Members); i++ {
+		if h.Members[i].IsEmployed() {
+			noIncome = false
+		}
+	}
+	return noIncome && timeSinceMoveIn > 0.25
+}

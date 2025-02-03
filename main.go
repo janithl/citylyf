@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
+	"slices"
 	"time"
 
 	"github.com/janithl/citylyf/economy"
@@ -13,7 +14,7 @@ import (
 )
 
 // TODO
-// Move people out of the city when they can't find work after a certain time - think about rent/mortgage expenses
+// Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
 var companies []economy.Company
 var freeHouses int
 var lastPopulation int
@@ -27,7 +28,7 @@ func main() {
 	lastPopulation = 0
 	populationGrowth = 0.0
 	market = economy.Market{
-		InterestRate:           7.0,
+		InterestRate:           5.0,
 		LastInflationRate:      0.0,
 		Unemployment:           0.0,
 		CorporateTax:           3.0,
@@ -57,6 +58,7 @@ func main() {
 				fmt.Printf("[ Date ] New simulation date is: %s\n", entities.CitySimulation.Date)
 				moveIn()
 				findJobs()
+				moveOut()
 
 				// run market calculations every month
 				diff := entities.CitySimulation.Date.Sub(market.LastCalculation)
@@ -79,12 +81,26 @@ func main() {
 	printFinalState(*jsonPtr)
 }
 
+// people move in if there are free houses
 func moveIn() {
 	for i := 0; i < rand.Intn(freeHouses/2); i++ {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
 		entities.CitySimulation.CityData.MoveIn(h)
+	}
+}
+
+// people move out if there are no jobs
+func moveOut() {
+	h := entities.CitySimulation.CityData.Households
+	for i := 0; i < len(h); i++ {
+		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
+			movedName := h[i].FamilyName()
+			entities.CitySimulation.CityData.Households = slices.Delete(h, i, i+1)
+			freeHouses += 1
+			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, freeHouses)
+		}
 	}
 }
 

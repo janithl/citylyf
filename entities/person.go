@@ -7,6 +7,7 @@ import (
 
 const AgeOfAdulthood = 18
 const AgeOfRetirement = 70
+const HoursPerYear = 24 * 365.25
 
 type Person struct {
 	ID             int            // Unique identifier for the person
@@ -26,8 +27,7 @@ type Person struct {
 
 func (p *Person) Age() int {
 	duration := CitySimulation.Date.Sub(p.Birthdate)
-	hoursPerYear := 24 * 365.25
-	return int(duration.Hours() / hoursPerYear)
+	return int(duration.Hours() / HoursPerYear)
 }
 
 func (p *Person) IsEmployable() bool {
