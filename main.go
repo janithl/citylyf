@@ -54,15 +54,16 @@ func main() {
 	}()
 
 	jsonPtr := flag.Bool("json", false, "should output be in json?")
-	// durationPtr := flag.Int("duration", 30, "how many seconds do we run the sim?")
 	flag.Parse()
 
-	// stop simulation after given duration
+	// run simulation until UI is closed
 	ui.RunGame()
 	ticker.Stop()
 	done <- true
 
-	printFinalState(*jsonPtr)
+	if *jsonPtr {
+		printFinalState()
+	}
 }
 
 // people move in if there are free houses
@@ -149,32 +150,18 @@ func calculateEconomy() {
 	}
 }
 
-func printFinalState(printJson bool) {
-	if printJson {
-		cityDataJson, err := json.Marshal(entities.Sim.People)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		compJson, err := json.Marshal(entities.Sim.Companies)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		fmt.Println("[ JSON ] Population: ", string(cityDataJson))
-		fmt.Println("[ JSON ] Companies: ", string(compJson))
-	} else {
-		h := entities.Sim.People.Households
-		for i := 0; i < len(h); i++ {
-			for j := 0; j < len(h[i].Members); j++ {
-				fmt.Println(h[i].Members[j].String())
-			}
-		}
-		for k := 0; k < len(entities.Sim.Companies); k++ {
-			fmt.Println(entities.Sim.Companies[k])
-		}
+func printFinalState() {
+	cityDataJson, err := json.Marshal(entities.Sim.People)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	compJson, err := json.Marshal(entities.Sim.Companies)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
-	fmt.Printf("[ Stat ] Total town population is %d (%.2f%% unemployment)\n", entities.Sim.People.Population, entities.Sim.Market.Unemployment)
+	fmt.Println("[ JSON ] Population: ", string(cityDataJson))
+	fmt.Println("[ JSON ] Companies: ", string(compJson))
 }

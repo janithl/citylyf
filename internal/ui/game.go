@@ -1,12 +1,9 @@
 package ui
 
 import (
-	"image"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/janithl/citylyf/entities"
 	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
@@ -14,15 +11,14 @@ import (
 )
 
 const (
-	screenWidth       = 1024
-	screenHeight      = 768
-	bottomBarHeight   = 24
-	bottomButtonWidth = 36
+	screenWidth  = 1024
+	screenHeight = 768
 )
 
 type Game struct {
-	graphs  []control.Graph
-	buttons []control.Button
+	graphs    []control.Graph
+	buttons   []control.Button
+	bottomBar control.BottomBar
 }
 
 func (g *Game) Update() error {
@@ -32,24 +28,13 @@ func (g *Game) Update() error {
 	g.graphs[1].Data = utils.ConvertToF64(entities.Sim.People.PopulationValues)
 	g.graphs[1].MaxValue = float64(entities.Sim.People.PopulationHigh)
 
-	switch entities.Sim.SimulationSpeed {
-	case entities.Slow:
-		g.buttons[0].Label = ">  "
-	case entities.Mid:
-		g.buttons[0].Label = ">> "
-	default:
-		g.buttons[0].Label = ">>>"
-	}
-
-	for i := range g.buttons {
-		g.buttons[i].Update()
-	}
+	g.bottomBar.Update()
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(image.White)
+	screen.Fill(colour.Gray)
 	for i := range g.graphs {
 		g.graphs[i].Draw(screen)
 	}
@@ -58,8 +43,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.buttons[j].Draw(screen)
 	}
 
-	vector.DrawFilledRect(screen, bottomButtonWidth, screenHeight-bottomBarHeight, screenWidth, bottomBarHeight, colour.Black, true)
-	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), bottomButtonWidth+10, screenHeight-bottomBarHeight+4)
+	g.bottomBar.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -89,18 +73,7 @@ func RunGame() {
 				MaxValue: float64(entities.Sim.People.PopulationHigh),
 			},
 		},
-		buttons: []control.Button{
-			{
-				Label:      ">  ",
-				X:          0,
-				Y:          screenHeight - 24,
-				Width:      bottomButtonWidth,
-				Height:     bottomBarHeight,
-				Color:      colour.Black,
-				HoverColor: colour.Blue,
-				OnClick:    entities.Sim.ChangeSimulationSpeed,
-			},
-		},
+		bottomBar: *control.NewBottomBar(screenHeight, screenWidth),
 	}
 
 	if err := ebiten.RunGame(game); err != nil {
