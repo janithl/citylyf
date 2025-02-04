@@ -42,7 +42,7 @@ func (p *People) CalculateUnemployment() {
 
 // Append current population value to history
 func (p *People) UpdatePopulationValues() {
-	if len(p.PopulationValues) >= 10 {
+	if len(p.PopulationValues) >= 20 {
 		p.PopulationValues = p.PopulationValues[1:] // Remove first element (FIFO behavior)
 	}
 	p.PopulationValues = append(p.PopulationValues, p.Population)
