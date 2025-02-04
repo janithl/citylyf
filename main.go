@@ -16,16 +16,10 @@ import (
 
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
-var freeHouses int
-var lastPopulation int
-var populationGrowth float64
+var freeHouses = 100
 
 func main() {
 	entities.Sim = entities.NewSimulation(2020)
-
-	freeHouses = 100
-	lastPopulation = 0
-	populationGrowth = 0.0
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 16; i++ {
@@ -73,7 +67,7 @@ func main() {
 
 // people move in if there are free houses
 func moveIn() {
-	for i := 0; i < rand.Intn(freeHouses/2); i++ {
+	for i := 0; i < rand.Intn(freeHouses/4); i++ {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
@@ -132,9 +126,9 @@ func getSuitableJob(p entities.Person) (int, int) {
 func calculateEconomy() {
 	// calculate impact of population growth on city economy
 	population := entities.Sim.People.Population
-	populationGrowth = float64(population-lastPopulation) / float64(lastPopulation)
-	lastPopulation = entities.Sim.People.Population
+	populationGrowth := entities.Sim.People.PopulationGrowthRate()
 
+	entities.Sim.People.UpdatePopulationValues()
 	entities.Sim.People.CalculateUnemployment()
 	entities.Sim.Market.Unemployment = entities.Sim.People.UnemploymentRate()
 
@@ -142,9 +136,9 @@ func calculateEconomy() {
 	marketGrowth := entities.Sim.Market.MarketGrowth()
 	newMarketValue := entities.Sim.Market.UpdateMarketValue(marketGrowth)
 
-	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Value: %.2f (±%.2f%%)\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, newMarketValue, marketGrowth)
+	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Value: %.2f (%.2f%%)\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, newMarketValue, marketGrowth)
 
-	if marketGrowth > 0 && rand.Intn(100) < 50 {
+	if (marketGrowth > 0 || entities.Sim.Market.GovernmentSpending > 3.0) && rand.Intn(100) < 50 {
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
