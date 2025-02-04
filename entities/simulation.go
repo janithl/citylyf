@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // SimulationSpeed defines the number of days at which the sim moves
 type SimulationSpeed int
@@ -22,6 +25,23 @@ type Simulation struct {
 func (s *Simulation) Tick() {
 	nextDate := s.Date.AddDate(0, 0, int(s.SimulationSpeed))
 	s.Date = nextDate
+}
+
+func (s *Simulation) ChangeSimulationSpeed() {
+	switch s.SimulationSpeed {
+	case Slow:
+		s.SimulationSpeed = Mid
+	case Mid:
+		s.SimulationSpeed = Fast
+	default:
+		s.SimulationSpeed = Slow
+	}
+}
+
+func (s *Simulation) GetStats() string {
+	return fmt.Sprintf("%s | Population: %4d (%5.2f%%) | Unemployment: %5.2f%% | Companies: %d | Market Value: %.2f (%5.2f%%) | Inflation: %5.2f%%",
+		s.Date.Format("2006-01-02"), s.People.Population, s.People.PopulationGrowthRate(), s.People.UnemploymentRate(),
+		len(s.Companies), s.Market.GetMarketValue(), s.Market.LastMarketGrowthRate, s.Market.LastInflationRate)
 }
 
 var Sim Simulation

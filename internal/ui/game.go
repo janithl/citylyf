@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"image"
 	"log"
 
@@ -15,8 +14,10 @@ import (
 )
 
 const (
-	screenWidth  = 1024
-	screenHeight = 768
+	screenWidth       = 1024
+	screenHeight      = 768
+	bottomBarHeight   = 24
+	bottomButtonWidth = 36
 )
 
 type Game struct {
@@ -57,12 +58,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.buttons[j].Draw(screen)
 	}
 
-	vector.DrawFilledRect(screen, 36, screenHeight-24, screenWidth, 24, colour.Black, true)
-	marketStats := fmt.Sprintf("%s | Population: %d (%.2f%%) | Unemployment: %.2f%% | Companies: %d | Market Value: %.2f (%.2f%%) | Inflation: %.2f%%",
-		entities.Sim.Date.Format("2006-01-02"), entities.Sim.People.Population, entities.Sim.People.PopulationGrowthRate(),
-		entities.Sim.People.UnemploymentRate(), len(entities.Sim.Companies), entities.Sim.Market.GetMarketValue(),
-		entities.Sim.Market.LastMarketGrowthRate, entities.Sim.Market.LastInflationRate)
-	ebitenutil.DebugPrintAt(screen, marketStats, 46, screenHeight-20)
+	vector.DrawFilledRect(screen, bottomButtonWidth, screenHeight-bottomBarHeight, screenWidth, bottomBarHeight, colour.Black, true)
+	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), bottomButtonWidth+10, screenHeight-bottomBarHeight+4)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -97,20 +94,11 @@ func RunGame() {
 				Label:      ">  ",
 				X:          0,
 				Y:          screenHeight - 24,
-				Width:      36,
-				Height:     24,
+				Width:      bottomButtonWidth,
+				Height:     bottomBarHeight,
 				Color:      colour.Black,
 				HoverColor: colour.Blue,
-				OnClick: func() {
-					switch entities.Sim.SimulationSpeed {
-					case entities.Slow:
-						entities.Sim.SimulationSpeed = entities.Mid
-					case entities.Mid:
-						entities.Sim.SimulationSpeed = entities.Fast
-					default:
-						entities.Sim.SimulationSpeed = entities.Slow
-					}
-				},
+				OnClick:    entities.Sim.ChangeSimulationSpeed,
 			},
 		},
 	}
