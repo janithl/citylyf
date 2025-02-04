@@ -138,7 +138,7 @@ func calculateEconomy() {
 
 	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Value: %.2f (%.2f%%)\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, newMarketValue, marketGrowth)
 
-	if (marketGrowth > 0 || entities.Sim.Market.GovernmentSpending > 3.0) && rand.Intn(100) < 50 {
+	if marketGrowth > 0 && rand.Intn(100) < 25 {
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
