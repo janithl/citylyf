@@ -10,6 +10,7 @@ import (
 
 	"github.com/janithl/citylyf/economy"
 	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/ui"
 	"github.com/janithl/citylyf/people"
 )
 
@@ -59,11 +60,11 @@ func main() {
 	}()
 
 	jsonPtr := flag.Bool("json", false, "should output be in json?")
-	durationPtr := flag.Int("duration", 30, "how many seconds do we run the sim?")
+	// durationPtr := flag.Int("duration", 30, "how many seconds do we run the sim?")
 	flag.Parse()
 
 	// stop simulation after given duration
-	time.Sleep(time.Duration(*durationPtr) * time.Second)
+	ui.RunGame()
 	ticker.Stop()
 	done <- true
 
@@ -139,9 +140,9 @@ func calculateEconomy() {
 
 	inflation := entities.Sim.Market.Inflation(populationGrowth)
 	marketGrowth := entities.Sim.Market.MarketGrowth()
-	entities.Sim.Market.LastCalculation = entities.Sim.Date // update last calculation time
+	newMarketValue := entities.Sim.Market.UpdateMarketValue(marketGrowth)
 
-	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Growth: %.2f%%\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, marketGrowth)
+	fmt.Printf("[ Econ ] Town population is %d (±%.2f%%). Inflation: %.2f%%, Unemployment: %.2f%%, Market Value: %.2f (±%.2f%%)\n", population, populationGrowth, inflation, entities.Sim.Market.Unemployment, newMarketValue, marketGrowth)
 
 	if marketGrowth > 0 && rand.Intn(100) < 50 {
 		newCompany := economy.GenerateRandomCompany()

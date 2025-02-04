@@ -20,7 +20,10 @@ type Market struct {
 	// Historical
 	LastCalculation        time.Time // last time the market was calculated
 	LastInflationRate      float64   // High inflation leads to money tightening
+	LastMarketGrowthRate   float64   // Growth adjusts the stock index based on economic conditions
 	LastMarketSentiment    float64   // Random factor (news, global events)
+	MarketHigh             float64   // The highest value the market has recorded
+	MarketValues           []float64 // The historical market values
 	MonthsOfNegativeGrowth int       // Holds number of months of negative growth for recession
 }
 
@@ -128,5 +131,27 @@ func (m *Market) MarketGrowth() float64 {
 		totalGrowth = MinGrowth
 	}
 
+	m.LastMarketGrowthRate = totalGrowth
 	return totalGrowth
+}
+
+func (m *Market) GetMarketValue() float64 {
+	return m.MarketValues[len(m.MarketValues)-1]
+}
+
+// Append new market value to history
+func (m *Market) UpdateMarketValue(marketGrowth float64) float64 {
+	if len(m.MarketValues) >= 10 {
+		m.MarketValues = m.MarketValues[1:] // Remove first element (FIFO behavior)
+	}
+	lastMarketValue := m.MarketValues[len(m.MarketValues)-1]
+	newMarketValue := lastMarketValue + (lastMarketValue * marketGrowth / 100)
+	if newMarketValue > m.MarketHigh { // Set market high
+		m.MarketHigh = newMarketValue
+	}
+
+	m.MarketValues = append(m.MarketValues, newMarketValue) // append new market value
+	m.LastCalculation = Sim.Date                            // update last calculation time
+
+	return newMarketValue
 }

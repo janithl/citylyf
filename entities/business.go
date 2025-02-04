@@ -21,7 +21,7 @@ type Company struct {
 // CalculateProfit computes net profit after taxes
 func (c *Company) CalculateProfit() float64 {
 	c.LastExpenses += c.LastExpenses * (Sim.Market.LastInflationRate / 100)
-	c.LastRevenue += c.LastRevenue * (Sim.Market.MarketGrowth() / 100)
+	c.LastRevenue += c.LastRevenue * (Sim.Market.LastMarketGrowthRate / 100)
 
 	taxedAmount := c.LastRevenue * (Sim.Market.CorporateTax / 100.0)
 	c.LastProfit = c.LastRevenue - (c.LastExpenses + taxedAmount)

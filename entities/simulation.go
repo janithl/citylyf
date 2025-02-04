@@ -43,6 +43,8 @@ func NewSimulation(startYear int) Simulation {
 			GovernmentSpending:     10.0,
 			MonthsOfNegativeGrowth: 0,
 			LastCalculation:        startDate,
+			MarketHigh:             1000,
+			MarketValues:           []float64{1000},
 		},
 		Companies: []Company{},
 	}
