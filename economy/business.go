@@ -23,6 +23,7 @@ func GenerateRandomCompany() entities.Company {
 		ID:           rand.Intn(999) + 1000,
 		Name:         companyName,
 		Industry:     entities.GetRandomIndustry(),
+		FoundingDate: entities.Sim.Date,
 		JobOpenings:  make(map[entities.CareerLevel]int),
 		LastRevenue:  baseRevenue,
 		LastExpenses: expenses,

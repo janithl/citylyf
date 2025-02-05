@@ -24,14 +24,14 @@ func (g *Game) Update() error {
 	// replace the children of the stats window
 	g.windows[0].ClearChildren()
 	for i := range entities.Sim.Companies {
-		label := &control.Label{X: 10, Y: 10 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
+		label := &control.Label{X: 6, Y: 4 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
 		g.windows[0].AddChild(label)
 	}
 
 	// replace the children of the households window
 	g.windows[1].ClearChildren()
 	for j := range entities.Sim.People.Households {
-		label := &control.Label{X: 10, Y: 10 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
+		label := &control.Label{X: 6, Y: 4 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
 		g.windows[1].AddChild(label)
 	}
 
@@ -52,11 +52,6 @@ func (g *Game) Update() error {
 		Height: 100,
 		Data:   entities.Sim.Market.MarketValues,
 	})
-
-	for j := range entities.Sim.People.Households {
-		label := &control.Label{X: 10, Y: 10 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
-		g.windows[1].AddChild(label)
-	}
 
 	for i := range g.windows {
 		g.windows[i].Update()
@@ -98,15 +93,15 @@ func RunGame() {
 		}
 	}
 
-	statsWin := control.NewWindow(20, (screenHeight-360)/2, 420, 360, "Company Stats", closeWindows)
+	statsWin := control.NewWindow(20, (screenHeight-360)/2, 432, 360, "Company Stats", closeWindows)
 	for i := range entities.Sim.Companies {
-		label := &control.Label{X: 10, Y: 10 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
+		label := &control.Label{X: 6, Y: 4 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
 		statsWin.AddChild(label)
 	}
 
 	householdsWin := control.NewWindow(460, (screenHeight-600)/2, 360, 600, "Households", closeWindows)
 	for j := range entities.Sim.People.Households {
-		label := &control.Label{X: 10, Y: 10 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
+		label := &control.Label{X: 6, Y: 4 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
 		householdsWin.AddChild(label)
 	}
 

@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
-	"slices"
 	"time"
 
 	"github.com/janithl/citylyf/economy"
@@ -16,13 +15,15 @@ import (
 
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
-var freeHouses = rand.Intn(24)
+// Housing market - rent, no. of bedrooms etc.
 
 func main() {
 	entities.Sim = entities.NewSimulation(2020)
+	migration := people.Migration{FreeHouses: 12 + rand.Intn(12)}
+	employment := economy.Employment{}
 
 	// set up some initial entities.Sim.Companies
-	for i := 0; i < rand.Intn(16); i++ {
+	for i := 0; i < 8+rand.Intn(8); i++ {
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
@@ -38,11 +39,9 @@ func main() {
 				return
 			case <-ticker.C:
 				entities.Sim.Tick()
-				fmt.Println("")
-				fmt.Printf("[ Date ] New simulation date is: %s\n", entities.Sim.Date)
-				moveIn()
-				findJobs()
-				moveOut()
+				migration.MoveIn()
+				employment.AssignJobs()
+				migration.MoveOut()
 
 				// run entities.Sim.Market calculations every month
 				diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
@@ -64,65 +63,6 @@ func main() {
 	if *jsonPtr {
 		printFinalState()
 	}
-}
-
-// people move in if there are free houses
-func moveIn() {
-	for i := 0; i < rand.Intn(1+(freeHouses/4)); i++ {
-		h := people.CreateHousehold()
-		freeHouses -= 1
-		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
-		entities.Sim.People.MoveIn(h)
-	}
-}
-
-// people move out if there are no jobs
-func moveOut() {
-	h := entities.Sim.People.Households
-	// traverse in reverse order to avoid index shifting
-	for i := len(h) - 1; i >= 0; i-- {
-		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
-			movedName := h[i].FamilyName()
-			h = slices.Delete(h, i, i+1)
-			freeHouses += 1
-			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, freeHouses)
-		}
-	}
-	entities.Sim.People.Households = h
-}
-
-// assign unemployed people jobs
-func findJobs() {
-	h := entities.Sim.People.Households
-	for i := 0; i < len(h); i++ {
-		for j := 0; j < len(h[i].Members); j++ {
-			if h[i].Members[j].IsEmployable() && !h[i].Members[j].IsEmployed() {
-				companyId, remaining := getSuitableJob(h[i].Members[j])
-				if companyId != 0 {
-					h[i].Members[j].EmployerID = companyId
-					fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n", h[i].Members[j].FirstName, h[i].Members[j].FamilyName, h[i].Members[j].Occupation, remaining)
-				}
-			}
-		}
-	}
-}
-
-func getSuitableJob(p entities.Person) (int, int) {
-	remaining := 0
-	companyId := 0
-	for i := 0; i < len(entities.Sim.Companies); i++ {
-		if entities.Sim.Companies[i].Industry == p.Industry {
-			openings := entities.Sim.Companies[i].JobOpenings
-			for j := 0; j < len(openings); j++ {
-				if openings[p.CareerLevel] > 0 {
-					entities.Sim.Companies[i].JobOpenings[p.CareerLevel] -= 1
-					remaining = entities.Sim.Companies[i].GetNumberOfJobOpenings()
-					companyId = entities.Sim.Companies[i].ID
-				}
-			}
-		}
-	}
-	return companyId, remaining
 }
 
 func calculateEconomy() {

@@ -40,5 +40,5 @@ func (h *Household) IsEligibleForMoveOut() bool {
 }
 
 func (h *Household) GetStats() string {
-	return fmt.Sprintf("%s family (%d members) - Moved in %s", h.FamilyName(), len(h.Members), h.MoveInDate.Format("2006-01-02"))
+	return fmt.Sprintf("%-24s %d Members %22s", h.FamilyName()+" family", len(h.Members), "Moved in "+h.MoveInDate.Format("2006-01-02"))
 }

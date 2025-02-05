@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 )
 
 // Company represents a business entity with jobs
 type Company struct {
-	ID          int
-	Name        string
-	Industry    Industry
-	JobOpenings map[CareerLevel]int // Available job positions at each level
+	ID           int
+	Name         string
+	Industry     Industry
+	FoundingDate time.Time
+	JobOpenings  map[CareerLevel]int // Available job positions at each level
 
 	// Historical
 	LastRevenue  float64
@@ -111,6 +113,11 @@ func (c *Company) DetermineJobOpenings() {
 	}
 }
 
+func (c *Company) CompanyAge() int {
+	duration := Sim.Date.Sub(c.FoundingDate)
+	return int(duration.Hours() / HoursPerYear)
+}
+
 func (c *Company) GetStats() string {
-	return fmt.Sprintf("%4d %-30s%-18s %12.2f", c.ID, c.Name, c.Industry, c.LastProfit)
+	return fmt.Sprintf("%4d %-28s %d %-18s %12.2f", c.ID, c.Name, c.FoundingDate.Year(), c.Industry, c.LastProfit)
 }
