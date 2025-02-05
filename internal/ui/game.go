@@ -16,8 +16,9 @@ const (
 )
 
 type Game struct {
-	windows   []control.Window
-	bottomBar control.BottomBar
+	windows      []control.Window
+	graphWindows []control.GraphWindow
+	bottomBar    control.BottomBar
 }
 
 func (g *Game) Update() error {
@@ -35,13 +36,8 @@ func (g *Game) Update() error {
 		g.windows[1].AddChild(label)
 	}
 
-	// replace the children of the graphs windows
+	// replace the children of the population graph window
 	g.windows[2].ClearChildren()
-	g.windows[3].ClearChildren()
-	g.windows[4].ClearChildren()
-	g.windows[5].ClearChildren()
-	g.windows[6].ClearChildren()
-	g.windows[7].ClearChildren()
 	g.windows[2].AddChild(&control.Graph{
 		X:      0,
 		Y:      2,
@@ -49,44 +45,13 @@ func (g *Game) Update() error {
 		Height: 100,
 		Data:   utils.ConvertToF64(entities.Sim.People.PopulationValues),
 	})
-	g.windows[3].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketValue,
-	})
-	g.windows[4].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.InflationRate,
-	})
-	g.windows[5].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketGrowthRate,
-	})
-	g.windows[6].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketSentiment,
-	})
-	g.windows[7].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.CompanyProfits,
-	})
 
 	for i := range g.windows {
 		g.windows[i].Update()
+	}
+
+	for i := range g.graphWindows {
+		g.graphWindows[i].Update()
 	}
 
 	g.bottomBar.Update()
@@ -97,8 +62,12 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colour.Gray)
 
-	for k := range g.windows {
-		g.windows[k].Draw(screen)
+	for i := range g.windows {
+		g.windows[i].Draw(screen)
+	}
+
+	for i := range g.graphWindows {
+		g.graphWindows[i].Draw(screen)
 	}
 
 	g.bottomBar.Draw(screen)
@@ -106,6 +75,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func (g *Game) closeGraphWindows(title string) {
+	for i := range g.graphWindows {
+		if g.graphWindows[i].Window.Title == title {
+			g.graphWindows[i].Window.CloseWindow()
+		}
+	}
 }
 
 func RunGame() {
@@ -146,53 +123,30 @@ func RunGame() {
 		Data:   utils.ConvertToF64(entities.Sim.People.PopulationValues),
 	})
 
-	marketGraphWin := control.NewWindow(220, 10, 200, 130, "Market Value", closeWindows)
-	marketGraphWin.AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketValue,
-	})
+	game.windows = append(game.windows, *statsWin, *householdsWin, *popGraphWin)
 
-	inflationGraphWin := control.NewWindow(430, 10, 200, 130, "Inflation", closeWindows)
-	inflationGraphWin.AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.InflationRate,
-	})
-
-	growthGraphWin := control.NewWindow(10, 150, 200, 130, "Market Growth", closeWindows)
-	growthGraphWin.AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketGrowthRate,
-	})
-
-	sentimentGraphWin := control.NewWindow(220, 150, 200, 130, "Market Sentiment", closeWindows)
-	sentimentGraphWin.AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.MarketSentiment,
-	})
-
-	profitsGraphWin := control.NewWindow(430, 150, 200, 130, "Company Profits", closeWindows)
-	profitsGraphWin.AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   entities.Sim.Market.History.CompanyProfits,
-	})
-
-	game.windows = append(game.windows, *statsWin, *householdsWin, *popGraphWin, *marketGraphWin,
-		*inflationGraphWin, *growthGraphWin, *sentimentGraphWin, *profitsGraphWin)
+	game.graphWindows = []control.GraphWindow{
+		{
+			Data:   &entities.Sim.Market.History.MarketValue,
+			Window: control.NewWindow(220, 10, 200, 130, "Market Value", game.closeGraphWindows),
+		},
+		{
+			Data:   &entities.Sim.Market.History.InflationRate,
+			Window: control.NewWindow(430, 10, 200, 130, "Inflation Rate", game.closeGraphWindows),
+		},
+		{
+			Data:   &entities.Sim.Market.History.MarketGrowthRate,
+			Window: control.NewWindow(10, 150, 200, 130, "Market Growth Rate", game.closeGraphWindows),
+		},
+		{
+			Data:   &entities.Sim.Market.History.MarketSentiment,
+			Window: control.NewWindow(220, 150, 200, 130, "Market Sentiment", game.closeGraphWindows),
+		},
+		{
+			Data:   &entities.Sim.Market.History.CompanyProfits,
+			Window: control.NewWindow(430, 150, 200, 130, "Company Profits", game.closeGraphWindows),
+		},
+	}
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
