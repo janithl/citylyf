@@ -119,5 +119,15 @@ func (c *Company) CompanyAge() int {
 }
 
 func (c *Company) GetStats() string {
-	return fmt.Sprintf("%4d %-28s %d %-18s %12.2f", c.ID, c.Name, c.FoundingDate.Year(), c.Industry, c.LastProfit)
+	lastProfit := c.LastProfit
+	profitSuffix := " "
+	if math.Abs(lastProfit) > 1e6 {
+		lastProfit /= 1e6
+		profitSuffix = "M"
+	} else if math.Abs(lastProfit) > 1e3 {
+		lastProfit /= 1e3
+		profitSuffix = "K"
+	}
+
+	return fmt.Sprintf("%4d %-28s %d %-18s %10.2f %s", c.ID, c.Name, c.FoundingDate.Year(), c.Industry, lastProfit, profitSuffix)
 }
