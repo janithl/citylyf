@@ -44,3 +44,8 @@ func (b *Button) Update() {
 	// Track previous mouse state
 	b.wasPressed = isPressed
 }
+
+func (b *Button) SetOffset(x, y int) {
+	b.X += x
+	b.Y += y
+}

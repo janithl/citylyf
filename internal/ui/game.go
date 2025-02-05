@@ -24,17 +24,19 @@ type Game struct {
 func (g *Game) Update() error {
 	// replace the children of the stats window
 	g.windows[0].ClearChildren()
-	for i := range entities.Sim.Companies {
-		label := &control.Label{X: 6, Y: 4 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
-		g.windows[0].AddChild(label)
+	companies := []string{}
+	for _, c := range entities.Sim.Companies {
+		companies = append(companies, c.GetStats())
 	}
+	g.windows[0].AddChild(control.NewTextList(0, 0, 432, 360, companies))
 
 	// replace the children of the households window
 	g.windows[1].ClearChildren()
-	for j := range entities.Sim.People.Households {
-		label := &control.Label{X: 6, Y: 4 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
-		g.windows[1].AddChild(label)
+	households := []string{}
+	for _, h := range entities.Sim.People.Households {
+		households = append(households, h.GetStats())
 	}
+	g.windows[1].AddChild(control.NewTextList(0, 0, 360, 480, households))
 
 	// replace the children of the population graph window
 	g.windows[2].ClearChildren()
@@ -102,17 +104,19 @@ func RunGame() {
 		}
 	}
 
-	statsWin := control.NewWindow(10, 290, 432, 360, "Company Stats", closeWindows)
-	for i := range entities.Sim.Companies {
-		label := &control.Label{X: 6, Y: 4 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
-		statsWin.AddChild(label)
+	companyWin := control.NewWindow(10, 290, 432, 360, "Companies", closeWindows)
+	companies := []string{}
+	for _, c := range entities.Sim.Companies {
+		companies = append(companies, c.GetStats())
 	}
+	companyWin.AddChild(control.NewTextList(0, 0, 432, 360, companies))
 
-	householdsWin := control.NewWindow(640, 10, 360, 600, "Households", closeWindows)
-	for j := range entities.Sim.People.Households {
-		label := &control.Label{X: 6, Y: 4 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
-		householdsWin.AddChild(label)
+	householdsWin := control.NewWindow(640, 10, 360, 480, "Households", closeWindows)
+	households := []string{}
+	for _, h := range entities.Sim.People.Households {
+		households = append(households, h.GetStats())
 	}
+	householdsWin.AddChild(control.NewTextList(0, 0, 360, 480, households))
 
 	popGraphWin := control.NewWindow(10, 10, 200, 130, "Population", closeWindows)
 	popGraphWin.AddChild(&control.Graph{
@@ -123,7 +127,7 @@ func RunGame() {
 		Data:   utils.ConvertToF64(entities.Sim.People.PopulationValues),
 	})
 
-	game.windows = append(game.windows, *statsWin, *householdsWin, *popGraphWin)
+	game.windows = append(game.windows, *companyWin, *householdsWin, *popGraphWin)
 
 	game.graphWindows = []control.GraphWindow{
 		{

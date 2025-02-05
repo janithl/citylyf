@@ -88,7 +88,7 @@ func (w *Window) Draw(screen *ebiten.Image) {
 	}
 
 	// Draw window background
-	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), float32(w.Height), colour.DarkGray, true)
+	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), float32(w.Height), colour.SemiBlack, true)
 
 	// Draw title bar
 	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), titleBarHeight, colour.Black, true)

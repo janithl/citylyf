@@ -39,8 +39,7 @@ func (c *Company) CalculateProfit() float64 {
 	c.LastExpenses *= inflationMultiplier // Expenses increase based on inflation
 
 	// Smoothed Revenue Growth: Companies reinvest past profits to scale
-	// Instead of full market dependency, use 50% market impact and 50% company-specific factors.
-	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 200) + (c.LastProfit / c.LastRevenue * 0.1)
+	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 100)
 	if c.LastProfit > 0 {
 		revenueMultiplier += 0.02
 	}
