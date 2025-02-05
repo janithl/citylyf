@@ -3,7 +3,7 @@ package economy
 import (
 	"fmt"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 // Employment handles job assignments

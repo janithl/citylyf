@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 func CreateHousehold() entities.Household {

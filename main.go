@@ -7,10 +7,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/janithl/citylyf/economy"
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/economy"
+	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/people"
 	"github.com/janithl/citylyf/internal/ui"
-	"github.com/janithl/citylyf/people"
 )
 
 // TODO

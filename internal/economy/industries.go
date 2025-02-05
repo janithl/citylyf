@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"slices"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 // IndustryJob represents the jobs in an industry

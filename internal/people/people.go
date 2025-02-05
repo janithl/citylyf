@@ -4,8 +4,8 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/janithl/citylyf/economy"
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/economy"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 func createRandomPerson(minAge int, maxAge int) entities.Person {

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 // getAge generates a random age based on a bell curve

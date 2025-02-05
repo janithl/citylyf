@@ -3,7 +3,7 @@ package people
 import (
 	"math/rand"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 var familyNames = []string{

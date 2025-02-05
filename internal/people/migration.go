@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"slices"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 // Migration handles people moving in and out of town

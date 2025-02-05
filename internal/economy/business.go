@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 // GenerateRandomCompany creates a company with random industry and financials
