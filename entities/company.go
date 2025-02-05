@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -18,13 +19,41 @@ type Company struct {
 	LastProfit   float64
 }
 
-// CalculateProfit computes net profit after taxes
+// CalculateProfit computes net profit
 func (c *Company) CalculateProfit() float64 {
-	c.LastExpenses += c.LastExpenses * (Sim.Market.LastInflationRate / 100)
-	c.LastRevenue += c.LastRevenue * (Sim.Market.LastMarketGrowthRate / 100)
+	// Smoothed Expense Growth: Reduce impact of inflation
+	inflationMultiplier := 1.0 + (Sim.Market.LastInflationRate / 200) // Reduced effect
 
-	taxedAmount := c.LastRevenue * (Sim.Market.CorporateTax / 100.0)
-	c.LastProfit = c.LastRevenue - (c.LastExpenses + taxedAmount)
+	// Apply gradual cost-cutting if past profits were negative
+	if c.LastProfit < 0 {
+		inflationMultiplier *= 0.9 // Reduce expenses by 10% if company is struggling
+	}
+
+	c.LastExpenses *= inflationMultiplier // Expenses increase based on inflation
+
+	// Smoothed Revenue Growth: Companies reinvest past profits to scale
+	// Instead of full market dependency, use 50% market impact and 50% company-specific factors.
+	revenueMultiplier := 1.0 + (Sim.Market.LastMarketGrowthRate / 200) + (c.LastProfit / c.LastRevenue * 0.1)
+	if c.LastProfit > 0 {
+		revenueMultiplier += 0.02
+	}
+
+	c.LastRevenue *= revenueMultiplier // Revenue increases
+
+	// Apply corporate tax only if there is profit
+	grossProfit := c.LastRevenue - c.LastExpenses
+	if grossProfit > 0 {
+		taxedAmount := grossProfit * (Sim.Market.CorporateTax / 100.0)
+		c.LastProfit = grossProfit - taxedAmount
+	} else {
+		c.LastProfit = grossProfit // No tax on negative profit
+	}
+
+	// Prevent extreme losses: Companies can't infinitely spiral downward
+	if c.LastProfit < -c.LastRevenue*0.5 {
+		c.LastProfit = -c.LastRevenue * 0.5 // Losses capped at 50% of revenue
+	}
+
 	return c.LastProfit
 }
 
@@ -80,4 +109,8 @@ func (c *Company) DetermineJobOpenings() {
 		}
 		c.JobOpenings[level] = adjustedJobs
 	}
+}
+
+func (c *Company) GetStats() string {
+	return fmt.Sprintf("%4d %-30s%-18s %12.2f", c.ID, c.Name, c.Industry, c.LastProfit)
 }

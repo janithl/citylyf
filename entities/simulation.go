@@ -39,7 +39,7 @@ func (s *Simulation) ChangeSimulationSpeed() {
 }
 
 func (s *Simulation) GetStats() string {
-	return fmt.Sprintf("%s | Population: %4d (%5.2f%%) | Unemployment: %5.2f%% | Companies: %d | Market Value: %.2f (%5.2f%%) | Inflation: %5.2f%%",
+	return fmt.Sprintf("%s | Population: %4d (%+6.2f%%) | Unemployment: %5.2f%% | Companies: %d | Market Value: %.2f (%+6.2f%%) | Inflation: %5.2f%%",
 		s.Date.Format("2006-01-02"), s.People.Population, s.People.PopulationGrowthRate(), s.People.UnemploymentRate(),
 		len(s.Companies), s.Market.GetMarketValue(), s.Market.LastMarketGrowthRate, s.Market.LastInflationRate)
 }
@@ -60,14 +60,15 @@ func NewSimulation(startYear int) Simulation {
 		},
 		Market: Market{
 			InterestRate:       7.0,
-			Unemployment:       0.0,
+			Unemployment:       0.001,
 			CorporateTax:       2.0,
 			GovernmentSpending: 5.0,
 
 			LastCalculation:        startDate,
-			LastInflationRate:      0.0,
-			LastMarketGrowthRate:   0.0,
-			LastMarketSentiment:    0.0,
+			LastInflationRate:      0.001,
+			LastMarketGrowthRate:   0.001,
+			LastMarketSentiment:    0.001,
+			LastSixMonthsProfits:   []float64{0.0},
 			MarketHigh:             1000,
 			MarketValues:           []float64{1000},
 			MonthsOfNegativeGrowth: 0,

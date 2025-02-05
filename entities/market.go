@@ -22,6 +22,7 @@ type Market struct {
 	LastInflationRate      float64   // High inflation leads to money tightening
 	LastMarketGrowthRate   float64   // Growth adjusts the stock index based on economic conditions
 	LastMarketSentiment    float64   // Random factor (news, global events)
+	LastSixMonthsProfits   []float64
 	MarketHigh             float64   // The highest value the market has recorded
 	MarketValues           []float64 // The historical market values
 	MonthsOfNegativeGrowth int       // Holds number of months of negative growth for recession
@@ -109,7 +110,7 @@ func (m *Market) MarketGrowth() float64 {
 	inflationImpact := -math.Pow((m.LastInflationRate-2)/3, 2)
 
 	// Unemployment Effect: More unemployment → Less consumer spending → Weaker market
-	unemploymentImpact := -m.Unemployment / 5
+	unemploymentImpact := -m.Unemployment / 10
 
 	// Corporate Tax Effect: Higher tax rates = Lower stock growth
 	taxImpact := -m.CorporateTax / 30
@@ -117,16 +118,43 @@ func (m *Market) MarketGrowth() float64 {
 	// Market Sentiment: Random external factors (news, global events, speculation)
 	marketSentimentImpact := m.LastMarketSentiment
 
-	// Calculate total stock market growth
-	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact
+	// Instead of using last month's profit, calculate the rolling average over 6 months.
+	totalProfit := 0.0
+	for _, p := range m.LastSixMonthsProfits {
+		totalProfit += p
+	}
+	averageProfit := totalProfit / float64(len(m.LastSixMonthsProfits))
 
+	var profitImpact float64
+	if averageProfit > 0 {
+		profitImpact = math.Log1p(averageProfit) / 10 // Normalized positive profit effect
+	} else {
+		profitImpact = -math.Sqrt(math.Abs(averageProfit)) / 50 // Controlled negative impact
+	}
+
+	// Market Recovery Mechanism
+	recoveryBoost := 0.0
+	if m.MonthsOfNegativeGrowth > 3 { // If negative for 3+ months, slow recovery kicks in
+		recoveryBoost = float64(m.MonthsOfNegativeGrowth) * 0.2
+	}
+
+	// Calculate total stock market growth
+	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + unemploymentImpact + taxImpact + marketSentimentImpact + profitImpact + recoveryBoost
+
+	// Update rolling history of profits
+	m.LastSixMonthsProfits = append(m.LastSixMonthsProfits, averageProfit)
+	if len(m.LastSixMonthsProfits) > 6 {
+		m.LastSixMonthsProfits = m.LastSixMonthsProfits[1:] // Keep last 6 months only
+	}
+
+	// Reset negative growth counter if market turns positive
 	if totalGrowth > 0 {
 		m.MonthsOfNegativeGrowth = 0
 	} else {
-		m.MonthsOfNegativeGrowth += 1
+		m.MonthsOfNegativeGrowth++
 	}
 
-	// Ensure the market doesn't collapse below -10% in extreme cases
+	// Prevent extreme crashes (below MinGrowth)
 	if totalGrowth < MinGrowth {
 		totalGrowth = MinGrowth
 	}

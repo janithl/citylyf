@@ -16,13 +16,13 @@ import (
 
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
-var freeHouses = 100
+var freeHouses = rand.Intn(24)
 
 func main() {
 	entities.Sim = entities.NewSimulation(2020)
 
 	// set up some initial entities.Sim.Companies
-	for i := 0; i < 16; i++ {
+	for i := 0; i < rand.Intn(16); i++ {
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
@@ -68,7 +68,7 @@ func main() {
 
 // people move in if there are free houses
 func moveIn() {
-	for i := 0; i < rand.Intn(freeHouses/4); i++ {
+	for i := 0; i < rand.Intn(1+(freeHouses/4)); i++ {
 		h := people.CreateHousehold()
 		freeHouses -= 1
 		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), freeHouses)
@@ -88,6 +88,7 @@ func moveOut() {
 			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, freeHouses)
 		}
 	}
+	entities.Sim.People.Households = h
 }
 
 // assign unemployed people jobs

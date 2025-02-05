@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Household struct {
 	Members    []Person  // Family members
@@ -9,7 +12,11 @@ type Household struct {
 }
 
 func (h *Household) FamilyName() string {
-	return h.Members[0].FamilyName
+	if len(h.Members) > 0 {
+		return h.Members[0].FamilyName
+	} else {
+		return ""
+	}
 }
 
 func (h *Household) AnnualIncome() int {
@@ -30,4 +37,8 @@ func (h *Household) IsEligibleForMoveOut() bool {
 		}
 	}
 	return noIncome && timeSinceMoveIn > 0.25
+}
+
+func (h *Household) GetStats() string {
+	return fmt.Sprintf("%s family (%d members) - Moved in %s", h.FamilyName(), len(h.Members), h.MoveInDate.Format("2006-01-02"))
 }
