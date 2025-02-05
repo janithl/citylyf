@@ -85,10 +85,12 @@ func calculateEconomy() {
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
+	totalProfits := 0.0
 	for k := 0; k < len(entities.Sim.Companies); k++ {
-		entities.Sim.Companies[k].CalculateProfit()
+		totalProfits += entities.Sim.Companies[k].CalculateProfit()
 		entities.Sim.Companies[k].DetermineJobOpenings()
 	}
+	entities.Sim.Market.ReportCompanyProfits(totalProfits)
 }
 
 func printFinalState() {

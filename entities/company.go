@@ -5,6 +5,8 @@ import (
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 // Company represents a business entity with jobs
@@ -23,8 +25,11 @@ type Company struct {
 
 // CalculateProfit computes net profit
 func (c *Company) CalculateProfit() float64 {
+	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
+	lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
+
 	// Smoothed Expense Growth: Reduce impact of inflation
-	inflationMultiplier := 1.0 + (Sim.Market.LastInflationRate / 200) // Reduced effect
+	inflationMultiplier := 1.0 + (lastInflationRate / 200) // Reduced effect
 
 	// Apply gradual cost-cutting if past profits were negative
 	if c.LastProfit < 0 {
@@ -35,7 +40,7 @@ func (c *Company) CalculateProfit() float64 {
 
 	// Smoothed Revenue Growth: Companies reinvest past profits to scale
 	// Instead of full market dependency, use 50% market impact and 50% company-specific factors.
-	revenueMultiplier := 1.0 + (Sim.Market.LastMarketGrowthRate / 200) + (c.LastProfit / c.LastRevenue * 0.1)
+	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 200) + (c.LastProfit / c.LastRevenue * 0.1)
 	if c.LastProfit > 0 {
 		revenueMultiplier += 0.02
 	}
@@ -70,6 +75,9 @@ func (c *Company) GetNumberOfJobOpenings() int {
 
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings() {
+	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
+	lastMarketSentiment := utils.GetLastValue(Sim.Market.History.MarketSentiment)
+
 	baseJobs := map[CareerLevel]int{
 		EntryLevel:     rand.Intn(10) + 5, // 5-15 jobs
 		MidLevel:       rand.Intn(5) + 2,  // 2-7 jobs
@@ -86,7 +94,7 @@ func (c *Company) DetermineJobOpenings() {
 	}
 
 	// Inflation Effect: High inflation discourages hiring
-	if Sim.Market.LastInflationRate > 6 {
+	if lastInflationRate > 6 {
 		marketMultiplier -= 0.2
 	}
 
@@ -96,7 +104,7 @@ func (c *Company) DetermineJobOpenings() {
 	}
 
 	// Market Sentiment Effect: High confidence = More job openings
-	marketMultiplier += Sim.Market.LastMarketSentiment * 0.1
+	marketMultiplier += lastMarketSentiment * 0.1
 
 	// Adjust hiring based on profitability
 	if c.LastProfit < 0 {

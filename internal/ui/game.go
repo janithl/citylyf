@@ -7,7 +7,7 @@ import (
 	"github.com/janithl/citylyf/entities"
 	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
-	"github.com/janithl/citylyf/utils"
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 const (
@@ -38,6 +38,10 @@ func (g *Game) Update() error {
 	// replace the children of the graphs windows
 	g.windows[2].ClearChildren()
 	g.windows[3].ClearChildren()
+	g.windows[4].ClearChildren()
+	g.windows[5].ClearChildren()
+	g.windows[6].ClearChildren()
+	g.windows[7].ClearChildren()
 	g.windows[2].AddChild(&control.Graph{
 		X:      0,
 		Y:      2,
@@ -50,7 +54,35 @@ func (g *Game) Update() error {
 		Y:      2,
 		Width:  200,
 		Height: 100,
-		Data:   entities.Sim.Market.MarketValues,
+		Data:   entities.Sim.Market.History.MarketValue,
+	})
+	g.windows[4].AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.InflationRate,
+	})
+	g.windows[5].AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.MarketGrowthRate,
+	})
+	g.windows[6].AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.MarketSentiment,
+	})
+	g.windows[7].AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.CompanyProfits,
 	})
 
 	for i := range g.windows {
@@ -93,13 +125,13 @@ func RunGame() {
 		}
 	}
 
-	statsWin := control.NewWindow(20, (screenHeight-360)/2, 432, 360, "Company Stats", closeWindows)
+	statsWin := control.NewWindow(10, 290, 432, 360, "Company Stats", closeWindows)
 	for i := range entities.Sim.Companies {
 		label := &control.Label{X: 6, Y: 4 + (i * 16), Text: entities.Sim.Companies[i].GetStats()}
 		statsWin.AddChild(label)
 	}
 
-	householdsWin := control.NewWindow(460, (screenHeight-600)/2, 360, 600, "Households", closeWindows)
+	householdsWin := control.NewWindow(640, 10, 360, 600, "Households", closeWindows)
 	for j := range entities.Sim.People.Households {
 		label := &control.Label{X: 6, Y: 4 + (j * 16), Text: entities.Sim.People.Households[j].GetStats()}
 		householdsWin.AddChild(label)
@@ -120,10 +152,47 @@ func RunGame() {
 		Y:      2,
 		Width:  200,
 		Height: 100,
-		Data:   entities.Sim.Market.MarketValues,
+		Data:   entities.Sim.Market.History.MarketValue,
 	})
 
-	game.windows = append(game.windows, *statsWin, *householdsWin, *popGraphWin, *marketGraphWin)
+	inflationGraphWin := control.NewWindow(430, 10, 200, 130, "Inflation", closeWindows)
+	inflationGraphWin.AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.InflationRate,
+	})
+
+	growthGraphWin := control.NewWindow(10, 150, 200, 130, "Market Growth", closeWindows)
+	growthGraphWin.AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.MarketGrowthRate,
+	})
+
+	sentimentGraphWin := control.NewWindow(220, 150, 200, 130, "Market Sentiment", closeWindows)
+	sentimentGraphWin.AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.MarketSentiment,
+	})
+
+	profitsGraphWin := control.NewWindow(430, 150, 200, 130, "Company Profits", closeWindows)
+	profitsGraphWin.AddChild(&control.Graph{
+		X:      0,
+		Y:      2,
+		Width:  200,
+		Height: 100,
+		Data:   entities.Sim.Market.History.CompanyProfits,
+	})
+
+	game.windows = append(game.windows, *statsWin, *householdsWin, *popGraphWin, *marketGraphWin,
+		*inflationGraphWin, *growthGraphWin, *sentimentGraphWin, *profitsGraphWin)
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)

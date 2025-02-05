@@ -3,6 +3,8 @@ package entities
 import (
 	"fmt"
 	"time"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 // SimulationSpeed defines the number of days at which the sim moves
@@ -40,8 +42,9 @@ func (s *Simulation) ChangeSimulationSpeed() {
 
 func (s *Simulation) GetStats() string {
 	return fmt.Sprintf("%s | Population: %4d (%+6.2f%%) | Unemployment: %5.2f%% | Companies: %d | Market Value: %.2f (%+6.2f%%) | Inflation: %5.2f%%",
-		s.Date.Format("2006-01-02"), s.People.Population, s.People.PopulationGrowthRate(), s.People.UnemploymentRate(),
-		len(s.Companies), s.Market.GetMarketValue(), s.Market.LastMarketGrowthRate, s.Market.LastInflationRate)
+		s.Date.Format("2006-01-02"), s.People.Population, s.People.PopulationGrowthRate(),
+		s.People.UnemploymentRate(), len(s.Companies), s.Market.GetMarketValue(),
+		utils.GetLastValue(s.Market.History.MarketGrowthRate), utils.GetLastValue(s.Market.History.InflationRate))
 }
 
 var Sim Simulation
@@ -65,13 +68,14 @@ func NewSimulation(startYear int) Simulation {
 			GovernmentSpending: 5.0,
 
 			LastCalculation:        startDate,
-			LastInflationRate:      0.001,
-			LastMarketGrowthRate:   0.001,
-			LastMarketSentiment:    0.001,
-			LastSixMonthsProfits:   []float64{0.0},
-			MarketHigh:             1000,
-			MarketValues:           []float64{1000},
 			MonthsOfNegativeGrowth: 0,
+			History: MarketHistory{
+				MarketValue:      []float64{1000},
+				InflationRate:    []float64{0.001},
+				MarketGrowthRate: []float64{0.001},
+				MarketSentiment:  []float64{0.001},
+				CompanyProfits:   []float64{0.001},
+			},
 		},
 		Companies: []Company{},
 	}
