@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/janithl/citylyf/entities"
+	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/utils"
