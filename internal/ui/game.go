@@ -16,10 +16,11 @@ const (
 )
 
 type Game struct {
-	windows      []control.Window
-	graphWindows []control.GraphWindow
-	bottomBar    control.BottomBar
-	animations   []Animation
+	windows        []control.Window
+	graphWindows   []control.GraphWindow
+	windowsVisible bool
+	bottomBar      control.BottomBar
+	animations     []Animation
 }
 
 func (g *Game) Update() error {
@@ -96,27 +97,40 @@ func (g *Game) closeGraphWindows(title string) {
 	}
 }
 
+func (g *Game) toggleAllWindows() {
+	g.windowsVisible = !g.windowsVisible
+	for i := range g.windows {
+		g.windows[i].IsVisible = g.windowsVisible
+	}
+	for i := range g.graphWindows {
+		g.graphWindows[i].Window.IsVisible = g.windowsVisible
+	}
+	g.bottomBar.WindowsVisible = g.windowsVisible
+}
+
 func RunGame() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("citylyf")
 
 	game := &Game{
-		bottomBar: *control.NewBottomBar(screenHeight, screenWidth),
-		windows:   []control.Window{},
+		windowsVisible: false,
+		windows:        []control.Window{},
 		animations: []Animation{
 			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, -0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, 0.28),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, -0.28),
 
 			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0.4),
 			*NewAnimation(screenWidth/2, screenHeight/2, 0, -0.4),
 			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0),
 
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, -0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, -0.28),
+			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, 0.28),
 			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
 		},
 	}
+
+	game.bottomBar = *control.NewBottomBar(screenHeight, screenWidth, game.toggleAllWindows)
 
 	closeWindows := func(title string) {
 		for i := range game.windows {
@@ -162,15 +176,15 @@ func RunGame() {
 		},
 		{
 			Data:   &entities.Sim.Market.History.MarketGrowthRate,
-			Window: control.NewWindow(10, 150, 200, 130, "Market Growth Rate", game.closeGraphWindows),
+			Window: control.NewWindow(10, 150, 160, 100, "Market Growth Rate", game.closeGraphWindows),
 		},
 		{
 			Data:   &entities.Sim.Market.History.MarketSentiment,
-			Window: control.NewWindow(220, 150, 200, 130, "Market Sentiment", game.closeGraphWindows),
+			Window: control.NewWindow(180, 150, 160, 100, "Market Sentiment", game.closeGraphWindows),
 		},
 		{
 			Data:   &entities.Sim.Market.History.CompanyProfits,
-			Window: control.NewWindow(430, 150, 200, 130, "Company Profits", game.closeGraphWindows),
+			Window: control.NewWindow(350, 150, 160, 100, "Company Profits", game.closeGraphWindows),
 		},
 	}
 

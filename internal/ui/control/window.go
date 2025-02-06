@@ -31,7 +31,7 @@ func NewWindow(x, y, width, height int, title string, closeFunc func(string)) *W
 		Width:     width,
 		Height:    height,
 		Title:     title,
-		IsVisible: true,
+		IsVisible: false,
 		closeButton: &Button{
 			Label:      " X ",
 			X:          x,

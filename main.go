@@ -80,7 +80,7 @@ func calculateEconomy() {
 
 	fmt.Printf("[ Econ ] %s\n", entities.Sim.GetStats())
 
-	if marketGrowth > 0 && rand.Intn(100) < 25 {
+	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)

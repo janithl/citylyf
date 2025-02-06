@@ -14,43 +14,72 @@ const (
 )
 
 type BottomBar struct {
+	WindowsVisible            bool
+	toggleWindows             func()
 	screenHeight, screenWidth int
-	bottomButton              Button
+	bottomButtons             []*Button
 }
 
 func (b *BottomBar) Draw(screen *ebiten.Image) {
-	b.bottomButton.Draw(screen)
-	vector.DrawFilledRect(screen, bottomButtonWidth, float32(b.screenHeight-bottomBarHeight), float32(b.screenWidth), bottomBarHeight, colour.Black, true)
+	vector.DrawFilledRect(screen, bottomButtonWidth, float32(b.screenHeight-bottomBarHeight), float32(b.screenWidth-bottomButtonWidth*2), bottomBarHeight, colour.DarkSemiBlack, true)
 	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), bottomButtonWidth+10, b.screenHeight-bottomBarHeight+4)
+	for i := range b.bottomButtons {
+		b.bottomButtons[i].Draw(screen)
+	}
 }
 
 func (b *BottomBar) Update() error {
 	switch entities.Sim.SimulationSpeed {
 	case entities.Slow:
-		b.bottomButton.Label = ">  "
+		b.bottomButtons[0].Label = ">  "
 	case entities.Mid:
-		b.bottomButton.Label = ">> "
+		b.bottomButtons[0].Label = ">> "
 	default:
-		b.bottomButton.Label = ">>>"
+		b.bottomButtons[0].Label = ">>>"
 	}
-	b.bottomButton.Update()
+
+	if b.WindowsVisible {
+		b.bottomButtons[1].Label = "[-]"
+	} else {
+		b.bottomButtons[1].Label = "[+]"
+	}
+
+	for i := range b.bottomButtons {
+		b.bottomButtons[i].Update()
+	}
 
 	return nil
 }
 
-func NewBottomBar(screenHeight, screenWidth int) *BottomBar {
-	return &BottomBar{
-		screenHeight: screenHeight,
-		screenWidth:  screenWidth,
-		bottomButton: Button{
+func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBar {
+	bar := &BottomBar{
+		WindowsVisible: false,
+		toggleWindows:  toggleWindows,
+		screenHeight:   screenHeight,
+		screenWidth:    screenWidth,
+	}
+	bar.bottomButtons = []*Button{
+		{
 			Label:      ">  ",
 			X:          0,
-			Y:          screenHeight - 24,
+			Y:          screenHeight - bottomBarHeight,
 			Width:      bottomButtonWidth,
 			Height:     bottomBarHeight,
-			Color:      colour.Black,
+			Color:      colour.DarkSemiBlack,
 			HoverColor: colour.Blue,
 			OnClick:    entities.Sim.ChangeSimulationSpeed,
 		},
+		{
+			Label:      "[+]",
+			X:          screenWidth - bottomButtonWidth,
+			Y:          screenHeight - bottomBarHeight,
+			Width:      bottomButtonWidth,
+			Height:     bottomBarHeight,
+			Color:      colour.DarkSemiBlack,
+			HoverColor: colour.DarkGreen,
+			OnClick:    toggleWindows,
+		},
 	}
+
+	return bar
 }
