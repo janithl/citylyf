@@ -19,6 +19,7 @@ type Game struct {
 	windows      []control.Window
 	graphWindows []control.GraphWindow
 	bottomBar    control.BottomBar
+	animations   []Animation
 }
 
 func (g *Game) Update() error {
@@ -56,6 +57,10 @@ func (g *Game) Update() error {
 		g.graphWindows[i].Update()
 	}
 
+	for i := range g.animations {
+		g.animations[i].Update()
+	}
+
 	g.bottomBar.Update()
 
 	return nil
@@ -63,6 +68,10 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colour.Gray)
+
+	for i := range g.animations {
+		g.animations[i].Draw(screen)
+	}
 
 	for i := range g.windows {
 		g.windows[i].Draw(screen)
@@ -94,6 +103,19 @@ func RunGame() {
 	game := &Game{
 		bottomBar: *control.NewBottomBar(screenHeight, screenWidth),
 		windows:   []control.Window{},
+		animations: []Animation{
+			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, -0.4),
+
+			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0, -0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0),
+
+			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, -0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0.4),
+			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
+		},
 	}
 
 	closeWindows := func(title string) {

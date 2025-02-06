@@ -16,6 +16,7 @@ import (
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
 // Housing market - rent, no. of bedrooms etc.
+// People should marry, move out, die etc.
 
 func main() {
 	entities.Sim = entities.NewSimulation(2020)

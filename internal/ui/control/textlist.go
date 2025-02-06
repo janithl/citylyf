@@ -1,6 +1,8 @@
 package control
 
 import (
+	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/ui/colour"
 )
@@ -43,8 +45,8 @@ func (tl *TextList) createButtons() {
 			Label:      text,
 			Color:      colour.Transparent,
 			HoverColor: colour.SemiBlack,
-			OnClick:    func() { println("Clicked:", text) },
 		}
+		btn.OnClick = func() { fmt.Println("Clicked:", i) }
 		tl.Buttons = append(tl.Buttons, btn)
 	}
 }
