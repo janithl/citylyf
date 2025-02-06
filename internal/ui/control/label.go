@@ -17,6 +17,6 @@ func (l *Label) Draw(screen *ebiten.Image) {
 func (l *Label) Update() {}
 
 func (l *Label) SetOffset(x, y int) {
-	l.X += x
-	l.Y += y
+	l.X = x
+	l.Y = y
 }

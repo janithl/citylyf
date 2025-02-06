@@ -46,6 +46,6 @@ func (b *Button) Update() {
 }
 
 func (b *Button) SetOffset(x, y int) {
-	b.X += x
-	b.Y += y
+	b.X = x
+	b.Y = y
 }

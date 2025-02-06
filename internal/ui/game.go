@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -24,31 +25,30 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	// replace the children of the stats window
-	g.windows[0].ClearChildren()
+	// update the items of the company window
 	companies := []string{}
 	for _, c := range entities.Sim.Companies {
 		companies = append(companies, c.GetStats())
 	}
-	g.windows[0].AddChild(control.NewTextList(0, 0, 432, 360, companies))
+	// Find and update the existing TextList instance
+	if list, ok := g.windows[0].Children[0].(*control.TextList); ok {
+		list.Items = companies // Updates text without resetting buttons
+	}
 
 	// replace the children of the households window
-	g.windows[1].ClearChildren()
 	households := []string{}
 	for _, h := range entities.Sim.People.Households {
 		households = append(households, h.GetStats())
 	}
-	g.windows[1].AddChild(control.NewTextList(0, 0, 360, 480, households))
+	// Find and update the existing TextList instance
+	if list, ok := g.windows[1].Children[0].(*control.TextList); ok {
+		list.Items = households // Updates text without resetting buttons
+	}
 
-	// replace the children of the population graph window
-	g.windows[2].ClearChildren()
-	g.windows[2].AddChild(&control.Graph{
-		X:      0,
-		Y:      2,
-		Width:  200,
-		Height: 100,
-		Data:   utils.ConvertToF64(entities.Sim.People.PopulationValues),
-	})
+	// Find and update the population graph window
+	if list, ok := g.windows[2].Children[0].(*control.Graph); ok {
+		list.Data = utils.ConvertToF64(entities.Sim.People.PopulationValues)
+	}
 
 	for i := range g.windows {
 		g.windows[i].Update()
@@ -145,14 +145,26 @@ func RunGame() {
 	for _, c := range entities.Sim.Companies {
 		companies = append(companies, c.GetStats())
 	}
-	companyWin.AddChild(control.NewTextList(0, 0, 432, 360, companies))
+	companyList := control.NewTextList(0, 0, 432, 336, companies)
+	companyList.OnClick = func(index int) {
+		if index < len(companies) {
+			fmt.Println("Learn more about", companies[index])
+		}
+	}
+	companyWin.AddChild(companyList)
 
 	householdsWin := control.NewWindow(640, 10, 360, 480, "Households", closeWindows)
 	households := []string{}
 	for _, h := range entities.Sim.People.Households {
 		households = append(households, h.GetStats())
 	}
-	householdsWin.AddChild(control.NewTextList(0, 0, 360, 480, households))
+	householdList := control.NewTextList(0, 0, 360, 456, households)
+	householdList.OnClick = func(index int) {
+		if index < len(entities.Sim.People.Households) {
+			fmt.Println("Learn more about the", entities.Sim.People.Households[index].FamilyName(), "family")
+		}
+	}
+	householdsWin.AddChild(householdList)
 
 	popGraphWin := control.NewWindow(10, 10, 200, 130, "Population", closeWindows)
 	popGraphWin.AddChild(&control.Graph{
@@ -166,26 +178,16 @@ func RunGame() {
 	game.windows = append(game.windows, *companyWin, *householdsWin, *popGraphWin)
 
 	game.graphWindows = []control.GraphWindow{
-		{
-			Data:   &entities.Sim.Market.History.MarketValue,
-			Window: control.NewWindow(220, 10, 200, 130, "Market Value", game.closeGraphWindows),
-		},
-		{
-			Data:   &entities.Sim.Market.History.InflationRate,
-			Window: control.NewWindow(430, 10, 200, 130, "Inflation Rate", game.closeGraphWindows),
-		},
-		{
-			Data:   &entities.Sim.Market.History.MarketGrowthRate,
-			Window: control.NewWindow(10, 150, 160, 100, "Market Growth Rate", game.closeGraphWindows),
-		},
-		{
-			Data:   &entities.Sim.Market.History.MarketSentiment,
-			Window: control.NewWindow(180, 150, 160, 100, "Market Sentiment", game.closeGraphWindows),
-		},
-		{
-			Data:   &entities.Sim.Market.History.CompanyProfits,
-			Window: control.NewWindow(350, 150, 160, 100, "Company Profits", game.closeGraphWindows),
-		},
+		*control.NewGraphWindow(220, 10, 200, 130, "Market Value", game.closeGraphWindows,
+			&entities.Sim.Market.History.MarketValue),
+		*control.NewGraphWindow(430, 10, 200, 130, "Inflation Rate", game.closeGraphWindows,
+			&entities.Sim.Market.History.InflationRate),
+		*control.NewGraphWindow(10, 150, 160, 100, "Market Growth Rate", game.closeGraphWindows,
+			&entities.Sim.Market.History.MarketGrowthRate),
+		*control.NewGraphWindow(180, 150, 160, 100, "Market Sentiment", game.closeGraphWindows,
+			&entities.Sim.Market.History.MarketSentiment),
+		*control.NewGraphWindow(350, 150, 160, 100, "Company Profits", game.closeGraphWindows,
+			&entities.Sim.Market.History.CompanyProfits),
 	}
 
 	if err := ebiten.RunGame(game); err != nil {

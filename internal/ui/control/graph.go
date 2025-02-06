@@ -63,6 +63,6 @@ func (g *Graph) Draw(screen *ebiten.Image) {
 func (g *Graph) Update() {}
 
 func (g *Graph) SetOffset(x, y int) {
-	g.X += float32(x)
-	g.Y += float32(y)
+	g.X = float32(x)
+	g.Y = float32(y)
 }

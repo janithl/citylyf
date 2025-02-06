@@ -24,7 +24,7 @@ func main() {
 	employment := economy.Employment{}
 
 	// set up some initial entities.Sim.Companies
-	for i := 0; i < 8+rand.Intn(8); i++ {
+	for i := 0; i < 4+rand.Intn(4); i++ {
 		newCompany := economy.GenerateRandomCompany()
 		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
