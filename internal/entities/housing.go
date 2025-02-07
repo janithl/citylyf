@@ -9,13 +9,16 @@ type Housing struct {
 	Houses []House
 }
 
-func (h *Housing) MoveIn(bedrooms int) {
+func (h *Housing) MoveIn(budget int, bedrooms int) int {
 	for i := range h.Houses {
-		if h.Houses[i].Free && h.Houses[i].Bedrooms >= bedrooms {
+		if h.Houses[i].Free &&
+			h.Houses[i].Bedrooms >= bedrooms &&
+			h.Houses[i].MonthlyRent <= budget {
 			h.Houses[i].Free = false
-			return
+			return h.Houses[i].ID
 		}
 	}
+	return 0
 }
 
 func (h *Housing) MoveOut() {
@@ -37,17 +40,31 @@ func (h *Housing) GetFreeHouses() int {
 	return freeCount
 }
 
+func (h *Housing) GetHouse(id int) *House {
+	for _, house := range h.Houses {
+		if house.ID == id {
+			return &house
+		}
+	}
+	return nil
+}
+
 type House struct {
-	Free     bool
-	Bedrooms int
+	ID          int
+	Free        bool
+	Bedrooms    int
+	MonthlyRent int
 }
 
 func NewHousing(count int) *Housing {
 	housing := &Housing{}
 	for i := 0; i < count; i++ {
+		bedrooms := 1 + rand.Intn(3)
 		housing.Houses = append(housing.Houses, House{
-			Free:     true,
-			Bedrooms: 1 + rand.Intn(3),
+			ID:          100 + i,
+			Free:        true,
+			Bedrooms:    bedrooms,
+			MonthlyRent: 1200 + 200*(bedrooms-1),
 		})
 	}
 	fmt.Println(housing)

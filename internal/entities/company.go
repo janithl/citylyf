@@ -23,41 +23,39 @@ type Company struct {
 	LastProfit   float64
 }
 
-// CalculateProfit computes net profit
+// CalculateProfit computes net profit every 28 days
 func (c *Company) CalculateProfit() float64 {
 	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
 	lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
 
-	// Smoothed Expense Growth: Reduce impact of inflation
-	inflationMultiplier := 1.0 + (lastInflationRate / 200) // Reduced effect
+	// **Monthly Expense Growth**: Inflation applied proportionally
+	inflationMultiplier := 1.0 + (lastInflationRate / 2400) // Divided by 2400 for smoother monthly change
 
-	// Apply gradual cost-cutting if past profits were negative
+	// **Cost-cutting for struggling companies**: Reduces expenses if past profits were negative
 	if c.LastProfit < 0 {
-		inflationMultiplier *= 0.9 // Reduce expenses by 10% if company is struggling
+		inflationMultiplier *= 0.95 // Expenses grow slower for struggling businesses
 	}
+	c.LastExpenses *= inflationMultiplier // Adjust expenses
 
-	c.LastExpenses *= inflationMultiplier // Expenses increase based on inflation
-
-	// Smoothed Revenue Growth: Companies reinvest past profits to scale
-	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 100)
+	// **Monthly Revenue Growth**: Adjusts based on market conditions
+	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
 	if c.LastProfit > 0 {
-		revenueMultiplier += 0.02
+		revenueMultiplier += 0.002 // Small bonus growth for profitable companies
 	}
+	c.LastRevenue *= revenueMultiplier
 
-	c.LastRevenue *= revenueMultiplier // Revenue increases
-
-	// Apply corporate tax only if there is profit
+	// **Calculate Profit**
 	grossProfit := c.LastRevenue - c.LastExpenses
 	if grossProfit > 0 {
 		taxedAmount := grossProfit * (Sim.Market.CorporateTax / 100.0)
 		c.LastProfit = grossProfit - taxedAmount
 	} else {
-		c.LastProfit = grossProfit // No tax on negative profit
+		c.LastProfit = grossProfit
 	}
 
-	// Prevent extreme losses: Companies can't infinitely spiral downward
-	if c.LastProfit < -c.LastRevenue*0.5 {
-		c.LastProfit = -c.LastRevenue * 0.5 // Losses capped at 50% of revenue
+	// **Loss Limiter**: Prevents companies from collapsing too fast
+	if c.LastProfit < -c.LastRevenue*0.25 { // Reduced from 50% to 25% for monthly scaling
+		c.LastProfit = -c.LastRevenue * 0.25
 	}
 
 	return c.LastProfit

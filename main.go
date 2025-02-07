@@ -97,7 +97,7 @@ func calculateEconomy() {
 
 	// calculate monthly pay
 	for i := range entities.Sim.People.Households {
-		entities.Sim.People.Households[i].CalculateMonthlyPay()
+		entities.Sim.People.Households[i].CalculateMonthlyBudget()
 	}
 
 	// do interest calcuations

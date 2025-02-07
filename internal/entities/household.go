@@ -11,6 +11,7 @@ type Household struct {
 	Members    []Person  // Family members
 	Savings    int       // Family savings
 	LastPayDay time.Time // Last time payments were calculated
+	HouseID    int       // ID of the house they moved to
 	MoveInDate time.Time // Day they moved in
 }
 
@@ -42,9 +43,8 @@ func (h *Household) IsEligibleForMoveOut() bool {
 	return noIncome && timeSinceMoveIn > 0.25
 }
 
-// calculate monthly pay
-// TODO extend to calculate expenses as well
-func (h *Household) CalculateMonthlyPay() {
+// calculate monthly budget
+func (h *Household) CalculateMonthlyBudget() {
 	daysSinceLastPay := Sim.Date.Sub(h.LastPayDay).Hours() / HoursPerDay
 	pay := 0.0
 	for i := range h.Members {
@@ -54,7 +54,8 @@ func (h *Household) CalculateMonthlyPay() {
 			pay += memberPay
 		}
 	}
-	h.Savings += int(pay)
+	expenses := Sim.Houses.GetHouse(h.HouseID).MonthlyRent
+	h.Savings += int(pay) - expenses
 	h.LastPayDay = Sim.Date
 }
 
