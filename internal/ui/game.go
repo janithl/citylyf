@@ -60,7 +60,7 @@ func RunGame() {
 			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, 0.28),
 			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
 		},
-		worldRenderer: *world.NewWorldRenderer(screenWidth, screenHeight, 64, 64),
+		worldRenderer: *world.NewWorldRenderer(screenWidth, screenHeight),
 		windowSystem:  *NewWindowSystem(),
 	}
 

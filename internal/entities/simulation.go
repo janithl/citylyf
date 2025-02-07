@@ -25,6 +25,7 @@ type Simulation struct {
 	Houses          Housing
 	Market          Market
 	Companies       []Company
+	Geography       Geography
 }
 
 func (s *Simulation) Tick() {
@@ -86,5 +87,6 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			},
 		},
 		Companies: []Company{},
+		Geography: *NewGeography(64, 8, 4, 0.01, 0.01),
 	}
 }

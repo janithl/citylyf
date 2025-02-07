@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
 )
 
@@ -11,19 +12,15 @@ const (
 	moveSpeed  = 0.1
 )
 
-type Tile int
-
-const (
-	Grass Tile = 0
-	Road  Tile = 1
-)
-
 type WorldRenderer struct {
 	playerX, playerY, cameraX, cameraY float64
 	width, height                      int
-	tiles                              [][]Tile
 	grassImage                         *ebiten.Image
 	roadImage                          *ebiten.Image
+	hillImage                          *ebiten.Image
+	sandImage                          *ebiten.Image
+	waterImage                         *ebiten.Image
+	deepWaterImage                     *ebiten.Image
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -62,41 +59,43 @@ func (wr *WorldRenderer) Update() error {
 
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	// Draw isometric tiles
-	for x := range wr.tiles {
-		for y := range wr.tiles[x] {
+	tiles := entities.Sim.Geography.GetTiles()
+	for x := range tiles {
+		for y := range tiles[x] {
 			isoX, isoY := wr.isoTransform(float64(x), float64(y))
 
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(isoX-wr.cameraX, isoY-wr.cameraY)
 
-			if wr.tiles[x][y] == Grass {
+			if tiles[x][y].Elevation == entities.Sim.Geography.SeaLevel {
+				screen.DrawImage(wr.sandImage, op)
+			} else if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel+(entities.Sim.Geography.MaxElevation-entities.Sim.Geography.SeaLevel)/2 {
+				screen.DrawImage(wr.hillImage, op)
+			} else if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel {
 				screen.DrawImage(wr.grassImage, op)
+			} else if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel/2 {
+				screen.DrawImage(wr.deepWaterImage, op)
 			} else {
-				screen.DrawImage(wr.roadImage, op)
+				screen.DrawImage(wr.waterImage, op)
 			}
 		}
 	}
 }
 
-func NewWorldRenderer(screenWidth, screenHeight, mapWidth, mapHeight int) *WorldRenderer {
-	tiles := make([][]Tile, mapWidth)
-	for x := range tiles {
-		tiles[x] = make([]Tile, mapHeight)
-	}
-
-	tiles[3][5] = Road
-	tiles[3][6] = Road
-	tiles[3][7] = Road
-
+func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
+	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
-		playerX:    float64(mapWidth / 2),
-		playerY:    float64(mapHeight / 2),
-		cameraX:    float64(mapWidth / 2),
-		cameraY:    float64(mapHeight / 2),
-		width:      screenWidth,
-		height:     screenHeight,
-		grassImage: assets.LoadImage("internal/ui/assets/grass.png"),
-		roadImage:  assets.LoadImage("internal/ui/assets/road.png"),
-		tiles:      tiles,
+		playerX:        float64(mapSize / 2),
+		playerY:        float64(mapSize / 2),
+		cameraX:        float64(mapSize / 2),
+		cameraY:        float64(mapSize / 2),
+		width:          screenWidth,
+		height:         screenHeight,
+		grassImage:     assets.LoadImage("internal/ui/assets/grass.png"),
+		roadImage:      assets.LoadImage("internal/ui/assets/road.png"),
+		hillImage:      assets.LoadImage("internal/ui/assets/hill.png"),
+		sandImage:      assets.LoadImage("internal/ui/assets/sand.png"),
+		waterImage:     assets.LoadImage("internal/ui/assets/water.png"),
+		deepWaterImage: assets.LoadImage("internal/ui/assets/deepwater.png"),
 	}
 }

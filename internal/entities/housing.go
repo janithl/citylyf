@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -67,6 +66,5 @@ func NewHousing(count int) *Housing {
 			MonthlyRent: 1200 + 200*(bedrooms-1),
 		})
 	}
-	fmt.Println(housing)
 	return housing
 }

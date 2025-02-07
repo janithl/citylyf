@@ -84,7 +84,6 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 }
 
 func NewWindowSystem() *WindowSystem {
-	fmt.Println("hello world")
 	ws := &WindowSystem{
 		windowsVisible: false,
 		windows:        []control.Window{},
