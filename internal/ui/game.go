@@ -5,6 +5,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/ui/colour"
+	"github.com/janithl/citylyf/internal/ui/world"
 )
 
 const (
@@ -13,15 +14,16 @@ const (
 )
 
 type Game struct {
-	animations   []Animation
-	windowSystem WindowSystem
+	animations    []Animation
+	worldRenderer world.WorldRenderer
+	windowSystem  WindowSystem
 }
 
 func (g *Game) Update() error {
+	g.worldRenderer.Update()
 	for i := range g.animations {
 		g.animations[i].Update()
 	}
-
 	g.windowSystem.Update()
 
 	return nil
@@ -29,11 +31,10 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colour.Gray)
-
+	g.worldRenderer.Draw(screen)
 	for i := range g.animations {
 		g.animations[i].Draw(screen)
 	}
-
 	g.windowSystem.Draw(screen)
 }
 
@@ -59,7 +60,8 @@ func RunGame() {
 			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, 0.28),
 			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
 		},
-		windowSystem: *NewWindowSystem(),
+		worldRenderer: *world.NewWorldRenderer(screenWidth, screenHeight, 64, 64),
+		windowSystem:  *NewWindowSystem(),
 	}
 
 	if err := ebiten.RunGame(game); err != nil {

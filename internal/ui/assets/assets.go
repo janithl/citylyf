@@ -46,3 +46,12 @@ func LoadSpritesheet(path string, frameWidth, frameHeight, columns, rows int, an
 		Assets.Animations[name] = Animation{Frames: frames}
 	}
 }
+
+// Load Single Image
+func LoadImage(path string) *ebiten.Image {
+	img, _, err := ebitenutil.NewImageFromFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
+}

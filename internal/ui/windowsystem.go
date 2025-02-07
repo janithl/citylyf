@@ -5,7 +5,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
-	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/utils"
 )
@@ -33,8 +32,6 @@ func (ws *WindowSystem) Update() error {
 }
 
 func (ws *WindowSystem) Draw(screen *ebiten.Image) {
-	screen.Fill(colour.Gray)
-
 	for i := range ws.windows {
 		ws.windows[i].Draw(screen)
 	}
