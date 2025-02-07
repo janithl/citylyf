@@ -1,6 +1,9 @@
 package entities
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Government struct {
 	Reserves            int
@@ -65,11 +68,11 @@ func (g *Government) updateReserveValues() {
 }
 
 // NewGovernment initializes the government system with reserves and progressive tax brackets
-func NewGovernment(reserves int) *Government {
+func NewGovernment(reserves int, startDate time.Time) *Government {
 	return &Government{
 		Reserves:            reserves,
 		ReserveValues:       []int{reserves},
-		LastCalculationYear: Sim.Date.Year(),
+		LastCalculationYear: startDate.Year(),
 		CorporateTaxRate:    5.0,
 		IncomeTaxBrackets: []TaxBracket{
 			{Threshold: 200000, Rate: 35}, // 35% for income above $200K

@@ -57,7 +57,7 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 	return Simulation{
 		SimulationSpeed: Mid,
 		Date:            startDate,
-		Government:      *NewGovernment(governmentReserves),
+		Government:      *NewGovernment(governmentReserves, startDate),
 		People: People{
 			Population:       0,
 			PopulationValues: []int{0},

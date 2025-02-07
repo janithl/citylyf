@@ -8,11 +8,6 @@ import (
 	"github.com/janithl/citylyf/internal/ui/colour"
 )
 
-const (
-	bottomBarHeight   = 24
-	bottomButtonWidth = 36
-)
-
 type BottomBar struct {
 	WindowsVisible            bool
 	toggleWindows             func()
@@ -21,8 +16,8 @@ type BottomBar struct {
 }
 
 func (b *BottomBar) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, bottomButtonWidth, float32(b.screenHeight-bottomBarHeight), float32(b.screenWidth-bottomButtonWidth*2), bottomBarHeight, colour.DarkSemiBlack, true)
-	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), bottomButtonWidth+10, b.screenHeight-bottomBarHeight+4)
+	vector.DrawFilledRect(screen, buttonWidth, float32(b.screenHeight-buttonHeight), float32(b.screenWidth-buttonWidth*2), buttonHeight, colour.DarkSemiBlack, true)
+	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), buttonWidth+10, b.screenHeight-buttonHeight+4)
 	for i := range b.bottomButtons {
 		b.bottomButtons[i].Draw(screen)
 	}
@@ -62,19 +57,19 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBa
 		{
 			Label:      ">  ",
 			X:          0,
-			Y:          screenHeight - bottomBarHeight,
-			Width:      bottomButtonWidth,
-			Height:     bottomBarHeight,
+			Y:          screenHeight - buttonHeight,
+			Width:      buttonWidth,
+			Height:     buttonHeight,
 			Color:      colour.DarkSemiBlack,
 			HoverColor: colour.Blue,
 			OnClick:    entities.Sim.ChangeSimulationSpeed,
 		},
 		{
 			Label:      "[+]",
-			X:          screenWidth - bottomButtonWidth,
-			Y:          screenHeight - bottomBarHeight,
-			Width:      bottomButtonWidth,
-			Height:     bottomBarHeight,
+			X:          screenWidth - buttonWidth,
+			Y:          screenHeight - buttonHeight,
+			Width:      buttonWidth,
+			Height:     buttonHeight,
 			Color:      colour.DarkSemiBlack,
 			HoverColor: colour.DarkGreen,
 			OnClick:    toggleWindows,

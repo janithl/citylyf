@@ -7,11 +7,6 @@ import (
 	"github.com/janithl/citylyf/internal/ui/colour"
 )
 
-const (
-	titleBarHeight   = 24
-	closeButtonWidth = 36
-)
-
 // Window represents a movable, dismissible UI window
 type Window struct {
 	X, Y, Width, Height      int
@@ -36,7 +31,7 @@ func NewWindow(x, y, width, height int, title string, closeFunc func(string)) *W
 			Label:      " X ",
 			X:          x,
 			Y:          y,
-			Width:      closeButtonWidth,
+			Width:      buttonWidth,
 			Height:     titleBarHeight,
 			Color:      colour.Black,
 			HoverColor: colour.Red,
@@ -92,7 +87,7 @@ func (w *Window) Draw(screen *ebiten.Image) {
 
 	// Draw title bar
 	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), titleBarHeight, colour.Black, true)
-	ebitenutil.DebugPrintAt(screen, w.Title, w.X+closeButtonWidth+10, w.Y+4)
+	ebitenutil.DebugPrintAt(screen, w.Title, w.X+buttonWidth+6, w.Y+4)
 
 	// Draw close button
 	w.closeButton.Draw(screen)
