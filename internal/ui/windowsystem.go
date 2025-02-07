@@ -112,19 +112,19 @@ func NewWindowSystem() *WindowSystem {
 	}
 
 	ws.graphWindows = []control.GraphWindow{
-		*control.NewGraphWindow(10, 10, 200, 130, "Population", ws.closeWindows,
+		*control.NewGraphWindow(10, 10, 200, 130, "Population", ws.closeWindows, control.Int,
 			func() []float64 { return utils.ConvertToF64(entities.Sim.People.PopulationValues) }),
-		*control.NewGraphWindow(220, 10, 200, 130, "Market Value", ws.closeWindows,
+		*control.NewGraphWindow(220, 10, 200, 130, "Market Value", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.MarketValue }),
-		*control.NewGraphWindow(430, 10, 200, 130, "Inflation Rate", ws.closeWindows,
+		*control.NewGraphWindow(430, 10, 200, 130, "Inflation Rate", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.InflationRate }),
-		*control.NewGraphWindow(640, 10, 200, 130, "Gov Reserves", ws.closeWindows,
+		*control.NewGraphWindow(640, 10, 200, 130, "Gov Reserves", ws.closeWindows, control.Currency,
 			func() []float64 { return utils.ConvertToF64(entities.Sim.Government.ReserveValues) }),
-		*control.NewGraphWindow(10, 150, 160, 100, "Market Growth Rate", ws.closeWindows,
+		*control.NewGraphWindow(10, 150, 160, 100, "Market Growth Rate", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.MarketGrowthRate }),
-		*control.NewGraphWindow(180, 150, 160, 100, "Market Sentiment", ws.closeWindows,
+		*control.NewGraphWindow(180, 150, 160, 100, "Market Sentiment", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.MarketSentiment }),
-		*control.NewGraphWindow(350, 150, 160, 100, "Company Profits", ws.closeWindows,
+		*control.NewGraphWindow(350, 150, 160, 100, "Company Profits", ws.closeWindows, control.Currency,
 			func() []float64 { return entities.Sim.Market.History.CompanyProfits }),
 	}
 

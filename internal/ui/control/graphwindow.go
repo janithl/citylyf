@@ -27,14 +27,15 @@ func (gw *GraphWindow) Draw(screen *ebiten.Image) {
 }
 
 // NewGraphWindow creates a new graph window instance
-func NewGraphWindow(x, y, width, height int, title string, closeFunc func(string), dataSource func() []float64) *GraphWindow {
+func NewGraphWindow(x, y, width, height int, title string, closeFunc func(string), graphType GraphType, dataSource func() []float64) *GraphWindow {
 	window := NewWindow(x, y, width, height, title, closeFunc)
 	window.AddChild(&Graph{
-		X:      0,
-		Y:      0,
-		Width:  float32(width),
-		Height: float32(height - 24),
-		Data:   dataSource(),
+		x:         0,
+		y:         0,
+		width:     float32(width),
+		height:    float32(height - 24),
+		graphType: graphType,
+		Data:      dataSource(),
 	})
 	return &GraphWindow{
 		Window:     window,

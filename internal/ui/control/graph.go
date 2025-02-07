@@ -8,10 +8,20 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/janithl/citylyf/internal/ui/colour"
+	"github.com/janithl/citylyf/internal/utils"
+)
+
+type GraphType int
+
+const (
+	Int      GraphType = 0
+	Float    GraphType = 1
+	Currency GraphType = 2
 )
 
 type Graph struct {
-	X, Y, Width, Height float32
+	x, y, width, height float32
+	graphType           GraphType
 	Data                []float64 // Y-values of the graph
 }
 
@@ -19,7 +29,7 @@ type Graph struct {
 func (g *Graph) Draw(screen *ebiten.Image) {
 	// Draw horizontal grid lines
 	for i := float32(0.0); i <= 1.0; i += 0.25 {
-		vector.StrokeLine(screen, g.X, g.Y+(g.Height*i), g.X+g.Width, g.Y+(g.Height*i), 1.0, colour.Black, true)
+		vector.StrokeLine(screen, g.x, g.y+(g.height*i), g.x+g.width, g.y+(g.height*i), 1.0, colour.Black, true)
 	}
 
 	if len(g.Data) < 2 {
@@ -41,28 +51,36 @@ func (g *Graph) Draw(screen *ebiten.Image) {
 
 	// Calculate step size (spacing between points)
 	pointCount := len(g.Data)
-	step := g.Width / float32(math.Max(float64(pointCount-1), 8))
+	step := g.width / float32(math.Max(float64(pointCount-1), 8))
 
 	// Draw data lines
 	for i := 0; i < pointCount-1; i++ {
-		x1 := g.X + step*float32(i)
-		x2 := g.X + step*float32(i+1)
+		x1 := g.x + step*float32(i)
+		x2 := g.x + step*float32(i+1)
 
 		// Scale Y values to fit the graph
-		y1 := g.Y + g.Height - float32((g.Data[i]-minValue)/valueRange)*g.Height
-		y2 := g.Y + g.Height - float32((g.Data[i+1]-minValue)/valueRange)*g.Height
+		y1 := g.y + g.height - float32((g.Data[i]-minValue)/valueRange)*g.height
+		y2 := g.y + g.height - float32((g.Data[i+1]-minValue)/valueRange)*g.height
 
 		vector.StrokeLine(screen, x1, y1, x2, y2, 2.0, colour.Green, true)
 	}
 
 	// add value label
-	label := fmt.Sprintf("%.2f", lastValue)
-	ebitenutil.DebugPrintAt(screen, label, int(g.X)+8, int(g.Y+g.Height)-12)
+	label := ""
+	switch g.graphType {
+	case Int:
+		label = fmt.Sprintf("%.0f", lastValue)
+	case Float:
+		label = fmt.Sprintf("%.2f", lastValue)
+	case Currency:
+		label = utils.FormatCurrency(lastValue, "$")
+	}
+	ebitenutil.DebugPrintAt(screen, label, int(g.x)+8, int(g.y+g.height)-12)
 }
 
 func (g *Graph) Update() {}
 
 func (g *Graph) SetOffset(x, y int) {
-	g.X = float32(x)
-	g.Y = float32(y)
+	g.x = float32(x)
+	g.y = float32(y)
 }
