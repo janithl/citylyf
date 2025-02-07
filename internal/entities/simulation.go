@@ -11,9 +11,10 @@ import (
 type SimulationSpeed int
 
 const (
-	Slow SimulationSpeed = 3
-	Mid  SimulationSpeed = 7
-	Fast SimulationSpeed = 28
+	Pause SimulationSpeed = 0
+	Slow  SimulationSpeed = 3
+	Mid   SimulationSpeed = 7
+	Fast  SimulationSpeed = 28
 )
 
 type Simulation struct {
@@ -37,6 +38,8 @@ func (s *Simulation) ChangeSimulationSpeed() {
 		s.SimulationSpeed = Mid
 	case Mid:
 		s.SimulationSpeed = Fast
+	case Fast:
+		s.SimulationSpeed = Pause
 	default:
 		s.SimulationSpeed = Slow
 	}

@@ -38,16 +38,18 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
-				entities.Sim.Tick()
-				entities.Sim.People.MoveIn(people.CreateHousehold)
-				employment.AssignJobs()
-				entities.Sim.People.MoveOut()
+				if entities.Sim.SimulationSpeed != entities.Pause {
+					entities.Sim.Tick()
+					entities.Sim.People.MoveIn(people.CreateHousehold)
+					employment.AssignJobs()
+					entities.Sim.People.MoveOut()
 
-				// run entities.Sim.Market calculations every month
-				diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
-				if diff.Hours()/24 >= 28 {
-					calculateEconomy()
-					entities.Sim.Government.CollectTaxes()
+					// run entities.Sim.Market calculations every month
+					diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
+					if diff.Hours()/24 >= 28 {
+						calculateEconomy()
+						entities.Sim.Government.CollectTaxes()
+					}
 				}
 			}
 		}

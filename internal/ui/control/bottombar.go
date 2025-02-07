@@ -24,14 +24,19 @@ func (b *BottomBar) Draw(screen *ebiten.Image) {
 }
 
 func (b *BottomBar) Update() error {
+	buttonColour := colour.DarkSemiBlack
 	switch entities.Sim.SimulationSpeed {
 	case entities.Slow:
 		b.bottomButtons[0].Label = ">  "
 	case entities.Mid:
 		b.bottomButtons[0].Label = ">> "
-	default:
+	case entities.Fast:
 		b.bottomButtons[0].Label = ">>>"
+	default:
+		b.bottomButtons[0].Label = "|| "
+		buttonColour = colour.DarkRed
 	}
+	b.bottomButtons[0].Color = buttonColour
 
 	if b.WindowsVisible {
 		b.bottomButtons[1].Label = "[-]"
