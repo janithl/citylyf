@@ -16,11 +16,10 @@ import (
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
 // Housing market - rent, no. of bedrooms etc.
-// People should marry, move out, die etc.
-
+// People should marry, have babies, move out out the house, die etc.
+// Yearly budget - once a year, we calculate how much income tax and company tax has to be paid
 func main() {
-	entities.Sim = entities.NewSimulation(2020)
-	migration := people.Migration{FreeHouses: 12 + rand.Intn(12)}
+	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{}
 
 	// set up some initial entities.Sim.Companies
@@ -40,14 +39,15 @@ func main() {
 				return
 			case <-ticker.C:
 				entities.Sim.Tick()
-				migration.MoveIn()
+				entities.Sim.People.MoveIn(people.CreateHousehold)
 				employment.AssignJobs()
-				migration.MoveOut()
+				entities.Sim.People.MoveOut()
 
 				// run entities.Sim.Market calculations every month
 				diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
 				if diff.Hours()/24 >= 28 {
 					calculateEconomy()
+					entities.Sim.Government.CollectTaxes()
 				}
 			}
 		}
@@ -92,6 +92,18 @@ func calculateEconomy() {
 		entities.Sim.Companies[k].DetermineJobOpenings()
 	}
 	entities.Sim.Market.ReportCompanyProfits(totalProfits)
+
+	// calculate monthly pay
+	for i := range entities.Sim.People.Households {
+		entities.Sim.People.Households[i].CalculateMonthlyPay()
+	}
+
+	// do interest calcuations
+	monthlyInterestRate := entities.Sim.Market.InterestRate * 28 / 36500
+	entities.Sim.Government.Reserves += int(float64(entities.Sim.Government.Reserves) * monthlyInterestRate)
+	for i := range entities.Sim.People.Households {
+		entities.Sim.People.Households[i].Savings += int(float64(entities.Sim.People.Households[i].Savings) * monthlyInterestRate)
+	}
 }
 
 func printFinalState() {

@@ -1,9 +1,14 @@
 package entities
 
+import (
+	"fmt"
+	"math/rand"
+	"slices"
+)
+
 type People struct {
 	Population       int
 	PopulationValues []int // Historical values
-	PopulationHigh   int   // Historic maximum poplulation
 	LabourForce      int   // Employable people
 	Unemployed       int
 	Households       []Household
@@ -18,9 +23,28 @@ func (p *People) PopulationGrowthRate() float64 {
 	return 100.0 * float64(p.Population-lastPopulationValue) / float64(lastPopulationValue)
 }
 
-func (p *People) MoveIn(h Household) {
-	p.Households = append(p.Households, h)
-	p.Population += len(h.Members)
+func (p *People) MoveIn(createHousehold func() Household) {
+	for i := 0; i < rand.Intn(1+(Sim.Houses.GetFreeHouses()/4)); i++ {
+		h := createHousehold()
+		Sim.Houses.MoveIn(len(h.Members) / 2) // everyone gets to share a bedroom
+		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
+		p.Households = append(p.Households, h)
+		p.Population += len(h.Members)
+	}
+}
+
+func (p *People) MoveOut() {
+	h := Sim.People.Households
+	// traverse in reverse order to avoid index shifting
+	for i := len(h) - 1; i >= 0; i-- {
+		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
+			movedName := h[i].FamilyName()
+			h = slices.Delete(h, i, i+1)
+			Sim.Houses.MoveOut()
+			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, Sim.Houses.GetFreeHouses())
+		}
+	}
+	Sim.People.Households = h
 }
 
 // calculate the unemployed and the total labour force
@@ -46,7 +70,4 @@ func (p *People) UpdatePopulationValues() {
 		p.PopulationValues = p.PopulationValues[1:] // Remove first element (FIFO behavior)
 	}
 	p.PopulationValues = append(p.PopulationValues, p.Population)
-	if p.Population > p.PopulationHigh { // Set population high
-		p.PopulationHigh = p.Population
-	}
 }

@@ -12,6 +12,7 @@ func CreateHousehold() entities.Household {
 	household := entities.Household{
 		Members:    []entities.Person{},
 		MoveInDate: entities.Sim.Date,
+		LastPayDay: entities.Sim.Date,
 	}
 
 	p = createRandomPerson(16, 100)

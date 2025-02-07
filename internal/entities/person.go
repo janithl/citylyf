@@ -5,9 +5,14 @@ import (
 	"time"
 )
 
-const AgeOfAdulthood = 18
-const AgeOfRetirement = 70
-const HoursPerYear = 24 * 365.25
+const (
+	AgeOfAdulthood  = 18
+	AgeOfRetirement = 70
+	HoursPerDay     = 24
+	DaysPerYear     = 365.25
+)
+
+const HoursPerYear = HoursPerDay * DaysPerYear
 
 type Person struct {
 	ID             int            // Unique identifier for the person
