@@ -1,12 +1,20 @@
 package assets
 
 import (
+	"encoding/json"
 	"image"
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
+
+// Sprite represents an extracted image from the spritesheet
+type Sprite struct {
+	Image               *ebiten.Image
+	X, Y, Width, Height int
+}
 
 // Animation stores frames for a specific action
 type Animation struct {
@@ -17,6 +25,7 @@ type Animation struct {
 type AssetManager struct {
 	SpriteSheet *ebiten.Image
 	Animations  map[string]Animation // Stores animations by name
+	Sprites     map[string]Sprite
 }
 
 // Global instance
@@ -54,4 +63,44 @@ func LoadImage(path string) *ebiten.Image {
 		log.Fatal(err)
 	}
 	return img
+}
+
+// LoadVariableSpritesheet loads a spritesheet and extracts sprites using JSON definitions
+func LoadVariableSpritesheet(imagePath, jsonPath string) {
+	// Load JSON file
+	data, err := os.ReadFile(jsonPath)
+	if err != nil {
+		log.Fatal("Failed to load sprite JSON:", err)
+	}
+
+	// Parse JSON into a map
+	var spriteMap map[string]struct {
+		X, Y, Width, Height int
+	}
+
+	if err := json.Unmarshal(data, &spriteMap); err != nil {
+		log.Fatal("Failed to parse sprite JSON:", err)
+	}
+
+	// Load the spritesheet image
+	img, _, err := ebitenutil.NewImageFromFile(imagePath)
+	if err != nil {
+		log.Fatal("Failed to load spritesheet:", err)
+	}
+
+	// Initialize asset manager
+	Assets = &AssetManager{
+		SpriteSheet: img,
+		Sprites:     make(map[string]Sprite),
+	}
+
+	// Extract sprites based on JSON data
+	for name, rect := range spriteMap {
+		sprite := img.SubImage(image.Rect(rect.X, rect.Y, rect.X+rect.Width, rect.Y+rect.Height)).(*ebiten.Image)
+		Assets.Sprites[name] = Sprite{
+			Image: sprite,
+			X:     rect.X,
+			Y:     rect.Y,
+		}
+	}
 }

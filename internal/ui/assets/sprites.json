@@ -1,0 +1,7 @@
+{
+  "sand": { "x": 0, "y": 0, "width": 48, "height": 48 },
+  "grass": { "x": 48, "y": 0, "width": 48, "height": 48 },
+  "hill": { "x": 96, "y": 0, "width": 48, "height": 48 },
+  "water": { "x": 0, "y": 48, "width": 48, "height": 48 },
+  "deepwater": { "x": 48, "y": 48, "width": 48, "height": 48 }
+}

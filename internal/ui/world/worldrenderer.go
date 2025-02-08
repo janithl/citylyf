@@ -7,26 +7,20 @@ import (
 )
 
 const (
-	tileWidth  = 64
-	tileHeight = 32
+	tileWidth  = 48
+	tileHeight = 48
 	moveSpeed  = 0.1
 )
 
 type WorldRenderer struct {
 	playerX, playerY, cameraX, cameraY float64
 	width, height                      int
-	grassImage                         *ebiten.Image
-	roadImage                          *ebiten.Image
-	hillImage                          *ebiten.Image
-	sandImage                          *ebiten.Image
-	waterImage                         *ebiten.Image
-	deepWaterImage                     *ebiten.Image
 }
 
 // Converts grid coordinates to isometric coordinates
 func (wr *WorldRenderer) isoTransform(x, y float64) (float64, float64) {
 	isoX := (x-y)*float64(tileWidth)/2 + float64(wr.width)/2
-	isoY := (x+y)*float64(tileHeight)/2 + float64(wr.height)/4
+	isoY := (x+y)*float64(tileHeight)/4 + float64(wr.height)/4
 	return isoX, isoY
 }
 
@@ -60,6 +54,7 @@ func (wr *WorldRenderer) Update() error {
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	// Draw isometric tiles
 	tiles := entities.Sim.Geography.GetTiles()
+	hillElevation := entities.Sim.Geography.SeaLevel + (entities.Sim.Geography.MaxElevation-entities.Sim.Geography.SeaLevel)/2
 	for x := range tiles {
 		for y := range tiles[x] {
 			isoX, isoY := wr.isoTransform(float64(x), float64(y))
@@ -68,34 +63,30 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			op.GeoM.Translate(isoX-wr.cameraX, isoY-wr.cameraY)
 
 			if tiles[x][y].Elevation == entities.Sim.Geography.SeaLevel {
-				screen.DrawImage(wr.sandImage, op)
-			} else if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel+(entities.Sim.Geography.MaxElevation-entities.Sim.Geography.SeaLevel)/2 {
-				screen.DrawImage(wr.hillImage, op)
-			} else if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel {
-				screen.DrawImage(wr.grassImage, op)
+				screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+			} else if tiles[x][y].Elevation > hillElevation {
+				screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
 			} else if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel/2 {
-				screen.DrawImage(wr.deepWaterImage, op)
+				screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
+			} else if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
+				screen.DrawImage(assets.Assets.Sprites["water"].Image, op)
 			} else {
-				screen.DrawImage(wr.waterImage, op)
+				screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 			}
 		}
 	}
 }
 
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
+	assets.LoadVariableSpritesheet("internal/ui/assets/geo-spritesheet.png", "internal/ui/assets/sprites.json")
+
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
-		playerX:        float64(mapSize / 2),
-		playerY:        float64(mapSize / 2),
-		cameraX:        float64(mapSize / 2),
-		cameraY:        float64(mapSize / 2),
-		width:          screenWidth,
-		height:         screenHeight,
-		grassImage:     assets.LoadImage("internal/ui/assets/grass.png"),
-		roadImage:      assets.LoadImage("internal/ui/assets/road.png"),
-		hillImage:      assets.LoadImage("internal/ui/assets/hill.png"),
-		sandImage:      assets.LoadImage("internal/ui/assets/sand.png"),
-		waterImage:     assets.LoadImage("internal/ui/assets/water.png"),
-		deepWaterImage: assets.LoadImage("internal/ui/assets/deepwater.png"),
+		playerX: float64(mapSize / 2),
+		playerY: float64(mapSize / 2),
+		cameraX: float64(mapSize / 2),
+		cameraY: float64(mapSize / 2),
+		width:   screenWidth,
+		height:  screenHeight,
 	}
 }
