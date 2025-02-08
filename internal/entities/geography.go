@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -36,7 +35,6 @@ func (g *Geography) Generate() {
 			}
 		}
 	}
-	fmt.Println(g.tiles)
 }
 
 // adjacentElevation checks if an adjacent element

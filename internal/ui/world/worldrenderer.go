@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	tileWidth  = 48
-	tileHeight = 48
+	tileWidth  = 64
+	tileHeight = 64
 	moveSpeed  = 0.1
 )
 
@@ -54,7 +54,6 @@ func (wr *WorldRenderer) Update() error {
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	// Draw isometric tiles
 	tiles := entities.Sim.Geography.GetTiles()
-	hillElevation := entities.Sim.Geography.SeaLevel + (entities.Sim.Geography.MaxElevation-entities.Sim.Geography.SeaLevel)/2
 	for x := range tiles {
 		for y := range tiles[x] {
 			isoX, isoY := wr.isoTransform(float64(x), float64(y))
@@ -62,15 +61,20 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(isoX-wr.cameraX, isoY-wr.cameraY)
 
-			if tiles[x][y].Elevation == entities.Sim.Geography.SeaLevel {
-				screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
-			} else if tiles[x][y].Elevation > hillElevation {
+			switch tiles[x][y].Elevation {
+			case 7:
+				screen.DrawImage(assets.Assets.Sprites["mountain"].Image, op)
+			case 6:
 				screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
-			} else if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel/2 {
+			case entities.Sim.Geography.SeaLevel:
+				screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+			case 2:
+				screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
+			case 1:
+				screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
+			case 0:
 				screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
-			} else if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
-				screen.DrawImage(assets.Assets.Sprites["water"].Image, op)
-			} else {
+			default:
 				screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 			}
 		}
