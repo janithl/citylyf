@@ -122,6 +122,8 @@ func NewWindowSystem() *WindowSystem {
 			func() []float64 { return entities.Sim.Market.History.MarketSentiment }),
 		*control.NewGraphWindow(350, 150, 160, 100, "Company Profits", ws.closeWindows, control.Currency,
 			func() []float64 { return entities.Sim.Market.History.CompanyProfits }),
+		*control.NewGraphWindow(520, 150, 160, 100, "Collected Tax", ws.closeWindows, control.Currency,
+			func() []float64 { return utils.ConvertToF64(entities.Sim.Government.CollectedTaxValues) }),
 	}
 
 	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)

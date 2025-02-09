@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"slices"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 type People struct {
@@ -70,8 +72,5 @@ func (p *People) CalculateUnemployment() {
 
 // Append current population value to history
 func (p *People) UpdatePopulationValues() {
-	if len(p.PopulationValues) >= 20 {
-		p.PopulationValues = p.PopulationValues[1:] // Remove first element (FIFO behavior)
-	}
-	p.PopulationValues = append(p.PopulationValues, p.Population)
+	p.PopulationValues = utils.AddFifo(p.PopulationValues, p.Population, 20)
 }

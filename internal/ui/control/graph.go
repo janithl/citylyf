@@ -75,7 +75,7 @@ func (g *Graph) Draw(screen *ebiten.Image) {
 	case Currency:
 		label = utils.FormatCurrency(lastValue, "$")
 	}
-	ebitenutil.DebugPrintAt(screen, label, int(g.x)+8, int(g.y+g.height)-12)
+	ebitenutil.DebugPrintAt(screen, label, int(g.x)+8, int(g.y+g.height)-14)
 }
 
 func (g *Graph) Update() {}

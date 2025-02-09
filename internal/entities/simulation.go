@@ -71,11 +71,8 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 		},
 		Houses: *NewHousing(houses),
 		Market: Market{
-			InterestRate:       7.0,
-			Unemployment:       0.001,
-			CorporateTax:       9.5,
-			GovernmentSpending: 5.0,
-
+			InterestRate:           7.0,
+			Unemployment:           0.001,
 			LastCalculation:        startDate,
 			MonthsOfNegativeGrowth: 0,
 			History: MarketHistory{

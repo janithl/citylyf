@@ -23,11 +23,11 @@ type MarketHistory struct { // tracking last 12 months data
 
 // Market tracks economic cycles and financial conditions
 type Market struct {
-	InterestRate, Unemployment, CorporateTax, GovernmentSpending float64
-	LastCalculation                                              time.Time
-	History                                                      MarketHistory
-	MonthsOfNegativeGrowth                                       int
-	InRecession, InBoom                                          bool
+	InterestRate, Unemployment float64
+	LastCalculation            time.Time
+	History                    MarketHistory
+	MonthsOfNegativeGrowth     int
+	InRecession, InBoom        bool
 }
 
 // MarketSentiment adjusts sentiment based on boom/bust cycles
@@ -58,10 +58,10 @@ func (m *Market) SupplyShock() float64 {
 // MoneySupplyGrowth calculates money supply changes
 func (m *Market) MoneySupplyGrowth() float64 {
 	lastInflationRate := utils.GetLastValue(m.History.InflationRate)
-	interestImpact := -math.Pow(m.InterestRate/5, 1.2)       // High rates slow money supply
-	inflationImpact := -math.Pow((lastInflationRate-2)/4, 2) // High inflation slows supply
-	spendingImpact := m.GovernmentSpending * 0.5             // More spending increases supply
-	confidenceImpact := m.MarketSentiment() * 0.3            // Market sentiment effect
+	interestImpact := -math.Pow(m.InterestRate/5, 1.2)             // High rates slow money supply
+	inflationImpact := -math.Pow((lastInflationRate-2)/4, 2)       // High inflation slows supply
+	spendingImpact := Sim.Government.GetGovernmentSpending() * 0.5 // More spending increases supply
+	confidenceImpact := m.MarketSentiment() * 0.3                  // Market sentiment effect
 	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
 
 	if totalGrowth < 0 {
@@ -98,7 +98,7 @@ func (m *Market) MarketGrowth() float64 {
 	interestImpact := -math.Pow(m.InterestRate/8, 2)                       // Higher rates slow growth
 	inflationImpact := -math.Pow((lastInflationRate-5)/3, 2)               // Inflation impact (good at 3-5%, bad above 6%)
 	unemploymentImpact := -m.Unemployment / 25                             // High unemployment reduces spending
-	taxImpact := -m.CorporateTax / 30                                      // Higher taxes = lower market growth
+	taxImpact := -(Sim.Government.CorporateTaxRate) / 30                   // Higher taxes = lower market growth
 	marketSentimentImpact := utils.GetLastValue(m.History.MarketSentiment) // External random factors
 	profitImpact := m.calculateProfitImpact()                              // Effect of corporate profits
 

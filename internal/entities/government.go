@@ -3,14 +3,18 @@ package entities
 import (
 	"fmt"
 	"time"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 type Government struct {
 	Reserves            int
-	ReserveValues       []int // Historical values
 	LastCalculationYear int
 	CorporateTaxRate    float64      // Flat corporate tax rate
 	IncomeTaxBrackets   []TaxBracket // Progressive income tax brackets
+
+	// Historical values
+	ReserveValues, CollectedTaxValues []int
 }
 
 // TaxBracket defines an income range and corresponding tax rate
@@ -25,23 +29,36 @@ func (g *Government) CollectTaxes() {
 		return
 	}
 
-	totalCollected := 0
-
-	// **Collect Household Income Taxes**
+	// Collect household income taxes
+	personalTaxesCollected := 0
 	for i := range Sim.People.Households {
 		household := &Sim.People.Households[i]
 		householdTax := g.CalculateIncomeTax(household.AnnualIncome())
 
 		// Deduct tax from household wealth
 		household.Savings -= householdTax
-		g.Reserves += householdTax
-		totalCollected += householdTax
+		personalTaxesCollected += householdTax
 	}
+	fmt.Printf("[  Tax ] Collected $%d in personal income taxes\n", personalTaxesCollected)
 
-	fmt.Printf("[  Tax ] Collected $%d in taxes for %d. Government reserves: $%d\n",
-		totalCollected, g.LastCalculationYear, g.Reserves)
+	// Collect corporate tax and reset tax payable account
+	corporateTaxesCollected := 0
+	for i := range Sim.Companies {
+		corporateTaxesCollected += int(Sim.Companies[i].TaxPayable)
+		Sim.Companies[i].TaxPayable = 0.0
+	}
+	fmt.Printf("[  Tax ] Collected $%d in corporate taxes\n", corporateTaxesCollected)
+
+	// add collected taxes to government reserves
+	totalTaxesCollected := personalTaxesCollected + corporateTaxesCollected
+	g.Reserves += totalTaxesCollected
+	fmt.Printf("[  Tax ] Collected $%d in total taxes for %d. Government reserves: $%d\n",
+		totalTaxesCollected, g.LastCalculationYear, g.Reserves)
 	g.LastCalculationYear = Sim.Date.Year()
-	g.updateReserveValues()
+
+	// Append current values to history
+	g.ReserveValues = utils.AddFifo(g.ReserveValues, g.Reserves, 10)
+	g.CollectedTaxValues = utils.AddFifo(g.CollectedTaxValues, totalTaxesCollected, 10)
 }
 
 // CalculateIncomeTax applies progressive tax rates to household income
@@ -59,26 +76,25 @@ func (g *Government) CalculateIncomeTax(income int) int {
 	return int(totalTax)
 }
 
-// Append current reserve value to history
-func (g *Government) updateReserveValues() {
-	if len(g.ReserveValues) >= 10 {
-		g.ReserveValues = g.ReserveValues[1:] // Remove first element (FIFO behavior)
-	}
-	g.ReserveValues = append(g.ReserveValues, g.Reserves)
+// TODO: Replace with actual spending calculation
+func (g *Government) GetGovernmentSpending() float64 {
+	return 5.0
 }
 
 // NewGovernment initializes the government system with reserves and progressive tax brackets
 func NewGovernment(reserves int, startDate time.Time) *Government {
 	return &Government{
 		Reserves:            reserves,
-		ReserveValues:       []int{reserves},
 		LastCalculationYear: startDate.Year(),
-		CorporateTaxRate:    5.0,
+		CorporateTaxRate:    9.5,
 		IncomeTaxBrackets: []TaxBracket{
 			{Threshold: 200000, Rate: 35}, // 35% for income above $200K
 			{Threshold: 100000, Rate: 25}, // 25% for income above $100K
 			{Threshold: 50000, Rate: 15},  // 15% for income above $50K
 			{Threshold: 20000, Rate: 5},   // 5% for income above $20K
 		},
+
+		ReserveValues:      []int{reserves},
+		CollectedTaxValues: []int{0},
 	}
 }

@@ -16,11 +16,10 @@ type Company struct {
 	Industry     Industry
 	FoundingDate time.Time
 	JobOpenings  map[CareerLevel]int // Available job positions at each level
+	TaxPayable   float64
 
 	// Historical
-	LastRevenue  float64
-	LastExpenses float64
-	LastProfit   float64
+	LastRevenue, LastExpenses, LastProfit float64
 }
 
 // CalculateProfit computes net profit every 28 days
@@ -46,9 +45,15 @@ func (c *Company) CalculateProfit() float64 {
 
 	// **Calculate Profit**
 	grossProfit := c.LastRevenue - c.LastExpenses
+
+	// **Apply Corporate Tax (Adjusted for Monthly Periods)**
 	if grossProfit > 0 {
-		taxedAmount := grossProfit * (Sim.Market.CorporateTax / 100.0)
+		monthlyTaxRate := Sim.Government.CorporateTaxRate * 28 / DaysPerYear // Convert annual tax rate to 28-day cycle
+		taxedAmount := math.Ceil(grossProfit * (monthlyTaxRate / 100.0))     // round to nearest dollar
 		c.LastProfit = grossProfit - taxedAmount
+
+		// Store unpaid tax in liability account
+		c.TaxPayable += taxedAmount
 	} else {
 		c.LastProfit = grossProfit
 	}
@@ -96,7 +101,7 @@ func (c *Company) DetermineJobOpenings() {
 	}
 
 	// Government Spending Effect: More spending stimulates job creation
-	if Sim.Market.GovernmentSpending > 5 {
+	if Sim.Government.GetGovernmentSpending() > 5 {
 		marketMultiplier += 0.2
 	}
 
