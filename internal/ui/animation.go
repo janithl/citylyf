@@ -65,7 +65,7 @@ func NewAnimation(x, y, speedX, speedY float64) *Animation {
 	}
 
 	// shout out to https://bossnelnel.itch.io/8-direction-top-down-character-sprites for the amazing sprites
-	assets.LoadSpritesheet("internal/ui/assets/human.png", 23, 36, 9, 8, animations)
+	assets.LoadAnimationSpritesheet("internal/ui/assets/human-green.png", 23, 36, 9, 8, animations)
 	return &Animation{
 		X:      x,
 		Y:      y,

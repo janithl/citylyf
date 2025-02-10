@@ -84,6 +84,6 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			},
 		},
 		Companies: []Company{},
-		Geography: *NewGeography(64, 7, 3, 0.01, 0.01),
+		Geography: *NewGeography(64, 8, 3, 0.004, 0.01),
 	}
 }

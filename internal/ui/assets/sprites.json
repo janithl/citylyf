@@ -5,5 +5,8 @@
   "deepwater": { "x": 0, "y": 64, "width": 64, "height": 64 },
   "midwater": { "x": 64, "y": 64, "width": 64, "height": 64 },
   "shallowwater": { "x": 128, "y": 64, "width": 64, "height": 64 },
-  "mountain": { "x": 192, "y": 64, "width": 64, "height": 64 }
+  "mountain": { "x": 192, "y": 64, "width": 64, "height": 64 },
+  "cursorbox": { "x": 0, "y": 128, "width": 64, "height": 64 },
+  "road-y": { "x": 64, "y": 128, "width": 64, "height": 64 },
+  "road-x": { "x": 128, "y": 128, "width": 64, "height": 64 }
 }

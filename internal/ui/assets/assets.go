@@ -29,16 +29,17 @@ type AssetManager struct {
 }
 
 // Global instance
+var AnimationAssets *AssetManager
 var Assets *AssetManager
 
 // LoadSpritesheet loads a multi-line sprite sheet
-func LoadSpritesheet(path string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
+func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Assets = &AssetManager{
+	AnimationAssets = &AssetManager{
 		SpriteSheet: img,
 		Animations:  make(map[string]Animation),
 	}
@@ -52,7 +53,7 @@ func LoadSpritesheet(path string, frameWidth, frameHeight, columns, rows int, an
 			)).(*ebiten.Image)
 			frames = append(frames, frame)
 		}
-		Assets.Animations[name] = Animation{Frames: frames}
+		AnimationAssets.Animations[name] = Animation{Frames: frames}
 	}
 }
 

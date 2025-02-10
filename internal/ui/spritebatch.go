@@ -25,7 +25,7 @@ func (b *SpriteBatch) AddSprite(animation string, frameIndex int, x, y float64) 
 // Draw renders all queued sprites
 func (b *SpriteBatch) Draw(screen *ebiten.Image) {
 	for _, sprite := range b.Sprites {
-		anim, exists := assets.Assets.Animations[sprite.AnimationName]
+		anim, exists := assets.AnimationAssets.Animations[sprite.AnimationName]
 		if !exists || len(anim.Frames) == 0 {
 			continue // Skip invalid animations
 		}

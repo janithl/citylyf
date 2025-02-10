@@ -15,9 +15,11 @@ import (
 
 // TODO
 // Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
-// Housing market - rent, no. of bedrooms etc.
-// People should marry, have babies, move out out the house, die etc.
-// Yearly budget - once a year, we calculate how much income tax and company tax has to be paid
+// Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate
+// People should marry, have babies, get promoted, move out out the house, die etc.
+// Yearly budget - once a year, we show users government income vs expenditure and store these values for recall
+// Calculate realistic government expenses
+// More realistic company expenses - people getting paid should come from payroll etc
 func main() {
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{}
