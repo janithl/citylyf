@@ -21,6 +21,8 @@ const (
 type WorldRenderer struct {
 	playerX, playerY, cameraX, cameraY, zoomFactor float64
 	width, height, hoveredTileX, hoveredTileY      int
+	roadStartX, roadStartY                         int
+	placingRoad                                    bool
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -107,6 +109,19 @@ func (wr *WorldRenderer) Update() error {
 	// Get mouse position and convert screen coordinates to isometric tile coordinates
 	cursorX, cursorY := ebiten.CursorPosition()
 	wr.hoveredTileX, wr.hoveredTileY = wr.screenToGrid(float64(cursorX), float64(cursorY))
+
+	if ebiten.IsKeyPressed(ebiten.KeyJ) {
+		wr.placingRoad = true
+		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
+	}
+
+	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		wr.placingRoad = false
+		road := entities.NewRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
+		if road != nil {
+			entities.Sim.Geography.AddRoad(road)
+		}
+	}
 
 	return nil
 }

@@ -29,21 +29,32 @@ func (r *Road) IsTraversable(x, y int) bool {
 }
 
 func NewRoad(startX, startY, endX, endY int, roadType RoadType) *Road {
+	if startX == endY && startY == endY {
+		return nil
+	}
+
+	segments := []Segment{}
+	if startX != endX {
+		segments = append(segments, Segment{
+			Start:     Point{startX, startY},
+			End:       Point{endX, startY},
+			Direction: DirX,
+		})
+		startX = endX
+	}
+
+	if startY != endY {
+		segments = append(segments, Segment{
+			Start:     Point{startX, startY},
+			End:       Point{endX, endY},
+			Direction: DirY,
+		})
+	}
+
 	road := &Road{
-		Name: fmt.Sprintf("Street %d", rand.Intn(100)),
-		Type: roadType,
-		Segments: []Segment{
-			{
-				Start:     Point{startX, startY},
-				End:       Point{endX, startY},
-				Direction: DirX,
-			},
-			{
-				Start:     Point{endX, startY},
-				End:       Point{endX, endY},
-				Direction: DirY,
-			},
-		},
+		Name:     fmt.Sprintf("Street %d", rand.Intn(100)),
+		Type:     roadType,
+		Segments: segments,
 	}
 
 	return road

@@ -63,6 +63,11 @@ func (g *Geography) GetRoads() []Road {
 	return g.roads
 }
 
+// add a new road
+func (g *Geography) AddRoad(r *Road) {
+	g.roads = append(g.roads, *r)
+}
+
 // bounds check
 func (g *Geography) BoundsCheck(x, y int) bool {
 	return x >= 0 && y >= 0 && x < Sim.Geography.Size && y < Sim.Geography.Size
