@@ -5,7 +5,10 @@ import (
 )
 
 type Tile struct {
-	Elevation int
+	Elevation    int
+	Road         bool
+	Intersection bool
+	Roundabout   bool
 }
 
 type Geography struct {
@@ -64,8 +67,27 @@ func (g *Geography) GetRoads() []Road {
 }
 
 // add a new road
-func (g *Geography) AddRoad(r *Road) {
+func (g *Geography) addRoad(r *Road) {
 	g.roads = append(g.roads, *r)
+	for _, segment := range r.Segments {
+		if segment.Direction == DirX {
+			for i := segment.Start.X; i <= segment.End.X; i++ {
+				if g.tiles[i][segment.Start.Y].Road {
+					g.tiles[i][segment.Start.Y].Intersection = true
+				} else {
+					g.tiles[i][segment.Start.Y].Road = true
+				}
+			}
+		} else if segment.Direction == DirY {
+			for i := segment.Start.Y; i <= segment.End.Y; i++ {
+				if g.tiles[segment.Start.X][i].Road {
+					g.tiles[segment.Start.X][i].Intersection = true
+				} else {
+					g.tiles[segment.Start.X][i].Road = true
+				}
+			}
+		}
+	}
 }
 
 // bounds check

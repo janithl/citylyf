@@ -28,25 +28,27 @@ func (r *Road) IsTraversable(x, y int) bool {
 	return Sim.Geography.tiles[x][y].Elevation < Sim.Geography.SeaLevel+3
 }
 
-func NewRoad(startX, startY, endX, endY int, roadType RoadType) *Road {
+func PlaceRoad(startX, startY, endX, endY int, roadType RoadType) {
 	if startX == endY && startY == endY {
-		return nil
+		return
 	}
 
 	segments := []Segment{}
 	if startX != endX {
+		minX, maxX := min(startX, endX), max(startX, endX)
 		segments = append(segments, Segment{
-			Start:     Point{startX, startY},
-			End:       Point{endX, startY},
+			Start:     Point{minX, startY},
+			End:       Point{maxX, startY},
 			Direction: DirX,
 		})
 		startX = endX
 	}
 
 	if startY != endY {
+		minY, maxY := min(startY, endY), max(startY, endY)
 		segments = append(segments, Segment{
-			Start:     Point{startX, startY},
-			End:       Point{endX, endY},
+			Start:     Point{startX, minY},
+			End:       Point{startX, maxY},
 			Direction: DirY,
 		})
 	}
@@ -57,5 +59,5 @@ func NewRoad(startX, startY, endX, endY int, roadType RoadType) *Road {
 		Segments: segments,
 	}
 
-	return road
+	Sim.Geography.addRoad(road)
 }

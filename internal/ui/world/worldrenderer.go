@@ -117,10 +117,7 @@ func (wr *WorldRenderer) Update() error {
 
 	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		wr.placingRoad = false
-		road := entities.NewRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
-		if road != nil {
-			entities.Sim.Geography.AddRoad(road)
-		}
+		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
 	}
 
 	return nil
@@ -164,11 +161,15 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// Draw roads if necessary
-			roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
-			if roadDirection == entities.DirX {
-				screen.DrawImage(assets.Assets.Sprites["road-x"].Image, op)
-			} else if roadDirection == entities.DirY {
-				screen.DrawImage(assets.Assets.Sprites["road-y"].Image, op)
+			if tiles[x][y].Intersection {
+				screen.DrawImage(assets.Assets.Sprites["intersection"].Image, op)
+			} else if tiles[x][y].Road {
+				roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
+				if roadDirection == entities.DirX {
+					screen.DrawImage(assets.Assets.Sprites["road-x"].Image, op)
+				} else if roadDirection == entities.DirY {
+					screen.DrawImage(assets.Assets.Sprites["road-y"].Image, op)
+				}
 			}
 
 			// Draw a highlight around the tile under the mouse.
