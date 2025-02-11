@@ -16,7 +16,10 @@ type Company struct {
 	Industry     Industry
 	FoundingDate time.Time
 	JobOpenings  map[CareerLevel]int // Available job positions at each level
+	Employees    []int               // Employee IDs
 	TaxPayable   float64
+	FixedCosts   float64
+	Payroll      float64
 
 	// Historical
 	LastRevenue, LastExpenses, LastProfit float64
@@ -34,7 +37,9 @@ func (c *Company) CalculateProfit() float64 {
 	if c.LastProfit < 0 {
 		inflationMultiplier *= 0.95 // Expenses grow slower for struggling businesses
 	}
-	c.LastExpenses *= inflationMultiplier // Adjust expenses
+	c.FixedCosts *= inflationMultiplier // Adjust fixed costs with inflation
+	c.LastExpenses = c.FixedCosts + c.Payroll
+	c.Payroll = 0.0 // Reset payroll liabilites
 
 	// **Monthly Revenue Growth**: Adjusts based on market conditions
 	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
@@ -73,6 +78,11 @@ func (c *Company) GetNumberOfJobOpenings() int {
 		openings += c.JobOpenings[CareerLevels[i]]
 	}
 	return openings
+}
+
+// GetNumberOfEmployees returns the total number of employees
+func (c *Company) GetNumberOfEmployees() int {
+	return len(c.Employees)
 }
 
 // DetermineJobOpenings calculates jobs available based on economic factors
@@ -129,5 +139,5 @@ func (c *Company) CompanyAge() int {
 }
 
 func (c *Company) GetStats() string {
-	return fmt.Sprintf("%4d %-28s %d %-18s %-10s", c.ID, c.Name, c.FoundingDate.Year(), c.Industry, utils.FormatCurrency(c.LastProfit, "$"))
+	return fmt.Sprintf("%4d %-28s %2d Empls   %d %-18s %-10s", c.ID, c.Name, c.GetNumberOfEmployees(), c.FoundingDate.Year(), c.Industry, utils.FormatCurrency(c.LastProfit, "$"))
 }

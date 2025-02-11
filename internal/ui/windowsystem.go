@@ -89,7 +89,7 @@ func NewWindowSystem() *WindowSystem {
 		windows:        []control.Window{},
 	}
 	ws.listWindows = []control.ListWindow{
-		*control.NewListWindow(10, 290, 432, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
+		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
 			func() []string {
 				companies := []string{}
 				for _, c := range entities.Sim.Companies {
@@ -97,7 +97,7 @@ func NewWindowSystem() *WindowSystem {
 				}
 				return companies
 			}),
-		*control.NewListWindow(450, 290, 480, 360, "Households", ws.closeWindows, ws.onWindowItemClick,
+		*control.NewListWindow(520, 290, 460, 360, "Households", ws.closeWindows, ws.onWindowItemClick,
 			func() []string {
 				households := []string{}
 				for _, h := range entities.Sim.People.Households {

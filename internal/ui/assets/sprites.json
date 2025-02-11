@@ -9,5 +9,7 @@
   "cursorbox": { "x": 0, "y": 128, "width": 64, "height": 64 },
   "road-y": { "x": 64, "y": 128, "width": 64, "height": 64 },
   "road-x": { "x": 128, "y": 128, "width": 64, "height": 64 },
-  "intersection": { "x": 192, "y": 128, "width": 64, "height": 64 }
+  "intersection": { "x": 192, "y": 128, "width": 64, "height": 64 },
+  "bridge-y": { "x": 0, "y": 192, "width": 64, "height": 64 },
+  "bridge-x": { "x": 64, "y": 192, "width": 64, "height": 64 }
 }

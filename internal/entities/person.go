@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -36,11 +37,24 @@ func (p *Person) Age() int {
 }
 
 func (p *Person) IsEmployable() bool {
-	return p.Age() > AgeOfAdulthood || p.CareerLevel != Unemployed
+	return p.Age() >= AgeOfAdulthood && p.CareerLevel != Retired
 }
 
 func (p *Person) IsEmployed() bool {
 	return p.EmployerID != 0
+}
+
+func (p *Person) ConsiderRetirement(removeEmployeeFromCompany func(companyID int, employeeID int)) bool {
+	if p.CareerLevel != Retired &&
+		p.Age() >= AgeOfRetirement &&
+		rand.Intn(100) < 1+p.Age()-AgeOfRetirement { // chance of retirement if over retirement age, starts at 1% and goes up
+
+		removeEmployeeFromCompany(p.EmployerID, p.ID)
+		p.EmployerID = 0
+		p.CareerLevel = Retired
+		return true
+	}
+	return false
 }
 
 func (p *Person) String() string {

@@ -44,13 +44,14 @@ func (h *Household) IsEligibleForMoveOut() bool {
 }
 
 // calculate monthly budget
-func (h *Household) CalculateMonthlyBudget() {
+func (h *Household) CalculateMonthlyBudget(addPayToPayroll func(companyID int, payAmount float64)) {
 	daysSinceLastPay := Sim.Date.Sub(h.LastPayDay).Hours() / HoursPerDay
 	pay := 0.0
 	for i := range h.Members {
 		if h.Members[i].IsEmployed() {
 			memberPay := float64(h.Members[i].AnnualIncome) * daysSinceLastPay / DaysPerYear
 			h.Members[i].Savings += int(memberPay)
+			addPayToPayroll(h.Members[i].EmployerID, memberPay) // deduct from company
 			pay += memberPay
 		}
 	}
@@ -60,6 +61,6 @@ func (h *Household) CalculateMonthlyBudget() {
 }
 
 func (h *Household) GetStats() string {
-	return fmt.Sprintf("%-24s %d Members   %s   %s", h.FamilyName()+" family", len(h.Members),
+	return fmt.Sprintf("%-24s %d Membs   %s   %s", h.FamilyName()+" family", len(h.Members),
 		"Moved in "+h.MoveInDate.Format("2006-01-02"), utils.FormatCurrency(float64(h.Savings), "$"))
 }

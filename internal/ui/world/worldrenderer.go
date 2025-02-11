@@ -93,6 +93,9 @@ func (wr *WorldRenderer) handleZoom() {
 	if ebiten.IsKeyPressed(ebiten.KeyF) {
 		wr.zoomFactor *= 1 - kbZoomSpeed // Zoom out
 	}
+	if ebiten.IsKeyPressed(ebiten.KeyZ) {
+		wr.zoomFactor = 1 // Reset Zoom
+	}
 
 	// Clamp zoom factor between 0.25 and 2
 	if wr.zoomFactor < minZoom {
@@ -167,8 +170,14 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 				roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
 				if roadDirection == entities.DirX {
 					screen.DrawImage(assets.Assets.Sprites["road-x"].Image, op)
+					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
+						screen.DrawImage(assets.Assets.Sprites["bridge-x"].Image, op)
+					}
 				} else if roadDirection == entities.DirY {
 					screen.DrawImage(assets.Assets.Sprites["road-y"].Image, op)
+					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
+						screen.DrawImage(assets.Assets.Sprites["bridge-y"].Image, op)
+					}
 				}
 			}
 
