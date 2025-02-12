@@ -126,6 +126,53 @@ func (wr *WorldRenderer) Update() error {
 	return nil
 }
 
+// Renders the base tile
+func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	// Check neighbors (prevent out-of-bounds errors)
+	left, right, top, bottom := tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation
+	if x > 0 {
+		left = tiles[x-1][y].Elevation
+	}
+	if x < len(tiles)-1 {
+		right = tiles[x+1][y].Elevation
+	}
+	if y > 0 {
+		top = tiles[x][y-1].Elevation
+	}
+	if y < len(tiles[x])-1 {
+		bottom = tiles[x][y+1].Elevation
+	}
+
+	switch tiles[x][y].Elevation {
+	case 8:
+		screen.DrawImage(assets.Assets.Sprites["mountain"].Image, op)
+	case 7:
+		screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
+	case 6:
+		if left == 7 && right == 5 {
+			screen.DrawImage(assets.Assets.Sprites["slope-x"].Image, op)
+		} else if left == 5 && right == 7 {
+			screen.DrawImage(assets.Assets.Sprites["slope-x-rev"].Image, op)
+		} else if top == 7 && bottom == 5 {
+			screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
+		} else if top == 5 && bottom == 7 {
+			screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
+		} else {
+			screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
+		}
+	case entities.Sim.Geography.SeaLevel:
+		screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+	case 2:
+		screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
+	case 1:
+		screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
+	case 0:
+		screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
+	default:
+		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
+	}
+}
+
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	tiles := entities.Sim.Geography.GetTiles()
 	// Use the same offsets as in isoTransform.
@@ -146,22 +193,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			scaledY := offsetY + (isoY-wr.cameraY-offsetY)*wr.zoomFactor
 			op.GeoM.Translate(scaledX, scaledY)
 
-			switch tiles[x][y].Elevation {
-			case 8:
-				screen.DrawImage(assets.Assets.Sprites["mountain"].Image, op)
-			case 7, 6:
-				screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
-			case entities.Sim.Geography.SeaLevel:
-				screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
-			case 2:
-				screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
-			case 1:
-				screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
-			case 0:
-				screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
-			default:
-				screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
-			}
+			wr.tileRender(screen, op, tiles, x, y)
 
 			// Draw roads if necessary
 			if tiles[x][y].Intersection {

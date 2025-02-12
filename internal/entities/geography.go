@@ -125,6 +125,7 @@ func NewGeography(size, maxElevation, SeaLevel int, peakProbability, cliffProbab
 		cliffProbability: cliffProbability,
 		tiles:            tiles,
 	}
+	// generate the terrain
 	geography.Generate()
 
 	return geography
