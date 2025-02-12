@@ -88,6 +88,11 @@ func NewWindowSystem() *WindowSystem {
 		windowsVisible: false,
 		windows:        []control.Window{},
 	}
+
+	ppWin := *control.NewWindow(850, 10, 360, 270, "Pop. Pyramid", ws.closeWindows)
+	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 360, Height: 250})
+	ws.windows = append(ws.windows, ppWin)
+
 	ws.listWindows = []control.ListWindow{
 		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
 			func() []string {

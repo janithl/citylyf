@@ -14,12 +14,14 @@ import (
 )
 
 // TODO
-// Household Budgeting - think about rent/mortgage expenses + taxes + savings interest etc
+// Household Budgeting - think about childcare expenses, groceries, shopping, vacation, utilities etc
 // Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate
 // People should marry, have babies, get promoted, move out out the house, die etc.
 // Yearly budget - once a year, we show users government income vs expenditure and store these values for recall
 // Calculate realistic government expenses
-// More realistic company expenses - people getting paid should come from payroll etc
+// Pension fund with employee + employer + government contributions
+// Companies should be tied to office space/industrial space availability
+// Companies with no employees for a year should shut down
 func main() {
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{}
@@ -51,6 +53,7 @@ func main() {
 					if diff.Hours()/24 >= 28 {
 						calculateEconomy()
 						entities.Sim.Government.CollectTaxes()
+						entities.Sim.Houses.ReviseRents()
 					}
 				}
 			}
@@ -75,6 +78,7 @@ func calculateEconomy() {
 	populationGrowth := entities.Sim.People.PopulationGrowthRate()
 
 	entities.Sim.People.UpdatePopulationValues()
+	entities.Sim.People.CalculateAgeGroups()
 	entities.Sim.People.CalculateUnemployment()
 	entities.Sim.Market.Unemployment = entities.Sim.People.UnemploymentRate()
 
@@ -111,7 +115,7 @@ func calculateEconomy() {
 }
 
 func printFinalState() {
-	cityDataJson, err := json.Marshal(entities.Sim.People)
+	peopleJson, err := json.Marshal(entities.Sim.People)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -121,7 +125,13 @@ func printFinalState() {
 		fmt.Println(err)
 		return
 	}
+	houseJson, err := json.Marshal(entities.Sim.Houses)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	fmt.Println("[ JSON ] Population: ", string(cityDataJson))
+	fmt.Println("[ JSON ] Population: ", string(peopleJson))
 	fmt.Println("[ JSON ] Companies: ", string(compJson))
+	fmt.Println("[ JSON ] Houses: ", string(houseJson))
 }

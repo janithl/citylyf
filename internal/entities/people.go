@@ -8,12 +8,21 @@ import (
 	"github.com/janithl/citylyf/internal/utils"
 )
 
+const AgeGroupSize = 10
+
+type AgeGroup struct {
+	Male   int
+	Female int
+	Other  int
+}
+
 type People struct {
 	Population       int
 	PopulationValues []int // Historical values
 	LabourForce      int   // Employable people
 	Unemployed       int
 	Households       []Household
+	AgeGroups        map[int]AgeGroup // Population breakdown by age group
 }
 
 func (p *People) UnemploymentRate() float64 {
@@ -56,8 +65,8 @@ func (p *People) MoveOut() {
 // calculate the unemployed and the total labour force
 func (p *People) CalculateUnemployment() {
 	labourforce, unemployed := 0, 0
-	for i := 0; i < len(p.Households); i++ {
-		for j := 0; j < len(p.Households[i].Members); j++ {
+	for i := range p.Households {
+		for j := range p.Households[i].Members {
 			if p.Households[i].Members[j].IsEmployable() {
 				labourforce += 1
 				if !p.Households[i].Members[j].IsEmployed() {
@@ -73,4 +82,30 @@ func (p *People) CalculateUnemployment() {
 // Append current population value to history
 func (p *People) UpdatePopulationValues() {
 	p.PopulationValues = utils.AddFifo(p.PopulationValues, p.Population, 20)
+}
+
+// calculate the age groups of the population
+func (p *People) CalculateAgeGroups() {
+	groups := make(map[int]AgeGroup)
+	for i := 0; i <= 120; i += AgeGroupSize {
+		groups[i] = AgeGroup{}
+	}
+
+	for i := range p.Households {
+		for j := range p.Households[i].Members {
+			ageGroup := AgeGroupSize * (p.Households[i].Members[j].Age() / AgeGroupSize)
+			if group, ok := groups[ageGroup]; ok {
+				switch p.Households[i].Members[j].Gender {
+				case Male:
+					group.Male += 1
+				case Female:
+					group.Female++
+				case Other:
+					group.Other++
+				}
+				groups[ageGroup] = group
+			}
+		}
+	}
+	p.AgeGroups = groups
 }
