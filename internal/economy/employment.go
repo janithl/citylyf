@@ -34,14 +34,16 @@ func (e *Employment) AssignJobs() {
 
 // findSuitableJob finds an appropriate job for a person based on their industry and career level
 func (e *Employment) findSuitableJob(p entities.Person) (companyID int, remaining int) {
-	for i := range entities.Sim.Companies {
-		company := &entities.Sim.Companies[i]
+	for id, company := range entities.Sim.Companies {
 		if company.Industry == p.Industry {
 			if openings, exists := company.JobOpenings[p.CareerLevel]; exists && openings > 0 {
-				company.JobOpenings[p.CareerLevel]--
+				openings--
+				company.JobOpenings[p.CareerLevel] = openings
+				entities.Sim.Companies[id] = company
 				return company.ID, company.GetNumberOfJobOpenings()
 			}
 		}
 	}
+
 	return 0, 0 // No suitable job found
 }

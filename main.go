@@ -14,6 +14,7 @@ import (
 )
 
 // TODO
+// ## Turn people, households, houses and companies into a map
 // Household Budgeting - think about childcare expenses, groceries, shopping, vacation, utilities etc
 // Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate
 // People should marry, have babies, get promoted, move out out the house, die etc.
@@ -23,13 +24,16 @@ import (
 // Companies should be tied to office space/industrial space availability
 // Companies with no employees for a year should shut down
 func main() {
+	jsonPtr := flag.Bool("json", false, "should output be in json?")
+	flag.Parse()
+
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{}
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
 		newCompany := economy.GenerateRandomCompany()
-		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
+		economy.AddCompany(newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
@@ -60,9 +64,6 @@ func main() {
 		}
 	}()
 
-	jsonPtr := flag.Bool("json", false, "should output be in json?")
-	flag.Parse()
-
 	// run simulation until UI is closed
 	ui.RunGame()
 	ticker.Stop()
@@ -90,14 +91,15 @@ func calculateEconomy() {
 
 	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
 		newCompany := economy.GenerateRandomCompany()
-		entities.Sim.Companies = append(entities.Sim.Companies, newCompany)
+		economy.AddCompany(newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
 	totalProfits := 0.0
-	for k := 0; k < len(entities.Sim.Companies); k++ {
-		totalProfits += entities.Sim.Companies[k].CalculateProfit()
-		entities.Sim.Companies[k].DetermineJobOpenings()
+	for id, company := range entities.Sim.Companies {
+		totalProfits += company.CalculateProfit()
+		company.DetermineJobOpenings()
+		entities.Sim.Companies[id] = company
 	}
 	entities.Sim.Market.ReportCompanyProfits(totalProfits)
 

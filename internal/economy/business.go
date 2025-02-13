@@ -9,7 +9,7 @@ import (
 )
 
 // GenerateRandomCompany creates a company with random industry and financials
-func GenerateRandomCompany() entities.Company {
+func GenerateRandomCompany() *entities.Company {
 	// Assign financials based on industry type
 	baseRevenue := rand.Float64()*5_000_000 + 1_000_000 // Revenue between $1M - $6M
 	expenseRatio := rand.Float64()*0.4 + 0.5            // Expenses are 50-90% of revenue
@@ -21,7 +21,6 @@ func GenerateRandomCompany() entities.Company {
 	companyName := fmt.Sprintf("%s %s", companyNames[rand.Intn(len(companyNames))], companySuffix[rand.Intn(len(companySuffix))])
 
 	company := entities.Company{
-		ID:           rand.Intn(999) + 1000,
 		Name:         companyName,
 		Industry:     entities.GetRandomIndustry(),
 		FoundingDate: entities.Sim.Date,
@@ -34,43 +33,42 @@ func GenerateRandomCompany() entities.Company {
 	}
 
 	company.CalculateProfit()
-	return company
+	return &company
+}
+
+// AddEmployeeToCompany adds your ID to the company list of employees
+func AddCompany(company *entities.Company) {
+	// base id + increment
+	company.ID = 1001 + len(entities.Sim.CompanyIDs)
+	entities.Sim.CompanyIDs = append(entities.Sim.CompanyIDs, company.ID)
+	entities.Sim.Companies[company.ID] = company
 }
 
 // AddEmployeeToCompany adds your ID to the company list of employees
 func AddEmployeeToCompany(companyID int, employeeID int) {
-	for c := range entities.Sim.Companies {
-		if entities.Sim.Companies[c].ID == companyID {
-			entities.Sim.Companies[c].Employees = append(entities.Sim.Companies[c].Employees, employeeID)
-			return
-		}
-
+	company, ok := entities.Sim.Companies[companyID]
+	if ok {
+		company.Employees = append(company.Employees, employeeID)
+		entities.Sim.Companies[companyID] = company
 	}
-
 }
 
 // RemoveEmployeeFromCompany removes your ID from the company list of employees
 func RemoveEmployeeFromCompany(companyID int, employeeID int) {
-	for c := range entities.Sim.Companies {
-		if entities.Sim.Companies[c].ID == companyID {
-			entities.Sim.Companies[c].Employees = slices.DeleteFunc(entities.Sim.Companies[c].Employees, func(id int) bool {
-				return id == employeeID
-			})
-			return
-		}
-
+	company, ok := entities.Sim.Companies[companyID]
+	if ok {
+		company.Employees = slices.DeleteFunc(company.Employees, func(id int) bool {
+			return id == employeeID
+		})
+		entities.Sim.Companies[companyID] = company
 	}
-
 }
 
 // AddPayToPayroll adds your payroll payment as a liability to the company
 func AddPayToPayroll(companyID int, payAmount float64) {
-	for c := range entities.Sim.Companies {
-		if entities.Sim.Companies[c].ID == companyID {
-			entities.Sim.Companies[c].Payroll -= payAmount
-			return
-		}
-
+	company, ok := entities.Sim.Companies[companyID]
+	if ok {
+		company.Payroll -= payAmount
+		entities.Sim.Companies[companyID] = company
 	}
-
 }

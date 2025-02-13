@@ -97,9 +97,10 @@ func NewWindowSystem() *WindowSystem {
 		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
 			func() []string {
 				companies := []string{}
-				for _, c := range entities.Sim.Companies {
-					companies = append(companies, c.GetStats())
+				for _, id := range entities.Sim.CompanyIDs {
+					companies = append(companies, entities.Sim.Companies[id].GetStats())
 				}
+
 				return companies
 			}),
 		*control.NewListWindow(520, 290, 460, 360, "Households", ws.closeWindows, ws.onWindowItemClick,

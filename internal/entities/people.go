@@ -87,7 +87,7 @@ func (p *People) UpdatePopulationValues() {
 // calculate the age groups of the population
 func (p *People) CalculateAgeGroups() {
 	groups := make(map[int]AgeGroup)
-	for i := 0; i <= 120; i += AgeGroupSize {
+	for i := 0; i < 120; i += AgeGroupSize {
 		groups[i] = AgeGroup{}
 	}
 
@@ -99,9 +99,9 @@ func (p *People) CalculateAgeGroups() {
 				case Male:
 					group.Male += 1
 				case Female:
-					group.Female++
+					group.Female += 1
 				case Other:
-					group.Other++
+					group.Other += 1
 				}
 				groups[ageGroup] = group
 			}

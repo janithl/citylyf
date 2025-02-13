@@ -43,9 +43,9 @@ func (g *Government) CollectTaxes() {
 
 	// Collect corporate tax and reset tax payable account
 	corporateTaxesCollected := 0
-	for i := range Sim.Companies {
-		corporateTaxesCollected += int(Sim.Companies[i].TaxPayable)
-		Sim.Companies[i].TaxPayable = 0.0
+	for id := range Sim.Companies {
+		corporateTaxesCollected += int(Sim.Companies[id].TaxPayable)
+		Sim.Companies[id].TaxPayable = 0.0
 	}
 	fmt.Printf("[  Tax ] Collected $%d in corporate taxes\n", corporateTaxesCollected)
 

@@ -24,7 +24,8 @@ type Simulation struct {
 	People          People
 	Houses          Housing
 	Market          Market
-	Companies       []Company
+	Companies       map[int]*Company
+	CompanyIDs      []int
 	Geography       Geography
 }
 
@@ -83,7 +84,8 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 				CompanyProfits:   []float64{0.001},
 			},
 		},
-		Companies: []Company{},
-		Geography: *NewGeography(64, 8, 3, 0.004, 0.01),
+		Companies:  make(map[int]*Company),
+		CompanyIDs: []int{},
+		Geography:  *NewGeography(64, 8, 3, 0.004, 0.01),
 	}
 }
