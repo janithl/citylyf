@@ -32,8 +32,8 @@ func main() {
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
-		newCompany := economy.GenerateRandomCompany()
-		economy.AddCompany(newCompany)
+		newCompany := employment.CompanyService.GenerateRandomCompany()
+		employment.CompanyService.AddCompany(newCompany)
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
@@ -55,7 +55,7 @@ func main() {
 					// run entities.Sim.Market calculations every month
 					diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
 					if diff.Hours()/24 >= 28 {
-						calculateEconomy()
+						calculateEconomy(employment.CompanyService)
 						entities.Sim.Government.CollectTaxes()
 						entities.Sim.Houses.ReviseRents()
 					}
@@ -74,7 +74,7 @@ func main() {
 	}
 }
 
-func calculateEconomy() {
+func calculateEconomy(companyService economy.CompanyService) {
 	// calculate impact of population growth on city economy
 	populationGrowth := entities.Sim.People.PopulationGrowthRate()
 
@@ -90,8 +90,8 @@ func calculateEconomy() {
 	fmt.Printf("[ Econ ] %s\n", entities.Sim.GetStats())
 
 	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
-		newCompany := economy.GenerateRandomCompany()
-		economy.AddCompany(newCompany)
+		newCompany := companyService.GenerateRandomCompany()
+		companyService.AddCompany(newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
@@ -105,7 +105,7 @@ func calculateEconomy() {
 
 	// calculate monthly pay
 	for i := range entities.Sim.People.Households {
-		entities.Sim.People.Households[i].CalculateMonthlyBudget(economy.AddPayToPayroll)
+		entities.Sim.People.Households[i].CalculateMonthlyBudget(companyService.AddPayToPayroll)
 	}
 
 	// do interest calcuations

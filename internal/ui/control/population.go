@@ -33,9 +33,9 @@ func (pp *PopulationPyramid) Draw(screen *ebiten.Image) {
 		otherWidth := maxWidth * (float32(group.Other) / float32(maxPopPerGroup))
 
 		// Draw bars
-		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth-maleWidth, y, maleWidth, barHeight-BarGraphPadding, colour.DarkCyan, true)
-		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth, y, femaleWidth, barHeight-BarGraphPadding, colour.DarkMagenta, true)
-		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth-otherWidth/2, y, otherWidth, barHeight-BarGraphPadding, colour.Gray, true)
+		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth-maleWidth, y, maleWidth, barHeight-BarGraphPadding, colour.DarkCyan, false)
+		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth, y, femaleWidth, barHeight-BarGraphPadding, colour.DarkMagenta, false)
+		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth-otherWidth/2, y, otherWidth, barHeight-BarGraphPadding, colour.Gray, false)
 
 		// Label age group
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%3d - %-3d", i, i+entities.AgeGroupSize), int(pp.X)+int(pp.Width)/2-28, int(y))

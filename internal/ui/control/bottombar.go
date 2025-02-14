@@ -16,7 +16,7 @@ type BottomBar struct {
 }
 
 func (b *BottomBar) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, buttonWidth, float32(b.screenHeight-buttonHeight), float32(b.screenWidth-buttonWidth*2), buttonHeight, colour.DarkSemiBlack, true)
+	vector.DrawFilledRect(screen, buttonWidth, float32(b.screenHeight-buttonHeight), float32(b.screenWidth-buttonWidth*2), buttonHeight, colour.DarkSemiBlack, false)
 	ebitenutil.DebugPrintAt(screen, entities.Sim.GetStats(), buttonWidth+10, b.screenHeight-buttonHeight+4)
 	for i := range b.bottomButtons {
 		b.bottomButtons[i].Draw(screen)

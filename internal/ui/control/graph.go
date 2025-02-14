@@ -14,9 +14,10 @@ import (
 type GraphType int
 
 const (
-	Int      GraphType = 0
-	Float    GraphType = 1
-	Currency GraphType = 2
+	Int        GraphType = 0
+	Float      GraphType = 1
+	Percentage GraphType = 2
+	Currency   GraphType = 3
 )
 
 type Graph struct {
@@ -29,7 +30,7 @@ type Graph struct {
 func (g *Graph) Draw(screen *ebiten.Image) {
 	// Draw horizontal grid lines
 	for i := float32(0.0); i <= 1.0; i += 0.25 {
-		vector.StrokeLine(screen, g.x, g.y+(g.height*i), g.x+g.width, g.y+(g.height*i), 1.0, colour.Black, true)
+		vector.StrokeLine(screen, g.x, g.y+(g.height*i), g.x+g.width, g.y+(g.height*i), 1.0, colour.LightGray, false)
 	}
 
 	if len(g.Data) < 2 {
@@ -72,6 +73,8 @@ func (g *Graph) Draw(screen *ebiten.Image) {
 		label = fmt.Sprintf("%.0f", lastValue)
 	case Float:
 		label = fmt.Sprintf("%.2f", lastValue)
+	case Percentage:
+		label = fmt.Sprintf("%.2f %%", lastValue)
 	case Currency:
 		label = utils.FormatCurrency(lastValue, "$")
 	}

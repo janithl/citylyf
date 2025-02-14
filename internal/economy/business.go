@@ -8,8 +8,18 @@ import (
 	"github.com/janithl/citylyf/internal/entities"
 )
 
+type CompanyService struct {
+	LastCompanyID int
+}
+
+func NewCompanyService() *CompanyService {
+	return &CompanyService{
+		LastCompanyID: 1000, // start IDs from 1000
+	}
+}
+
 // GenerateRandomCompany creates a company with random industry and financials
-func GenerateRandomCompany() *entities.Company {
+func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 	// Assign financials based on industry type
 	baseRevenue := rand.Float64()*5_000_000 + 1_000_000 // Revenue between $1M - $6M
 	expenseRatio := rand.Float64()*0.4 + 0.5            // Expenses are 50-90% of revenue
@@ -36,16 +46,24 @@ func GenerateRandomCompany() *entities.Company {
 	return &company
 }
 
-// AddEmployeeToCompany adds your ID to the company list of employees
-func AddCompany(company *entities.Company) {
-	// base id + increment
-	company.ID = 1001 + len(entities.Sim.CompanyIDs)
+// AddCompany adds a new company
+func (c *CompanyService) AddCompany(company *entities.Company) {
+	c.LastCompanyID += 1
+	company.ID = c.LastCompanyID
 	entities.Sim.CompanyIDs = append(entities.Sim.CompanyIDs, company.ID)
 	entities.Sim.Companies[company.ID] = company
 }
 
+// RemoveCompany removes a company
+func (c *CompanyService) RemoveCompany(companyID int) {
+	delete(entities.Sim.Companies, companyID)
+	entities.Sim.CompanyIDs = slices.DeleteFunc(entities.Sim.CompanyIDs, func(ID int) bool {
+		return ID == companyID
+	})
+}
+
 // AddEmployeeToCompany adds your ID to the company list of employees
-func AddEmployeeToCompany(companyID int, employeeID int) {
+func (c *CompanyService) AddEmployeeToCompany(companyID int, employeeID int) {
 	company, ok := entities.Sim.Companies[companyID]
 	if ok {
 		company.Employees = append(company.Employees, employeeID)
@@ -54,7 +72,7 @@ func AddEmployeeToCompany(companyID int, employeeID int) {
 }
 
 // RemoveEmployeeFromCompany removes your ID from the company list of employees
-func RemoveEmployeeFromCompany(companyID int, employeeID int) {
+func (c *CompanyService) RemoveEmployeeFromCompany(companyID int, employeeID int) {
 	company, ok := entities.Sim.Companies[companyID]
 	if ok {
 		company.Employees = slices.DeleteFunc(company.Employees, func(id int) bool {
@@ -65,7 +83,7 @@ func RemoveEmployeeFromCompany(companyID int, employeeID int) {
 }
 
 // AddPayToPayroll adds your payroll payment as a liability to the company
-func AddPayToPayroll(companyID int, payAmount float64) {
+func (c *CompanyService) AddPayToPayroll(companyID int, payAmount float64) {
 	company, ok := entities.Sim.Companies[companyID]
 	if ok {
 		company.Payroll -= payAmount

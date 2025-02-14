@@ -83,10 +83,10 @@ func (w *Window) Draw(screen *ebiten.Image) {
 	}
 
 	// Draw window background
-	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), float32(w.Height), colour.SemiBlack, true)
+	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), float32(w.Height), colour.SemiBlack, false)
 
 	// Draw title bar
-	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), titleBarHeight, colour.Black, true)
+	vector.DrawFilledRect(screen, float32(w.X), float32(w.Y), float32(w.Width), titleBarHeight, colour.Black, false)
 	ebitenutil.DebugPrintAt(screen, w.Title, w.X+buttonWidth+6, w.Y+4)
 
 	// Draw close button

@@ -89,7 +89,7 @@ func NewWindowSystem() *WindowSystem {
 		windows:        []control.Window{},
 	}
 
-	ppWin := *control.NewWindow(850, 10, 360, 270, "Pop. Pyramid", ws.closeWindows)
+	ppWin := *control.NewWindow(850, 10, 360, 270, "Population Pyramid", ws.closeWindows)
 	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 360, Height: 250})
 	ws.windows = append(ws.windows, ppWin)
 
@@ -118,18 +118,20 @@ func NewWindowSystem() *WindowSystem {
 			func() []float64 { return utils.ConvertToF64(entities.Sim.People.PopulationValues) }),
 		*control.NewGraphWindow(220, 10, 200, 130, "Market Value", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.MarketValue }),
-		*control.NewGraphWindow(430, 10, 200, 130, "Inflation Rate", ws.closeWindows, control.Float,
+		*control.NewGraphWindow(430, 10, 200, 130, "Inflation Rate", ws.closeWindows, control.Percentage,
 			func() []float64 { return entities.Sim.Market.History.InflationRate }),
 		*control.NewGraphWindow(640, 10, 200, 130, "Gov Reserves", ws.closeWindows, control.Currency,
 			func() []float64 { return utils.ConvertToF64(entities.Sim.Government.ReserveValues) }),
-		*control.NewGraphWindow(10, 150, 160, 100, "Market Growth Rate", ws.closeWindows, control.Float,
+		*control.NewGraphWindow(10, 150, 160, 100, "Market Growth Rate", ws.closeWindows, control.Percentage,
 			func() []float64 { return entities.Sim.Market.History.MarketGrowthRate }),
 		*control.NewGraphWindow(180, 150, 160, 100, "Market Sentiment", ws.closeWindows, control.Float,
 			func() []float64 { return entities.Sim.Market.History.MarketSentiment }),
 		*control.NewGraphWindow(350, 150, 160, 100, "Company Profits", ws.closeWindows, control.Currency,
 			func() []float64 { return entities.Sim.Market.History.CompanyProfits }),
-		*control.NewGraphWindow(520, 150, 160, 100, "Collected Tax", ws.closeWindows, control.Currency,
+		*control.NewGraphWindow(520, 150, 155, 100, "Collected Tax", ws.closeWindows, control.Currency,
 			func() []float64 { return utils.ConvertToF64(entities.Sim.Government.CollectedTaxValues) }),
+		*control.NewGraphWindow(685, 150, 155, 100, "Unemployment Rate", ws.closeWindows, control.Percentage,
+			func() []float64 { return entities.Sim.People.UnemploymentRateValues }),
 	}
 
 	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)

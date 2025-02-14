@@ -25,7 +25,7 @@ func (b *Button) Draw(screen *ebiten.Image) {
 		btnColor = b.HoverColor
 	}
 
-	vector.DrawFilledRect(screen, float32(b.X), float32(b.Y), float32(b.Width), float32(b.Height), btnColor, true)
+	vector.DrawFilledRect(screen, float32(b.X), float32(b.Y), float32(b.Width), float32(b.Height), btnColor, false)
 	ebitenutil.DebugPrintAt(screen, b.Label, b.X+10, b.Y+4)
 }
 

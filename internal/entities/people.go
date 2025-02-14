@@ -17,12 +17,13 @@ type AgeGroup struct {
 }
 
 type People struct {
-	Population       int
-	PopulationValues []int // Historical values
-	LabourForce      int   // Employable people
-	Unemployed       int
-	Households       []Household
-	AgeGroups        map[int]AgeGroup // Population breakdown by age group
+	Population             int
+	PopulationValues       []int // Historical values
+	LabourForce            int   // Employable people
+	Unemployed             int
+	UnemploymentRateValues []float64
+	Households             []Household
+	AgeGroups              map[int]AgeGroup // Population breakdown by age group
 }
 
 func (p *People) UnemploymentRate() float64 {
@@ -77,6 +78,7 @@ func (p *People) CalculateUnemployment() {
 	}
 	p.LabourForce = labourforce
 	p.Unemployed = unemployed
+	p.UnemploymentRateValues = utils.AddFifo(p.UnemploymentRateValues, p.UnemploymentRate(), 20)
 }
 
 // Append current population value to history
