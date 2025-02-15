@@ -8,7 +8,7 @@ import (
 
 // Employment handles job assignments
 type Employment struct {
-	CompanyService CompanyService
+	CompanyService *CompanyService
 }
 
 // AssignJobs assigns unemployed people to jobs

@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
-	employment := economy.Employment{}
+	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
@@ -74,7 +74,7 @@ func main() {
 	}
 }
 
-func calculateEconomy(companyService economy.CompanyService) {
+func calculateEconomy(companyService *economy.CompanyService) {
 	// calculate impact of population growth on city economy
 	populationGrowth := entities.Sim.People.PopulationGrowthRate()
 
