@@ -12,10 +12,11 @@ type Tile struct {
 }
 
 type Geography struct {
-	Size, SeaLevel, MaxElevation      int
-	peakProbability, cliffProbability float64
-	tiles                             [][]Tile
-	roads                             []Road
+	Size, SeaLevel, MaxElevation                        int
+	biasX, biasY                                        int // bias x and y create a vector along which mountain ranges form
+	peakProbability, rangeProbability, cliffProbability float64
+	tiles                                               [][]Tile
+	roads                                               []Road
 }
 
 // Generate generates the terrain map
@@ -23,18 +24,19 @@ type Geography struct {
 func (g *Geography) Generate() {
 	// iterate down from max elevation, assigning vals
 	for e := g.MaxElevation; e > 0; e-- {
-		for h := 0; h < g.Size; h++ {
-			for w := 0; w < g.Size; w++ {
-				// if the element has already been assigned, skip it
-				if g.tiles[h][w].Elevation > 0 {
-					continue
-				}
-
+		for y := 0; y < g.Size; y++ {
+			for x := 0; x < g.Size; x++ {
 				// if the element is next to a element with elevation x, it
 				// should get elevation x - 1
 				// alternately, if the random value meets our criteria, it's a peak
-				if g.adjacentElevation(h, w, e) || rand.Float64() < g.peakProbability {
-					g.tiles[h][w].Elevation = e
+				if g.adjacentElevation(x, y, e) || rand.Float64() < g.peakProbability {
+					g.setElevation(x, y, e)
+					if rand.Float64() > g.rangeProbability { // randomly add follow-up peaks
+						g.setElevation(x+g.biasX, y+g.biasY, e)
+					}
+					if rand.Float64() > g.rangeProbability {
+						g.setElevation(x-g.biasX, y-g.biasY, e)
+					}
 				}
 			}
 		}
@@ -43,10 +45,10 @@ func (g *Geography) Generate() {
 
 // adjacentElevation checks if an adjacent element
 // to the given element (h, w) is at a given elevation
-func (g *Geography) adjacentElevation(h, w, elevation int) bool {
+func (g *Geography) adjacentElevation(w, h, elevation int) bool {
 	for y := max(0, h-1); y <= min(g.Size-1, h+1); y++ {
 		for x := max(0, w-1); x <= min(g.Size-1, w+1); x++ {
-			if g.tiles[y][x].Elevation == elevation+1 {
+			if g.tiles[x][y].Elevation == elevation+1 {
 				// if this element is *not* randomly a cliff, return true
 				return rand.Float64() > g.cliffProbability
 			}
@@ -54,6 +56,21 @@ func (g *Geography) adjacentElevation(h, w, elevation int) bool {
 	}
 
 	return false
+}
+
+// setElevation checks if a tile exists and updates the elevation
+// to the given element (h, w) is at a given elevation
+func (g *Geography) setElevation(x, y, elevation int) {
+	if x < 0 || x >= g.Size || y < 0 || y >= g.Size { // bounds check
+		return
+	}
+
+	// if the element has already been assigned, skip it
+	if g.tiles[x][y].Elevation > 0 {
+		return
+	}
+
+	g.tiles[x][y].Elevation = elevation
 }
 
 // accessor for tiles
@@ -111,7 +128,7 @@ func (g *Geography) IsWithinRoad(x, y int) Direction {
 }
 
 // NewGeography returns a new terrain map
-func NewGeography(size, maxElevation, SeaLevel int, peakProbability, cliffProbability float64) *Geography {
+func NewGeography(size, maxElevation, SeaLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
 	tiles := make([][]Tile, size)
 	for i := 0; i < size; i++ {
 		tiles[i] = make([]Tile, size)
@@ -121,7 +138,10 @@ func NewGeography(size, maxElevation, SeaLevel int, peakProbability, cliffProbab
 		Size:             size,
 		MaxElevation:     maxElevation,
 		SeaLevel:         SeaLevel,
+		biasX:            rand.Intn(6) - 3,
+		biasY:            rand.Intn(6) - 3,
 		peakProbability:  peakProbability,
+		rangeProbability: rangeProbability,
 		cliffProbability: cliffProbability,
 		tiles:            tiles,
 	}

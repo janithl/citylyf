@@ -55,12 +55,16 @@ func (s *Simulation) GetStats() string {
 		utils.GetLastValue(s.Market.History.MarketGrowthRate), utils.GetLastValue(s.Market.History.InflationRate))
 }
 
+func (s *Simulation) RegenerateMap() {
+	s.Geography = *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01)
+}
+
 var Sim Simulation
 
 func NewSimulation(startYear int, houses int, governmentReserves int) Simulation {
 	startDate := time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC)
 	return Simulation{
-		SimulationSpeed: Mid,
+		SimulationSpeed: Pause,
 		Date:            startDate,
 		Government:      *NewGovernment(governmentReserves, startDate),
 		People: People{
@@ -86,6 +90,6 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 		},
 		Companies:  make(map[int]*Company),
 		CompanyIDs: []int{},
-		Geography:  *NewGeography(64, 8, 3, 0.004, 0.01),
+		Geography:  *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
 	}
 }

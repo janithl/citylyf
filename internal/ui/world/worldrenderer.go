@@ -226,11 +226,11 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
-		playerX:    float64(mapSize / 2),
-		playerY:    float64(mapSize / 2),
+		playerX:    float64(mapSize / 3),
+		playerY:    float64(mapSize / 3),
 		cameraX:    float64(mapSize / 2),
 		cameraY:    float64(mapSize / 2),
-		zoomFactor: 1,
+		zoomFactor: 0.25,
 		width:      screenWidth,
 		height:     screenHeight,
 	}

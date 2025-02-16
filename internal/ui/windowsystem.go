@@ -5,16 +5,18 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/utils"
 )
 
 type WindowSystem struct {
-	windowsVisible bool
-	windows        []control.Window
-	listWindows    []control.ListWindow
-	graphWindows   []control.GraphWindow
-	bottomBar      *control.BottomBar
+	windowsVisible, generatingMap bool
+	windows                       []control.Window
+	listWindows                   []control.ListWindow
+	graphWindows                  []control.GraphWindow
+	bottomBar                     *control.BottomBar
+	generateBar                   []control.Button
 }
 
 func (ws *WindowSystem) Update() error {
@@ -28,10 +30,19 @@ func (ws *WindowSystem) Update() error {
 		ws.graphWindows[i].Update()
 	}
 	ws.bottomBar.Update()
+	for i := range ws.generateBar {
+		ws.generateBar[i].Update()
+	}
 	return nil
 }
 
 func (ws *WindowSystem) Draw(screen *ebiten.Image) {
+	if ws.generatingMap {
+		for i := range ws.generateBar {
+			ws.generateBar[i].Draw(screen)
+		}
+	}
+
 	for i := range ws.windows {
 		ws.windows[i].Draw(screen)
 	}
@@ -83,9 +94,14 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 	fmt.Println("Learn more about", title, "#", index)
 }
 
+func (ws *WindowSystem) doneGeneratingMap() {
+	ws.generatingMap = false
+}
+
 func NewWindowSystem() *WindowSystem {
 	ws := &WindowSystem{
 		windowsVisible: false,
+		generatingMap:  true,
 		windows:        []control.Window{},
 	}
 
@@ -135,6 +151,10 @@ func NewWindowSystem() *WindowSystem {
 	}
 
 	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)
+	ws.generateBar = []control.Button{
+		{Label: "Regenerate Map", X: 4, Y: 4, Width: 200, Height: 24, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: entities.Sim.RegenerateMap},
+		{Label: "Done", X: 4, Y: 32, Width: 200, Height: 24, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: ws.doneGeneratingMap},
+	}
 
 	return ws
 }
