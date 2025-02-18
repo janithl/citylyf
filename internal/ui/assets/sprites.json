@@ -14,6 +14,8 @@
   "bridge-x": { "x": 64, "y": 192, "width": 64, "height": 64 },
   "slope-y": { "x": 128, "y": 192, "width": 64, "height": 64 },
   "slope-x": { "x": 192, "y": 192, "width": 64, "height": 64 },
+  "waves-y": { "x": 0, "y": 256, "width": 64, "height": 64 },
+  "waves-x": { "x": 64, "y": 256, "width": 64, "height": 64 },
   "slope-y-rev": { "x": 128, "y": 256, "width": 64, "height": 64 },
   "slope-x-rev": { "x": 192, "y": 256, "width": 64, "height": 64 }
 }

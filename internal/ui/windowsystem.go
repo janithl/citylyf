@@ -5,18 +5,16 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
-	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/utils"
 )
 
 type WindowSystem struct {
-	windowsVisible, generatingMap bool
-	windows                       []control.Window
-	listWindows                   []control.ListWindow
-	graphWindows                  []control.GraphWindow
-	bottomBar                     *control.BottomBar
-	generateBar                   []control.Button
+	windowsVisible bool
+	windows        []control.Window
+	listWindows    []control.ListWindow
+	graphWindows   []control.GraphWindow
+	bottomBar      *control.BottomBar
 }
 
 func (ws *WindowSystem) Update() error {
@@ -29,20 +27,12 @@ func (ws *WindowSystem) Update() error {
 	for i := range ws.graphWindows {
 		ws.graphWindows[i].Update()
 	}
+
 	ws.bottomBar.Update()
-	for i := range ws.generateBar {
-		ws.generateBar[i].Update()
-	}
 	return nil
 }
 
 func (ws *WindowSystem) Draw(screen *ebiten.Image) {
-	if ws.generatingMap {
-		for i := range ws.generateBar {
-			ws.generateBar[i].Draw(screen)
-		}
-	}
-
 	for i := range ws.windows {
 		ws.windows[i].Draw(screen)
 	}
@@ -52,10 +42,18 @@ func (ws *WindowSystem) Draw(screen *ebiten.Image) {
 	for i := range ws.graphWindows {
 		ws.graphWindows[i].Draw(screen)
 	}
+
 	ws.bottomBar.Draw(screen)
 }
 
 func (ws *WindowSystem) closeWindows(title string) {
+	if title == "Map Control" {
+		ws.windows[0].CloseWindow()
+		ws.windows = ws.windows[1:]
+		ws.bottomBar.Enabled = true
+		entities.Sim.ChangeSimulationSpeed()
+	}
+
 	for i := range ws.windows {
 		if ws.windows[i].Title == title {
 			ws.windows[i].CloseWindow()
@@ -87,6 +85,7 @@ func (ws *WindowSystem) toggleAllWindows() {
 	for i := range ws.graphWindows {
 		ws.graphWindows[i].Window.IsVisible = ws.windowsVisible
 	}
+
 	ws.bottomBar.WindowsVisible = ws.windowsVisible
 }
 
@@ -94,16 +93,15 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 	fmt.Println("Learn more about", title, "#", index)
 }
 
-func (ws *WindowSystem) doneGeneratingMap() {
-	ws.generatingMap = false
-}
-
 func NewWindowSystem() *WindowSystem {
 	ws := &WindowSystem{
 		windowsVisible: false,
-		generatingMap:  true,
 		windows:        []control.Window{},
 	}
+
+	mapWin := *control.NewMapWindow(10, 10, 200, 200, ws.closeWindows)
+	ws.windows = append(ws.windows, *mapWin.Window)
+	ws.windows[0].IsVisible = true
 
 	ppWin := *control.NewWindow(850, 10, 360, 270, "Population Pyramid", ws.closeWindows)
 	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 360, Height: 250})
@@ -151,10 +149,6 @@ func NewWindowSystem() *WindowSystem {
 	}
 
 	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)
-	ws.generateBar = []control.Button{
-		{Label: "Regenerate Map", X: 4, Y: 4, Width: 200, Height: 24, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: entities.Sim.RegenerateMap},
-		{Label: "Done", X: 4, Y: 32, Width: 200, Height: 24, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: ws.doneGeneratingMap},
-	}
 
 	return ws
 }
