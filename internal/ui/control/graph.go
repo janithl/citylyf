@@ -11,15 +11,6 @@ import (
 	"github.com/janithl/citylyf/internal/utils"
 )
 
-type GraphType int
-
-const (
-	Int        GraphType = 0
-	Float      GraphType = 1
-	Percentage GraphType = 2
-	Currency   GraphType = 3
-)
-
 type Graph struct {
 	x, y, width, height float32
 	graphType           GraphType

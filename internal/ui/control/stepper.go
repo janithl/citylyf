@@ -12,6 +12,7 @@ type Stepper struct {
 	X, Y           int
 	currentNumber  int
 	maxNumber      int
+	StepperType    StepperType
 	decreaseButton *Button
 	increaseButton *Button
 	onChange       func(newValue int) // Callback when value changes
@@ -27,7 +28,12 @@ func (s *Stepper) Update() {
 func (s *Stepper) Draw(screen *ebiten.Image) {
 	s.decreaseButton.Draw(screen)
 	s.increaseButton.Draw(screen)
-	text := fmt.Sprintf("%02d/%02d", s.currentNumber, s.maxNumber)
+	var text string
+	if s.StepperType == NumberStepper {
+		text = fmt.Sprintf("%02d/%02d", s.currentNumber, s.maxNumber)
+	} else if s.StepperType == PercentageStepper {
+		text = fmt.Sprintf(" %02d%% ", s.currentNumber)
+	}
 	ebitenutil.DebugPrintAt(screen, text, s.X+buttonWidth+2, s.Y+4)
 }
 
@@ -47,23 +53,32 @@ func (s *Stepper) SetMaxNumber(maxNumber int) {
 }
 
 // NewStepper creates a new stepper with an optional callback
-func NewStepper(x, y, maxNumber int, onChange func(int)) *Stepper {
-	if maxNumber < 1 {
-		maxNumber = 1 // Ensure valid max
+func NewStepper(x, y, currentNumber, maxNumber int, stepperType StepperType, onChange func(int)) *Stepper {
+	if maxNumber < currentNumber {
+		maxNumber = currentNumber // Ensure valid max
 	}
 
 	stepper := &Stepper{
 		X: x, Y: y,
-		currentNumber: 1, maxNumber: maxNumber,
-		onChange: onChange,
+		StepperType:   stepperType,
+		currentNumber: currentNumber,
+		maxNumber:     maxNumber,
+		onChange:      onChange,
+	}
+
+	leftLabel, rightLabel := " < ", " > "
+	leftIncrement, rightIncrement := -1, 1
+	if stepperType == PercentageStepper {
+		leftLabel, rightLabel = " - ", " + "
+		leftIncrement, rightIncrement = -10, 10
 	}
 
 	stepper.decreaseButton = &Button{
 		X: x, Y: y, Width: buttonWidth, Height: buttonHeight,
-		Label: " < ", Color: colour.Transparent, HoverColor: colour.SemiBlack,
+		Label: leftLabel, Color: colour.Transparent, HoverColor: colour.SemiBlack,
 		OnClick: func() {
 			if stepper.currentNumber > 1 {
-				stepper.currentNumber--
+				stepper.currentNumber += leftIncrement
 				stepper.onChange(stepper.currentNumber)
 			}
 		},
@@ -71,10 +86,10 @@ func NewStepper(x, y, maxNumber int, onChange func(int)) *Stepper {
 
 	stepper.increaseButton = &Button{
 		X: x + 2*buttonWidth, Y: y, Width: buttonWidth, Height: buttonHeight,
-		Label: " > ", Color: colour.Transparent, HoverColor: colour.SemiBlack,
+		Label: rightLabel, Color: colour.Transparent, HoverColor: colour.SemiBlack,
 		OnClick: func() {
 			if stepper.currentNumber < stepper.maxNumber {
-				stepper.currentNumber++
+				stepper.currentNumber += rightIncrement
 				stepper.onChange(stepper.currentNumber)
 			}
 		},

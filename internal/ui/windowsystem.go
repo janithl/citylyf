@@ -99,8 +99,9 @@ func NewWindowSystem() *WindowSystem {
 		windows:        []control.Window{},
 	}
 
-	mapWin := *control.NewMapWindow(10, 10, 200, 200, ws.closeWindows)
-	ws.windows = append(ws.windows, *mapWin.Window)
+	mapWin := *control.NewWindow(10, 10, 240, 200, "Map Control", ws.closeWindows)
+	mapWin.AddChild(control.NewMapWindow(0, 0, 240, 180, func() { ws.closeWindows("Map Control") }))
+	ws.windows = append(ws.windows, mapWin)
 	ws.windows[0].IsVisible = true
 
 	ppWin := *control.NewWindow(850, 10, 360, 270, "Population Pyramid", ws.closeWindows)

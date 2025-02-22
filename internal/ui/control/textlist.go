@@ -92,7 +92,7 @@ func NewTextList(x, y, width, height int, items []string) *TextList {
 		currentPage: 1,
 	}
 	stepperX, stepperY := tl.getStepperLocation()
-	tl.stepper = NewStepper(stepperX, stepperY, pages, tl.setCurrentPage)
+	tl.stepper = NewStepper(stepperX, stepperY, 1, pages, NumberStepper, tl.setCurrentPage)
 	tl.createButtons(numberOfButtons)
 	return tl
 }
