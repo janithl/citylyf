@@ -55,8 +55,8 @@ func (s *Simulation) GetStats() string {
 		utils.GetLastValue(s.Market.History.MarketGrowthRate), utils.GetLastValue(s.Market.History.InflationRate))
 }
 
-func (s *Simulation) RegenerateMap() {
-	s.Geography = *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01)
+func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
+	s.Geography = *NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
 
 var Sim Simulation

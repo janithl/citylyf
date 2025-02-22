@@ -7,10 +7,11 @@ import (
 )
 
 type MapWindow struct {
-	x, y, width, height int
-	stepperLabels       []*Label
-	steppers            []*Stepper
-	buttons             []*Button
+	x, y, width, height            int
+	peakPerc, rangePerc, cliffPerc int
+	stepperLabels                  []*Label
+	steppers                       []*Stepper
+	buttons                        []*Button
 }
 
 func (mw *MapWindow) Update() {
@@ -51,29 +52,51 @@ func (mw *MapWindow) SetOffset(x, y int) {
 	}
 }
 
+func (mw *MapWindow) setPerc(perc string, value int) {
+	switch perc {
+	case "peak":
+		mw.peakPerc = value
+	case "range":
+		mw.rangePerc = value
+	case "cliff":
+		mw.cliffPerc = value
+	}
+}
+
+func (mw *MapWindow) regenerateMap() {
+	peakProb := 0.001 + 0.00001*float64(mw.peakPerc)
+	rangeProb := 0.0 + 0.0001*float64(mw.rangePerc)
+	cliffProb := 0.0 + 0.0002*float64(mw.cliffPerc)
+	entities.Sim.RegenerateMap(peakProb, rangeProb, cliffProb)
+}
+
 func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {
-	steppersLabels := []*Label{
+	mw := &MapWindow{
+		x:         x,
+		y:         y,
+		width:     width,
+		height:    height,
+		peakPerc:  50,
+		rangePerc: 50,
+		cliffPerc: 50,
+	}
+
+	mw.stepperLabels = []*Label{
 		{X: 0, Y: 0, Text: "Mountain Peaks"},
 		{X: 0, Y: 0, Text: "Mountain Ranges"},
 		{X: 0, Y: 0, Text: "Cliffs"},
 	}
-	steppers := []*Stepper{
-		NewStepper(0, 0, 50, 90, PercentageStepper, func(i int) {}),
-		NewStepper(0, 0, 50, 90, PercentageStepper, func(i int) {}),
-		NewStepper(0, 0, 50, 90, PercentageStepper, func(i int) {}),
-	}
-	buttons := []*Button{
-		{Label: "Done", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.Red, OnClick: closeFunc},
-		{Label: "Regenerate Map", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: entities.Sim.RegenerateMap},
+
+	mw.steppers = []*Stepper{
+		NewStepper(0, 0, mw.peakPerc, 90, PercentageStepper, func(i int) { mw.setPerc("peak", i) }),
+		NewStepper(0, 0, mw.rangePerc, 90, PercentageStepper, func(i int) { mw.setPerc("range", i) }),
+		NewStepper(0, 0, mw.cliffPerc, 90, PercentageStepper, func(i int) { mw.setPerc("cliff", i) }),
 	}
 
-	return &MapWindow{
-		x:             x,
-		y:             y,
-		width:         width,
-		height:        height,
-		stepperLabels: steppersLabels,
-		steppers:      steppers,
-		buttons:       buttons,
+	mw.buttons = []*Button{
+		{Label: "Done", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.Red, OnClick: closeFunc},
+		{Label: "Regenerate Map", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: mw.regenerateMap},
 	}
+
+	return mw
 }
