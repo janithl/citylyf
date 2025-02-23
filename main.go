@@ -29,6 +29,8 @@ func main() {
 
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
+	peopleService := people.NewPeopleService()
+	createHousehold := func() entities.Household { return people.CreateHousehold(peopleService) }
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
@@ -48,7 +50,7 @@ func main() {
 			case <-ticker.C:
 				if entities.Sim.SimulationSpeed != entities.Pause {
 					entities.Sim.Tick()
-					entities.Sim.People.MoveIn(people.CreateHousehold)
+					entities.Sim.People.MoveIn(createHousehold)
 					employment.AssignJobs()
 					entities.Sim.People.MoveOut()
 

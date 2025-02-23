@@ -23,7 +23,7 @@ func GetLastValue(s []float64) float64 {
 }
 
 // Adds an element FIFO for float64 and int
-func AddFifo[T int | float64](s []T, element T, maxLength int) []T {
+func AddFifo[T int | float64 | string](s []T, element T, maxLength int) []T {
 	if len(s) >= maxLength {
 		s = slices.Delete(s, 0, 1) // Remove oldest element
 	}

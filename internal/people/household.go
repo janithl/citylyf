@@ -7,38 +7,40 @@ import (
 	"github.com/janithl/citylyf/internal/entities"
 )
 
-func CreateHousehold() entities.Household {
-	var p, q entities.Person
+func CreateHousehold(ps *PeopleService) entities.Household {
+	var p, q *entities.Person
 	household := entities.Household{
 		Members:    []entities.Person{},
 		MoveInDate: entities.Sim.Date,
 		LastPayDay: entities.Sim.Date,
 	}
 
-	p = createRandomPerson(16, 100)
-	household.Members = append(household.Members, p)
+	p = ps.CreateRandomPerson(16, 100)
+	entities.Sim.People.AddPerson(p)
+	household.Members = append(household.Members, *p)
 	household.Savings = p.Savings
 
 	if p.Relationship == entities.Married {
-		q = createRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
+		q = ps.CreateRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
+		entities.Sim.People.AddPerson(q)
 		q.Relationship = entities.Married
 		household.Savings += q.Savings
 		if rand.Intn(100) < 80 {
 			q.FamilyName = p.FamilyName
 		}
 
-		household.Members = append(household.Members, q)
+		household.Members = append(household.Members, *q)
 	}
 
 	if rand.Intn(100) < 58 {
-		kids := createKids(p, q)
+		kids := createKids(ps, p, q)
 		household.Members = append(household.Members, kids...)
 	}
 
 	return household
 }
 
-func createKids(p entities.Person, q entities.Person) []entities.Person {
+func createKids(ps *PeopleService, p *entities.Person, q *entities.Person) []entities.Person {
 	var kids []entities.Person
 	numberOfKids := 0
 
@@ -59,28 +61,29 @@ func createKids(p entities.Person, q entities.Person) []entities.Person {
 	}
 
 	for i := 0; i < numberOfKids; i++ {
-		var kid entities.Person
+		var kid *entities.Person
 
 		if p.Relationship == entities.Married {
 			if q.Age() == 0 {
-				kid = createRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
+				kid = ps.CreateRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
 			} else {
 				parentMaxAge := p.Age()
 				if q.Age() > p.Age() {
 					parentMaxAge = q.Age()
 				}
-				kid = createRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
+				kid = ps.CreateRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
 			}
 		}
 
 		if p.Relationship == entities.Divorced || p.Relationship == entities.Widowed {
-			kid = createRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
+			kid = ps.CreateRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
 		}
 
-		if kid.FirstName != "" {
+		if kid != nil {
 			kid.Relationship = entities.Single
 			kid.FamilyName = p.FamilyName
-			kids = append(kids, kid)
+			entities.Sim.People.AddPerson(kid)
+			kids = append(kids, *kid)
 		}
 	}
 

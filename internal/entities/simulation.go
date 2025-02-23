@@ -72,6 +72,7 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			PopulationValues: []int{0},
 			LabourForce:      0,
 			Unemployed:       0,
+			People:           make(map[int]*Person),
 			Households:       []Household{},
 		},
 		Houses: *NewHousing(houses),

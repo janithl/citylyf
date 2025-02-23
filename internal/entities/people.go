@@ -22,6 +22,7 @@ type People struct {
 	LabourForce            int   // Employable people
 	Unemployed             int
 	UnemploymentRateValues []float64
+	People                 map[int]*Person
 	Households             []Household
 	AgeGroups              map[int]AgeGroup // Population breakdown by age group
 }
@@ -49,12 +50,26 @@ func (p *People) MoveIn(createHousehold func() Household) {
 	}
 }
 
+// AddPerson adds a new person
+func (p *People) AddPerson(person *Person) {
+	p.People[person.ID] = person
+}
+
+// RemovePerson removes person
+func (p *People) RemovePerson(personID int) {
+	delete(p.People, personID)
+}
+
 func (p *People) MoveOut() {
 	h := Sim.People.Households
 	// traverse in reverse order to avoid index shifting
 	for i := len(h) - 1; i >= 0; i-- {
 		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
 			movedName := h[i].FamilyName()
+			// remove members
+			for _, member := range h[i].Members {
+				p.RemovePerson(member.ID)
+			}
 			h = slices.Delete(h, i, i+1)
 			Sim.Houses.MoveOut()
 			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, Sim.Houses.GetFreeHouses())
