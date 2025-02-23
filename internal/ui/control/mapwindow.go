@@ -42,7 +42,7 @@ func (mw *MapWindow) SetOffset(x, y int) {
 	mw.x = x
 	mw.y = y
 	for i, stepperLabel := range mw.stepperLabels {
-		stepperLabel.SetOffset(x+4, y+4+(i*buttonHeight))
+		stepperLabel.SetOffset(x, y+(i*buttonHeight))
 	}
 	for i, stepper := range mw.steppers {
 		stepper.SetOffset(x+mw.width/2, y+(i*buttonHeight))
@@ -82,9 +82,9 @@ func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {
 	}
 
 	mw.stepperLabels = []*Label{
-		{X: 0, Y: 0, Text: "Mountain Peaks"},
-		{X: 0, Y: 0, Text: "Mountain Ranges"},
-		{X: 0, Y: 0, Text: "Cliffs"},
+		{X: 0, Y: 0, Padding: 4, Text: "Mountain Peaks"},
+		{X: 0, Y: 0, Padding: 4, Text: "Mountain Ranges"},
+		{X: 0, Y: 0, Padding: 4, Text: "Cliffs"},
 	}
 
 	mw.steppers = []*Stepper{

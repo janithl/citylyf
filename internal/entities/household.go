@@ -35,8 +35,8 @@ func (h *Household) AnnualIncome() int {
 func (h *Household) IsEligibleForMoveOut() bool {
 	timeSinceMoveIn := Sim.Date.Sub(h.MoveInDate).Hours() / HoursPerYear
 	noIncome := true
-	for i := 0; i < len(h.Members); i++ {
-		if h.Members[i].IsEmployed() {
+	for _, member := range h.Members {
+		if member.IsEmployed() || (member.CareerLevel == Retired && h.Savings > 0) {
 			noIncome = false
 		}
 	}

@@ -6,12 +6,12 @@ import (
 )
 
 type Label struct {
-	X, Y int
-	Text string
+	X, Y, Padding int
+	Text          string
 }
 
 func (l *Label) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrintAt(screen, l.Text, l.X, l.Y)
+	ebitenutil.DebugPrintAt(screen, l.Text, l.X+l.Padding, l.Y+l.Padding)
 }
 
 func (l *Label) Update() {}
