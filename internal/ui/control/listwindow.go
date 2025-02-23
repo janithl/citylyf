@@ -5,7 +5,7 @@ import (
 )
 
 type ListWindow struct {
-	dataSource   func() []string // Function to dynamically fetch data
+	dataSource   func() []Statable // Function to dynamically fetch data
 	Window       *Window
 	frameCounter int
 }
@@ -29,7 +29,7 @@ func (lw *ListWindow) Draw(screen *ebiten.Image) {
 }
 
 // NewListWindow creates a new graph window instance
-func NewListWindow(x, y, width, height int, title string, closeFunc func(string), clickFunc func(string, int), dataSource func() []string) *ListWindow {
+func NewListWindow(x, y, width, height int, title string, closeFunc func(string), clickFunc func(string, int), dataSource func() []Statable) *ListWindow {
 	window := NewWindow(x, y, width, height, title, closeFunc)
 	textlist := NewTextList(0, 0, width, height-titleBarHeight, dataSource())
 	textlist.OnClick = func(index int) {

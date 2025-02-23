@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"maps"
 	"math/rand"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 )
 
 // TODO
-// ## Turn people, households, houses and companies into a map
+// ## Turn people, households, houses and companies into a map (done except houses)
 // Household Budgeting - think about childcare expenses, groceries, shopping, vacation, utilities etc
 // Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate (done)
 // People should marry, have babies, get promoted, move out out the house, die etc.
@@ -30,7 +31,6 @@ func main() {
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
 	peopleService := people.NewPeopleService()
-	createHousehold := func() entities.Household { return people.CreateHousehold(peopleService) }
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
@@ -50,7 +50,7 @@ func main() {
 			case <-ticker.C:
 				if entities.Sim.SimulationSpeed != entities.Pause {
 					entities.Sim.Tick()
-					entities.Sim.People.MoveIn(createHousehold)
+					entities.Sim.People.MoveIn(peopleService.CreateHousehold)
 					employment.AssignJobs()
 					entities.Sim.People.MoveOut()
 
@@ -105,16 +105,14 @@ func calculateEconomy(companyService *economy.CompanyService) {
 	}
 	entities.Sim.Market.ReportCompanyProfits(totalProfits)
 
-	// calculate monthly pay
-	for i := range entities.Sim.People.Households {
-		entities.Sim.People.Households[i].CalculateMonthlyBudget(companyService.AddPayToPayroll)
-	}
-
-	// do interest calcuations
+	// do govt interest calcuations
 	monthlyInterestRate := entities.Sim.Market.InterestRate * 28 / 36500
 	entities.Sim.Government.Reserves += int(float64(entities.Sim.Government.Reserves) * monthlyInterestRate)
-	for i := range entities.Sim.People.Households {
-		entities.Sim.People.Households[i].Savings += int(float64(entities.Sim.People.Households[i].Savings) * monthlyInterestRate)
+
+	// calculate monthly pay and interest for households
+	for household := range maps.Values(entities.Sim.People.Households) {
+		household.CalculateMonthlyBudget(companyService.AddPayToPayroll)
+		household.Savings += int(float64(household.Savings) * monthlyInterestRate)
 	}
 }
 

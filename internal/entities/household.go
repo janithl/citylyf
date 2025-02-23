@@ -8,25 +8,35 @@ import (
 )
 
 type Household struct {
-	Members    []Person  // Family members
+	ID         int
+	MemberIDs  []int     // Family member IDs
 	Savings    int       // Family savings
 	LastPayDay time.Time // Last time payments were calculated
 	HouseID    int       // ID of the house they moved to
 	MoveInDate time.Time // Day they moved in
 }
 
+func (h *Household) Size() int {
+	return len(h.MemberIDs)
+}
+
 func (h *Household) FamilyName() string {
-	if len(h.Members) > 0 {
-		return h.Members[0].FamilyName
-	} else {
-		return ""
+	if h.Size() > 0 {
+		p := Sim.People.GetPerson(h.MemberIDs[0])
+		if p != nil {
+			return p.FamilyName
+		}
 	}
+	return ""
 }
 
 func (h *Household) AnnualIncome() int {
 	income := 0
-	for i := 0; i < len(h.Members); i++ {
-		income += h.Members[i].AnnualIncome
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil {
+			income += p.AnnualIncome
+		}
 	}
 	return income
 }
@@ -35,8 +45,9 @@ func (h *Household) AnnualIncome() int {
 func (h *Household) IsEligibleForMoveOut() bool {
 	timeSinceMoveIn := Sim.Date.Sub(h.MoveInDate).Hours() / HoursPerYear
 	noIncome := true
-	for _, member := range h.Members {
-		if member.IsEmployed() || (member.CareerLevel == Retired && h.Savings > 0) {
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil && (p.IsEmployed() || (p.CareerLevel == Retired && h.Savings > 0)) {
 			noIncome = false
 		}
 	}
@@ -47,11 +58,12 @@ func (h *Household) IsEligibleForMoveOut() bool {
 func (h *Household) CalculateMonthlyBudget(addPayToPayroll func(companyID int, payAmount float64)) {
 	daysSinceLastPay := Sim.Date.Sub(h.LastPayDay).Hours() / HoursPerDay
 	pay := 0.0
-	for i := range h.Members {
-		if h.Members[i].IsEmployed() {
-			memberPay := float64(h.Members[i].AnnualIncome) * daysSinceLastPay / DaysPerYear
-			h.Members[i].Savings += int(memberPay)
-			addPayToPayroll(h.Members[i].EmployerID, memberPay) // deduct from company
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil && p.IsEmployed() {
+			memberPay := float64(p.AnnualIncome) * daysSinceLastPay / DaysPerYear
+			p.Savings += int(memberPay)
+			addPayToPayroll(p.EmployerID, memberPay) // deduct from company
 			pay += memberPay
 		}
 	}
@@ -60,7 +72,22 @@ func (h *Household) CalculateMonthlyBudget(addPayToPayroll func(companyID int, p
 	h.LastPayDay = Sim.Date
 }
 
+func (h *Household) GetID() int {
+	return h.ID
+}
+
 func (h *Household) GetStats() string {
-	return fmt.Sprintf("%-24s %d Membs   %s   %s", h.FamilyName()+" family", len(h.Members),
+	return fmt.Sprintf("%-24s %d Membs   %s   %s", h.FamilyName()+" family", h.Size(),
 		"Moved in "+h.MoveInDate.Format("2006-01-02"), utils.FormatCurrency(float64(h.Savings), "$"))
+}
+
+func (h *Household) GetMemberStats() string {
+	stats := ""
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil {
+			stats += p.String() + "\n"
+		}
+	}
+	return stats
 }

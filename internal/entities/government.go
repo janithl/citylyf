@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -31,8 +32,7 @@ func (g *Government) CollectTaxes() {
 
 	// Collect household income taxes
 	personalTaxesCollected := 0
-	for i := range Sim.People.Households {
-		household := &Sim.People.Households[i]
+	for household := range maps.Values(Sim.People.Households) {
 		householdTax := g.CalculateIncomeTax(household.AnnualIncome())
 
 		// Deduct tax from household wealth

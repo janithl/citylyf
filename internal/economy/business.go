@@ -50,16 +50,12 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 func (c *CompanyService) AddCompany(company *entities.Company) {
 	c.LastCompanyID += 1
 	company.ID = c.LastCompanyID
-	entities.Sim.CompanyIDs = append(entities.Sim.CompanyIDs, company.ID)
 	entities.Sim.Companies[company.ID] = company
 }
 
 // RemoveCompany removes a company
 func (c *CompanyService) RemoveCompany(companyID int) {
 	delete(entities.Sim.Companies, companyID)
-	entities.Sim.CompanyIDs = slices.DeleteFunc(entities.Sim.CompanyIDs, func(ID int) bool {
-		return ID == companyID
-	})
 }
 
 // AddEmployeeToCompany adds your ID to the company list of employees

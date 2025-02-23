@@ -85,6 +85,15 @@ func (c *Company) GetNumberOfEmployees() int {
 	return len(c.Employees)
 }
 
+// GetEmployees returns a list of employees
+func (c *Company) GetEmployees() []*Person {
+	employees := []*Person{}
+	for _, employeeID := range c.Employees {
+		employees = append(employees, Sim.People.People[employeeID])
+	}
+	return employees
+}
+
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings() {
 	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
@@ -136,6 +145,10 @@ func (c *Company) DetermineJobOpenings() {
 func (c *Company) CompanyAge() int {
 	duration := Sim.Date.Sub(c.FoundingDate)
 	return int(duration.Hours() / HoursPerYear)
+}
+
+func (c *Company) GetID() int {
+	return c.ID
 }
 
 func (c *Company) GetStats() string {

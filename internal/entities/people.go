@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"maps"
 	"math/rand"
 	"slices"
 
@@ -23,7 +24,7 @@ type People struct {
 	Unemployed             int
 	UnemploymentRateValues []float64
 	People                 map[int]*Person
-	Households             []Household
+	Households             map[int]*Household
 	AgeGroups              map[int]AgeGroup // Population breakdown by age group
 }
 
@@ -36,18 +37,27 @@ func (p *People) PopulationGrowthRate() float64 {
 	return 100.0 * float64(p.Population-lastPopulationValue) / float64(lastPopulationValue)
 }
 
-func (p *People) MoveIn(createHousehold func() Household) {
+func (p *People) MoveIn(createHousehold func() *Household) {
 	for i := 0; i < rand.Intn(1+(Sim.Houses.GetFreeHouses()/4)); i++ {
 		h := createHousehold()
-		monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)              // 25% of yearly income towards rent / 12
-		houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), len(h.Members)/2) // everyone gets to share a bedroom
+		monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)        // 25% of yearly income towards rent / 12
+		houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
 		if houseId > 0 {
 			h.HouseID = houseId
 			fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
-			p.Households = append(p.Households, h)
-			p.Population += len(h.Members)
+			p.Households[h.ID] = h
+			p.Population += h.Size()
 		}
 	}
+}
+
+// GetPerson gets an existing person
+func (p *People) GetPerson(personID int) *Person {
+	person, exists := p.People[personID]
+	if exists {
+		return person
+	}
+	return nil
 }
 
 // AddPerson adds a new person
@@ -60,34 +70,40 @@ func (p *People) RemovePerson(personID int) {
 	delete(p.People, personID)
 }
 
+// GetHouseholdIDs returns a sorted list of household IDs
+func (p *People) GetHouseholdIDs() []int {
+	IDs := []int{}
+	for household := range maps.Values(p.Households) {
+		IDs = append(IDs, household.ID)
+	}
+	slices.Sort(IDs)
+	return IDs
+}
+
 func (p *People) MoveOut() {
-	h := Sim.People.Households
-	// traverse in reverse order to avoid index shifting
-	for i := len(h) - 1; i >= 0; i-- {
-		if len(h[i].Members) > 0 && h[i].IsEligibleForMoveOut() {
-			movedName := h[i].FamilyName()
-			// remove members
-			for _, member := range h[i].Members {
-				p.RemovePerson(member.ID)
+	for household := range maps.Values(p.Households) {
+		if household.Size() > 0 && household.IsEligibleForMoveOut() {
+			movedName := household.FamilyName()
+			// remove members and deduct from population
+			for _, memberID := range household.MemberIDs {
+				p.RemovePerson(memberID)
 			}
-			h = slices.Delete(h, i, i+1)
+			p.Population -= household.Size()
+			delete(p.Households, household.ID)
 			Sim.Houses.MoveOut()
 			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, Sim.Houses.GetFreeHouses())
 		}
 	}
-	Sim.People.Households = h
 }
 
 // calculate the unemployed and the total labour force
 func (p *People) CalculateUnemployment() {
 	labourforce, unemployed := 0, 0
-	for i := range p.Households {
-		for j := range p.Households[i].Members {
-			if p.Households[i].Members[j].IsEmployable() {
-				labourforce += 1
-				if !p.Households[i].Members[j].IsEmployed() {
-					unemployed += 1
-				}
+	for _, person := range p.People {
+		if person.IsEmployable() {
+			labourforce += 1
+			if !person.IsEmployed() {
+				unemployed += 1
 			}
 		}
 	}
@@ -108,20 +124,18 @@ func (p *People) CalculateAgeGroups() {
 		groups[i] = AgeGroup{}
 	}
 
-	for i := range p.Households {
-		for j := range p.Households[i].Members {
-			ageGroup := AgeGroupSize * (p.Households[i].Members[j].Age() / AgeGroupSize)
-			if group, ok := groups[ageGroup]; ok {
-				switch p.Households[i].Members[j].Gender {
-				case Male:
-					group.Male += 1
-				case Female:
-					group.Female += 1
-				case Other:
-					group.Other += 1
-				}
-				groups[ageGroup] = group
+	for _, person := range p.People {
+		ageGroup := AgeGroupSize * (person.Age() / AgeGroupSize)
+		if group, ok := groups[ageGroup]; ok {
+			switch person.Gender {
+			case Male:
+				group.Male += 1
+			case Female:
+				group.Female += 1
+			case Other:
+				group.Other += 1
 			}
+			groups[ageGroup] = group
 		}
 	}
 	p.AgeGroups = groups

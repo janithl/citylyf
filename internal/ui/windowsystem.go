@@ -90,7 +90,22 @@ func (ws *WindowSystem) toggleAllWindows() {
 }
 
 func (ws *WindowSystem) onWindowItemClick(title string, index int) {
-	fmt.Println("Learn more about", title, "#", index)
+	switch title {
+	case "Companies":
+		company, exists := entities.Sim.Companies[index]
+		if exists {
+			fmt.Println(company.Name, company.CompanyAge(), company.Industry, company.GetNumberOfEmployees(), company.GetNumberOfJobOpenings())
+			for _, emp := range company.GetEmployees() {
+				fmt.Println(emp)
+			}
+		}
+	case "Households":
+		household, exists := entities.Sim.People.Households[index]
+		if exists {
+			fmt.Println(household.FamilyName(), household.Size(), household.MoveInDate.Year())
+			fmt.Println(household.GetMemberStats())
+		}
+	}
 }
 
 func NewWindowSystem() *WindowSystem {
@@ -110,19 +125,24 @@ func NewWindowSystem() *WindowSystem {
 
 	ws.listWindows = []control.ListWindow{
 		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
-			func() []string {
-				companies := []string{}
-				for _, id := range entities.Sim.CompanyIDs {
-					companies = append(companies, entities.Sim.Companies[id].GetStats())
+			func() []control.Statable {
+				companies := []control.Statable{}
+				for _, companyID := range entities.Sim.GetCompanyIDs() {
+					company, exists := entities.Sim.Companies[companyID]
+					if exists {
+						companies = append(companies, company)
+					}
 				}
-
 				return companies
 			}),
 		*control.NewListWindow(520, 290, 460, 360, "Households", ws.closeWindows, ws.onWindowItemClick,
-			func() []string {
-				households := []string{}
-				for _, h := range entities.Sim.People.Households {
-					households = append(households, h.GetStats())
+			func() []control.Statable {
+				households := []control.Statable{}
+				for _, householdID := range entities.Sim.People.GetHouseholdIDs() {
+					household, exists := entities.Sim.People.Households[householdID]
+					if exists {
+						households = append(households, household)
+					}
 				}
 				return households
 			}),

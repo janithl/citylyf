@@ -13,22 +13,19 @@ type Employment struct {
 
 // AssignJobs assigns unemployed people to jobs
 func (e *Employment) AssignJobs() {
-	for i := range entities.Sim.People.Households {
-		for j := range entities.Sim.People.Households[i].Members {
-			person := &entities.Sim.People.Households[i].Members[j]
-			retirement := person.ConsiderRetirement(e.CompanyService.RemoveEmployeeFromCompany)
-			if retirement {
-				fmt.Printf("[  Job ] %s %s (%d) has retired\n", person.FirstName, person.FamilyName, person.Age())
-				continue
-			}
+	for _, person := range entities.Sim.People.People {
+		retirement := person.ConsiderRetirement(e.CompanyService.RemoveEmployeeFromCompany)
+		if retirement {
+			fmt.Printf("[  Job ] %s %s (%d) has retired\n", person.FirstName, person.FamilyName, person.Age())
+			continue
+		}
 
-			if person.IsEmployable() && !person.IsEmployed() {
-				if companyID, remaining := e.findSuitableJob(*person); companyID != 0 {
-					e.CompanyService.AddEmployeeToCompany(companyID, person.ID)
-					person.EmployerID = companyID
-					fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n",
-						person.FirstName, person.FamilyName, person.Occupation, remaining)
-				}
+		if person.IsEmployable() && !person.IsEmployed() {
+			if companyID, remaining := e.findSuitableJob(*person); companyID != 0 {
+				e.CompanyService.AddEmployeeToCompany(companyID, person.ID)
+				person.EmployerID = companyID
+				fmt.Printf("[  Job ] %s %s has accepted a job as %s, %d jobs remain\n",
+					person.FirstName, person.FamilyName, person.Occupation, remaining)
 			}
 		}
 	}

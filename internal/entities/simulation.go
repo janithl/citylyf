@@ -2,6 +2,8 @@ package entities
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -25,7 +27,6 @@ type Simulation struct {
 	Houses          Housing
 	Market          Market
 	Companies       map[int]*Company
-	CompanyIDs      []int
 	Geography       Geography
 }
 
@@ -55,6 +56,16 @@ func (s *Simulation) GetStats() string {
 		utils.GetLastValue(s.Market.History.MarketGrowthRate), utils.GetLastValue(s.Market.History.InflationRate))
 }
 
+// GetCompanyIDs returns a sorted list of company IDs
+func (s *Simulation) GetCompanyIDs() []int {
+	IDs := []int{}
+	for company := range maps.Values(s.Companies) {
+		IDs = append(IDs, company.ID)
+	}
+	slices.Sort(IDs)
+	return IDs
+}
+
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
 	s.Geography = *NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
@@ -73,7 +84,7 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			LabourForce:      0,
 			Unemployed:       0,
 			People:           make(map[int]*Person),
-			Households:       []Household{},
+			Households:       make(map[int]*Household),
 		},
 		Houses: *NewHousing(houses),
 		Market: Market{
@@ -89,8 +100,7 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 				CompanyProfits:   []float64{0.001},
 			},
 		},
-		Companies:  make(map[int]*Company),
-		CompanyIDs: []int{},
-		Geography:  *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		Companies: make(map[int]*Company),
+		Geography: *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
 	}
 }
