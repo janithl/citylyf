@@ -52,7 +52,8 @@ func main() {
 					entities.Sim.Tick()
 					entities.Sim.People.MoveIn(peopleService.CreateHousehold)
 					employment.AssignJobs()
-					entities.Sim.People.MoveOut()
+					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
+					entities.Sim.Market.ReviseInterestRate()
 
 					// run entities.Sim.Market calculations every month
 					diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)

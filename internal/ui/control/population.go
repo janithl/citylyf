@@ -18,6 +18,10 @@ const BarGraphPadding = 4
 
 func (pp *PopulationPyramid) Draw(screen *ebiten.Image) {
 	ageGroups := entities.Sim.People.AgeGroups
+	if len(ageGroups) < 1 {
+		return
+	}
+
 	maxPopPerGroup := entities.Sim.People.Population
 	if entities.Sim.People.Population > 20 { // bigger populations are easier to predict
 		maxPopPerGroup = 3 * entities.Sim.People.Population / len(ageGroups)

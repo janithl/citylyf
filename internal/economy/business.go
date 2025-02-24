@@ -3,7 +3,6 @@ package economy
 import (
 	"fmt"
 	"math/rand"
-	"slices"
 
 	"github.com/janithl/citylyf/internal/entities"
 )
@@ -71,9 +70,7 @@ func (c *CompanyService) AddEmployeeToCompany(companyID int, employeeID int) {
 func (c *CompanyService) RemoveEmployeeFromCompany(companyID int, employeeID int) {
 	company, ok := entities.Sim.Companies[companyID]
 	if ok {
-		company.Employees = slices.DeleteFunc(company.Employees, func(id int) bool {
-			return id == employeeID
-		})
+		company.RemoveEmployee(employeeID)
 		entities.Sim.Companies[companyID] = company
 	}
 }

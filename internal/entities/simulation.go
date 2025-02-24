@@ -91,6 +91,7 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			InterestRate:           7.0,
 			Unemployment:           0.001,
 			LastCalculation:        startDate,
+			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,
 			History: MarketHistory{
 				MarketValue:      []float64{1000},

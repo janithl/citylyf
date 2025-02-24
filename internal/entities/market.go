@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -15,16 +16,18 @@ const ( // Constants for economic behavior
 	MinGrowth             = -5.0
 	RecessionThreshold    = -2.0 // Growth below this triggers a recession
 	BoomThreshold         = 5.0  // Growth above this triggers a boom
+	InflationTarget       = 2.0
 )
 
 type MarketHistory struct { // tracking last 12 months data
-	MarketValue, InflationRate, MarketGrowthRate, MarketSentiment, CompanyProfits []float64
+	MarketValue, InflationRate, MarketGrowthRate, MarketSentiment, CompanyProfits, InterestRate []float64
 }
 
 // Market tracks economic cycles and financial conditions
 type Market struct {
 	InterestRate, Unemployment float64
 	LastCalculation            time.Time
+	NextRateRevision           time.Time
 	History                    MarketHistory
 	MonthsOfNegativeGrowth     int
 	InRecession, InBoom        bool
@@ -176,4 +179,43 @@ func (m *Market) UpdateMarketValue(marketGrowth float64) float64 {
 // Total company profits are added to market history
 func (m *Market) ReportCompanyProfits(profits float64) {
 	m.History.CompanyProfits = utils.AddFifo(m.History.CompanyProfits, profits, 10)
+}
+
+// ReviseInterestRate updates interest rate based on inflation
+func (m *Market) ReviseInterestRate() {
+	if Sim.Date.Before(m.NextRateRevision) || len(m.History.InflationRate) < 3 {
+		return // rate revisions only happen once a quarter + we need historical inflation data to do a rates revision
+	}
+	averageInflationRate := 0.0
+	for i := len(m.History.InflationRate) - 3; i < len(m.History.InflationRate); i++ {
+		averageInflationRate += m.History.InflationRate[i]
+	}
+	averageInflationRate /= 3
+
+	m.History.InterestRate = utils.AddFifo(m.History.InterestRate, m.InterestRate, 20)
+	interestRateChange := 0.0
+	switch {
+	case averageInflationRate < InflationTarget-1.5:
+		// large deflation is happening, lower interest rates by 50 basis points
+		interestRateChange = -0.5
+	case averageInflationRate < InflationTarget-0.75:
+		// small deflation is happening, lower interest rates by 25 basis points
+		interestRateChange = -0.25
+	case averageInflationRate > InflationTarget+0.75:
+		// small inflation is happening, raise interest rates by 25 basis points
+		interestRateChange = 0.25
+	case averageInflationRate > InflationTarget+1.5:
+		// large inflation is happening, raise interest rates by 50 basis points
+		interestRateChange = 0.5
+	}
+	m.InterestRate += interestRateChange
+	m.NextRateRevision = Sim.Date.AddDate(0, 3, 0) // next rate revision in 3 months
+	if interestRateChange > 0 {
+		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, above target range. Interest rate raised by %.2f%% to", averageInflationRate, interestRateChange)
+	} else if interestRateChange < 0 {
+		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, below target range. Interest rate lowered by %.2f%% to", averageInflationRate, interestRateChange)
+	} else {
+		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, within the target range. Interest rates held steady at", averageInflationRate)
+	}
+	fmt.Printf(" %.2f%%. Next rates revision on %s\n", m.InterestRate, m.NextRateRevision.Format("2006-01-02"))
 }

@@ -80,13 +80,17 @@ func (p *People) GetHouseholdIDs() []int {
 	return IDs
 }
 
-func (p *People) MoveOut() {
+func (p *People) MoveOut(removeEmployeeFromCompany func(companyID int, employeeID int)) {
 	for household := range maps.Values(p.Households) {
 		if household.Size() > 0 && household.IsEligibleForMoveOut() {
 			movedName := household.FamilyName()
-			// remove members and deduct from population
+			// remove members from people, their jobs, and deduct from population
 			for _, memberID := range household.MemberIDs {
-				p.RemovePerson(memberID)
+				member := p.GetPerson(memberID)
+				if member != nil {
+					removeEmployeeFromCompany(member.EmployerID, memberID)
+					p.RemovePerson(memberID)
+				}
 			}
 			p.Population -= household.Size()
 			delete(p.Households, household.ID)

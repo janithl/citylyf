@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"slices"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -92,6 +93,13 @@ func (c *Company) GetEmployees() []*Person {
 		employees = append(employees, Sim.People.People[employeeID])
 	}
 	return employees
+}
+
+// RemoveEmployee removes an employee from the company
+func (c *Company) RemoveEmployee(employeeID int) {
+	c.Employees = slices.DeleteFunc(c.Employees, func(id int) bool {
+		return id == employeeID
+	})
 }
 
 // DetermineJobOpenings calculates jobs available based on economic factors
