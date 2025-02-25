@@ -39,7 +39,7 @@ func main() {
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 
-	ticker := time.NewTicker(1000 * time.Millisecond) // tick every second
+	ticker := time.NewTicker(100 * time.Millisecond) // tick every 1/10th of a second
 	done := make(chan bool)
 
 	go func() {

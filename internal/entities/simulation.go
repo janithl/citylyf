@@ -9,14 +9,14 @@ import (
 	"github.com/janithl/citylyf/internal/utils"
 )
 
-// SimulationSpeed defines the number of days at which the sim moves
+// SimulationSpeed defines the speed of the simulation
 type SimulationSpeed int
 
 const (
 	Pause SimulationSpeed = 0
-	Slow  SimulationSpeed = 3
-	Mid   SimulationSpeed = 7
-	Fast  SimulationSpeed = 28
+	Slow  SimulationSpeed = 1600
+	Mid   SimulationSpeed = 400
+	Fast  SimulationSpeed = 100
 )
 
 type Simulation struct {
@@ -28,11 +28,15 @@ type Simulation struct {
 	Market          Market
 	Companies       map[int]*Company
 	Geography       Geography
+	tickNumber      int
 }
 
 func (s *Simulation) Tick() {
-	nextDate := s.Date.AddDate(0, 0, int(s.SimulationSpeed))
-	s.Date = nextDate
+	s.tickNumber = (s.tickNumber + 100) % 1600
+	if s.tickNumber%int(s.SimulationSpeed) == 0 {
+		nextDate := s.Date.AddDate(0, 0, 1)
+		s.Date = nextDate
+	}
 }
 
 func (s *Simulation) ChangeSimulationSpeed() {

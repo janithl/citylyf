@@ -195,33 +195,49 @@ func (m *Market) ReviseInterestRate() {
 	}
 	averageInflationRate /= 3
 
-	interestRateChange := 0.0
-	switch {
-	case averageInflationRate < InflationTarget-1.5:
-		// large deflation is happening, lower interest rates by 50 basis points
-		interestRateChange = -0.5
-	case averageInflationRate < InflationTarget-0.75:
-		// small deflation is happening, lower interest rates by 25 basis points
-		interestRateChange = -0.25
-	case averageInflationRate > InflationTarget+0.75:
-		// small inflation is happening, raise interest rates by 25 basis points
-		interestRateChange = 0.25
-	case averageInflationRate > InflationTarget+1.5:
-		// large inflation is happening, raise interest rates by 50 basis points
+	// set rate change, working within inflation target band
+	var interestRateChange float64
+	if averageInflationRate < InflationTarget-1.0 { // inflation lower than target band, lower rates
+		interestRateChange = (averageInflationRate - InflationTarget) * 0.5
+	} else if averageInflationRate > InflationTarget+1.0 { // inflation is too high, raise rates proportionally
+		interestRateChange = (averageInflationRate - InflationTarget) * 0.25
+	} else { // Inflation is within the target band
+		// Only lower rates if the previous revision was held steady.
+		if len(m.History.InterestRate) > 1 {
+			lastRate := m.History.InterestRate[len(m.History.InterestRate)-1]
+			secondLastRate := m.History.InterestRate[len(m.History.InterestRate)-2]
+			// Use a small epsilon for float comparison.
+			if math.Abs(lastRate-secondLastRate) < 1e-6 {
+				interestRateChange = -0.25
+			} else {
+				interestRateChange = 0.0
+			}
+		} else { // hold rates steady
+			interestRateChange = 0.0
+		}
+	}
+	interestRateChange = math.Round(interestRateChange*4) / 4 // always change rates in multiples of 0.25%
+
+	// Cap the change to avoid overshooting (max +/- 0.5% per revision).
+	if interestRateChange > 0.5 {
 		interestRateChange = 0.5
+	} else if interestRateChange < -0.5 {
+		interestRateChange = -0.5
 	}
 
+	// Calculate the new interest rate.
 	newInterestRate := m.InterestRate() + interestRateChange
 	if newInterestRate < 0 { // we cannot allow negative interest rates
-		return
+		newInterestRate = 0
 	}
+
 	m.History.InterestRate = utils.AddFifo(m.History.InterestRate, newInterestRate, 20)
 	m.NextRateRevision = Sim.Date.AddDate(0, 3, 0) // next rate revision in 3 months
 
 	if interestRateChange > 0 {
 		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, above target range. Interest rate raised by %.2f%% to", averageInflationRate, interestRateChange)
 	} else if interestRateChange < 0 {
-		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, below target range. Interest rate lowered by %.2f%% to", averageInflationRate, interestRateChange)
+		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, within or below target range. Interest rate lowered by %.2f%% to", averageInflationRate, interestRateChange)
 	} else {
 		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, within the target range. Interest rates held steady at", averageInflationRate)
 	}
