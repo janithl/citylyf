@@ -20,16 +20,27 @@ const ( // Constants for economic behavior
 )
 
 type MarketHistory struct { // tracking last 12 months data
-	MarketValue, InflationRate, MarketGrowthRate, MarketSentiment, CompanyProfits, InterestRate []float64
+	MarketValue, InflationRate, InterestRate, MarketGrowthRate, MarketSentiment, CompanyProfits []float64
 }
 
 // Market tracks economic cycles and financial conditions
 type Market struct {
-	InterestRate, Unemployment float64
-	NextRateRevision           time.Time
-	History                    MarketHistory
-	MonthsOfNegativeGrowth     int
-	InRecession, InBoom        bool
+	NextRateRevision       time.Time
+	History                MarketHistory
+	MonthsOfNegativeGrowth int
+	InRecession, InBoom    bool
+}
+
+func (m *Market) InterestRate() float64 {
+	return utils.GetLastValue(m.History.InterestRate)
+}
+
+func (m *Market) InflationRate() float64 {
+	return utils.GetLastValue(m.History.InflationRate)
+}
+
+func (m *Market) MarketValue() float64 {
+	return utils.GetLastValue(m.History.MarketValue)
 }
 
 // MarketSentiment adjusts sentiment based on boom/bust cycles
@@ -59,9 +70,8 @@ func (m *Market) SupplyShock() float64 {
 
 // MoneySupplyGrowth calculates money supply changes
 func (m *Market) MoneySupplyGrowth() float64 {
-	lastInflationRate := utils.GetLastValue(m.History.InflationRate)
-	interestImpact := -math.Pow(m.InterestRate/5, 1.2)             // High rates slow money supply
-	inflationImpact := -math.Pow((lastInflationRate-2)/4, 2)       // High inflation slows supply
+	interestImpact := -math.Pow(m.InterestRate()/5, 1.2)           // High rates slow money supply
+	inflationImpact := -math.Pow((m.InflationRate()-2)/4, 2)       // High inflation slows supply
 	spendingImpact := Sim.Government.GetGovernmentSpending() * 0.5 // More spending increases supply
 	confidenceImpact := m.MarketSentiment() * 0.3                  // Market sentiment effect
 	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
@@ -74,10 +84,10 @@ func (m *Market) MoneySupplyGrowth() float64 {
 	return totalGrowth
 }
 
-// Inflation calculates inflation considering money supply, interest rates, and supply shocks
-func (m *Market) Inflation(populationGrowth float64) float64 {
+// CalculateInflation calculates inflation considering money supply, interest rates, and supply shocks
+func (m *Market) CalculateInflation(populationGrowth float64) {
 	moneyImpact := math.Log(m.MoneySupplyGrowth()+1) * 1.5 // More money = higher inflation
-	interestImpact := -math.Pow(m.InterestRate/3, 1.5)     // Higher rates reduce inflation
+	interestImpact := -math.Pow(m.InterestRate()/3, 1.5)   // Higher rates reduce inflation
 	demandImpact := math.Max(populationGrowth*0.5, 0.0)    // Higher demand pushes inflation up
 	supplyImpact := m.SupplyShock() * 1.2                  // Supply disruptions worsen inflation
 	totalInflation := BaseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact
@@ -89,17 +99,15 @@ func (m *Market) Inflation(populationGrowth float64) float64 {
 	}
 
 	m.History.InflationRate = utils.AddFifo(m.History.InflationRate, totalInflation, 10)
-	return totalInflation
 }
 
-// MarketGrowth calculates stock index growth with boom/bust cycle logic
-func (m *Market) MarketGrowth() float64 {
-	lastInflationRate := utils.GetLastValue(m.History.InflationRate)
+// CalculateMarketGrowth calculates stock index growth with boom/bust cycle logic
+func (m *Market) CalculateMarketGrowth() float64 {
 	lastMarketGrowthRate := utils.GetLastValue(m.History.MarketGrowthRate)
 
-	interestImpact := -math.Pow(m.InterestRate/8, 2)                       // Higher rates slow growth
-	inflationImpact := -math.Pow((lastInflationRate-5)/3, 2)               // Inflation impact (good at 3-5%, bad above 6%)
-	unemploymentImpact := -m.Unemployment / 25                             // High unemployment reduces spending
+	interestImpact := -math.Pow(m.InterestRate()/8, 2)                     // Higher rates slow growth
+	inflationImpact := -math.Pow((m.InflationRate()-5)/3, 2)               // Inflation impact (good at 3-5%, bad above 6%)
+	unemploymentImpact := -Sim.People.UnemploymentRate() / 25              // High unemployment reduces spending
 	taxImpact := -(Sim.Government.CorporateTaxRate) / 30                   // Higher taxes = lower market growth
 	marketSentimentImpact := utils.GetLastValue(m.History.MarketSentiment) // External random factors
 	profitImpact := m.calculateProfitImpact()                              // Effect of corporate profits
@@ -163,16 +171,10 @@ func (m *Market) calculateProfitImpact() float64 {
 	return -math.Sqrt(math.Abs(averageProfit)) / 50 // Controlled negative impact
 }
 
-// GetMarketValue returns the latest market index value
-func (m *Market) GetMarketValue() float64 {
-	return utils.GetLastValue(m.History.MarketValue)
-}
-
 // UpdateMarketValue updates market history & records highs
 func (m *Market) UpdateMarketValue(marketGrowth float64) float64 {
-	lastMarketValue := m.GetMarketValue()
+	lastMarketValue := m.MarketValue()
 	newMarketValue := lastMarketValue + (lastMarketValue * marketGrowth / 100)
-
 	m.History.MarketValue = utils.AddFifo(m.History.MarketValue, newMarketValue, 10)
 	return newMarketValue
 }
@@ -193,7 +195,6 @@ func (m *Market) ReviseInterestRate() {
 	}
 	averageInflationRate /= 3
 
-	m.History.InterestRate = utils.AddFifo(m.History.InterestRate, m.InterestRate, 20)
 	interestRateChange := 0.0
 	switch {
 	case averageInflationRate < InflationTarget-1.5:
@@ -210,12 +211,13 @@ func (m *Market) ReviseInterestRate() {
 		interestRateChange = 0.5
 	}
 
-	if m.InterestRate+interestRateChange < 0 { // we cannot allow negative interest rates
+	newInterestRate := m.InterestRate() + interestRateChange
+	if newInterestRate < 0 { // we cannot allow negative interest rates
 		return
 	}
-
-	m.InterestRate += interestRateChange
+	m.History.InterestRate = utils.AddFifo(m.History.InterestRate, newInterestRate, 20)
 	m.NextRateRevision = Sim.Date.AddDate(0, 3, 0) // next rate revision in 3 months
+
 	if interestRateChange > 0 {
 		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, above target range. Interest rate raised by %.2f%% to", averageInflationRate, interestRateChange)
 	} else if interestRateChange < 0 {
@@ -223,5 +225,5 @@ func (m *Market) ReviseInterestRate() {
 	} else {
 		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, within the target range. Interest rates held steady at", averageInflationRate)
 	}
-	fmt.Printf(" %.2f%%. Next rates revision on %s\n", m.InterestRate, m.NextRateRevision.Format("2006-01-02"))
+	fmt.Printf(" %.2f%%. Next rates revision on %s\n", newInterestRate, m.NextRateRevision.Format("2006-01-02"))
 }

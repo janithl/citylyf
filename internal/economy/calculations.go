@@ -37,10 +37,9 @@ func (cs *CalculationService) CalculateEconomy() {
 	entities.Sim.People.UpdatePopulationValues()
 	entities.Sim.People.CalculateAgeGroups()
 	entities.Sim.People.CalculateUnemployment()
-	entities.Sim.Market.Unemployment = entities.Sim.People.UnemploymentRate()
 
-	entities.Sim.Market.Inflation(populationGrowth)
-	marketGrowth := entities.Sim.Market.MarketGrowth()
+	entities.Sim.Market.CalculateInflation(populationGrowth)
+	marketGrowth := entities.Sim.Market.CalculateMarketGrowth()
 	entities.Sim.Market.UpdateMarketValue(marketGrowth)
 
 	fmt.Printf("[ Econ ] %s | Next calculation on %s\n", entities.Sim.GetStats(), cs.nextCalculation.Format("2006-01-02"))
@@ -60,7 +59,7 @@ func (cs *CalculationService) CalculateEconomy() {
 	entities.Sim.Market.ReportCompanyProfits(totalProfits)
 
 	// do govt interest calcuations (monthly)
-	monthlyInterestRate := (entities.Sim.Market.InterestRate / 100) * (daysSinceLastCalculation / entities.DaysPerYear)
+	monthlyInterestRate := (entities.Sim.Market.InterestRate() / 100) * (daysSinceLastCalculation / entities.DaysPerYear)
 	entities.Sim.Government.Reserves += int(float64(entities.Sim.Government.Reserves) * monthlyInterestRate)
 
 	// calculate monthly pay and interest for households

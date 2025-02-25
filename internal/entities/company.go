@@ -28,11 +28,10 @@ type Company struct {
 
 // CalculateProfit computes monthly net profit
 func (c *Company) CalculateProfit(monthLength float64) float64 {
-	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
 	lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
 
 	// **Monthly Expense Growth**: Inflation applied proportionally
-	inflationMultiplier := 1.0 + (lastInflationRate / 2400) // Divided by 2400 for smoother monthly change
+	inflationMultiplier := 1.0 + (Sim.Market.InflationRate() / 2400) // Divided by 2400 for smoother monthly change
 
 	// **Cost-cutting for struggling companies**: Reduces expenses if past profits were negative
 	if c.LastProfit < 0 {
@@ -104,7 +103,6 @@ func (c *Company) RemoveEmployee(employeeID int) {
 
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings() {
-	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
 	lastMarketSentiment := utils.GetLastValue(Sim.Market.History.MarketSentiment)
 
 	baseJobs := map[CareerLevel]int{
@@ -118,12 +116,12 @@ func (c *Company) DetermineJobOpenings() {
 	marketMultiplier := 1.0
 
 	// Interest Rate Effect: High rates slow down hiring
-	if Sim.Market.InterestRate > 5 {
+	if Sim.Market.InterestRate() > 5 {
 		marketMultiplier -= 0.3
 	}
 
 	// Inflation Effect: High inflation discourages hiring
-	if lastInflationRate > 6 {
+	if Sim.Market.InflationRate() > 6 {
 		marketMultiplier -= 0.2
 	}
 

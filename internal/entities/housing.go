@@ -53,7 +53,7 @@ func (h *Housing) GetHouse(id int) *House {
 func (h *Housing) ReviseRents() {
 	for i, house := range h.Houses {
 		if Sim.Date.Sub(house.LastRentRevision).Hours() > HoursPerYear { // Revise rents every year
-			h.Houses[i].MonthlyRent += int(float64(house.MonthlyRent) * Sim.Market.InterestRate / 100)
+			h.Houses[i].MonthlyRent += int(float64(house.MonthlyRent) * Sim.Market.InterestRate() / 100)
 			h.Houses[i].LastRentRevision = Sim.Date
 		}
 	}

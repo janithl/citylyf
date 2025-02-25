@@ -53,9 +53,8 @@ func (s *Simulation) GetStats() string {
 		"Unemployment: %5.2f%% | Companies: %2d | Market Value: %.2f (%+6.2f%%) | Inflation: %5.2f%% | IntRate: %5.2f%%",
 		s.Date.Format("2006-01-02"), utils.FormatCurrency(float64(s.Government.Reserves), "$"),
 		s.People.Population(), s.People.PopulationGrowthRate(), s.Houses.GetFreeHouses(),
-		s.People.UnemploymentRate(), len(s.Companies), s.Market.GetMarketValue(),
-		utils.GetLastValue(s.Market.History.MarketGrowthRate),
-		utils.GetLastValue(s.Market.History.InflationRate), s.Market.InterestRate)
+		s.People.UnemploymentRate(), len(s.Companies), s.Market.MarketValue(),
+		utils.GetLastValue(s.Market.History.MarketGrowthRate), s.Market.InflationRate(), s.Market.InterestRate())
 }
 
 // GetCompanyIDs returns a sorted list of company IDs
@@ -89,13 +88,12 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 		},
 		Houses: *NewHousing(houses),
 		Market: Market{
-			InterestRate:           7.0,
-			Unemployment:           0.001,
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,
 			History: MarketHistory{
 				MarketValue:      []float64{1000},
 				InflationRate:    []float64{0.001},
+				InterestRate:     []float64{7.0},
 				MarketGrowthRate: []float64{0.001},
 				MarketSentiment:  []float64{0.001},
 				CompanyProfits:   []float64{0.001},
