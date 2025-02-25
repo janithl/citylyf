@@ -18,7 +18,6 @@ type AgeGroup struct {
 }
 
 type People struct {
-	Population             int
 	PopulationValues       []int // Historical values
 	LabourForce            int   // Employable people
 	Unemployed             int
@@ -28,13 +27,20 @@ type People struct {
 	AgeGroups              map[int]AgeGroup // Population breakdown by age group
 }
 
+func (p *People) Population() int {
+	return len(p.People)
+}
+
 func (p *People) UnemploymentRate() float64 {
+	if p.LabourForce == 0 {
+		return 0.0
+	}
 	return 100.0 * float64(p.Unemployed) / float64(p.LabourForce)
 }
 
 func (p *People) PopulationGrowthRate() float64 {
 	lastPopulationValue := p.PopulationValues[len(p.PopulationValues)-1]
-	return 100.0 * float64(p.Population-lastPopulationValue) / float64(lastPopulationValue)
+	return 100.0 * float64(p.Population()-lastPopulationValue) / float64(lastPopulationValue)
 }
 
 func (p *People) MoveIn(createHousehold func() *Household) {
@@ -46,7 +52,6 @@ func (p *People) MoveIn(createHousehold func() *Household) {
 			h.HouseID = houseId
 			fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
 			p.Households[h.ID] = h
-			p.Population += h.Size()
 		}
 	}
 }
@@ -92,7 +97,6 @@ func (p *People) MoveOut(removeEmployeeFromCompany func(companyID int, employeeI
 					p.RemovePerson(memberID)
 				}
 			}
-			p.Population -= household.Size()
 			delete(p.Households, household.ID)
 			Sim.Houses.MoveOut()
 			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, Sim.Houses.GetFreeHouses())
@@ -118,7 +122,7 @@ func (p *People) CalculateUnemployment() {
 
 // Append current population value to history
 func (p *People) UpdatePopulationValues() {
-	p.PopulationValues = utils.AddFifo(p.PopulationValues, p.Population, 20)
+	p.PopulationValues = utils.AddFifo(p.PopulationValues, p.Population(), 20)
 }
 
 // calculate the age groups of the population

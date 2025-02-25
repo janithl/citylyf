@@ -148,6 +148,10 @@ func (m *Market) MarketGrowth() float64 {
 
 // calculateProfitImpact smooths corporate profit influence on the market
 func (m *Market) calculateProfitImpact() float64 {
+	if len(m.History.CompanyProfits) < 1 {
+		return 0.0
+	}
+
 	totalProfit := 0.0
 	for _, p := range m.History.CompanyProfits {
 		totalProfit += p
@@ -208,6 +212,11 @@ func (m *Market) ReviseInterestRate() {
 		// large inflation is happening, raise interest rates by 50 basis points
 		interestRateChange = 0.5
 	}
+
+	if m.InterestRate+interestRateChange < 0 { // we cannot allow negative interest rates
+		return
+	}
+
 	m.InterestRate += interestRateChange
 	m.NextRateRevision = Sim.Date.AddDate(0, 3, 0) // next rate revision in 3 months
 	if interestRateChange > 0 {
