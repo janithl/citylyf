@@ -26,7 +26,6 @@ type MarketHistory struct { // tracking last 12 months data
 // Market tracks economic cycles and financial conditions
 type Market struct {
 	InterestRate, Unemployment float64
-	LastCalculation            time.Time
 	NextRateRevision           time.Time
 	History                    MarketHistory
 	MonthsOfNegativeGrowth     int
@@ -175,8 +174,6 @@ func (m *Market) UpdateMarketValue(marketGrowth float64) float64 {
 	newMarketValue := lastMarketValue + (lastMarketValue * marketGrowth / 100)
 
 	m.History.MarketValue = utils.AddFifo(m.History.MarketValue, newMarketValue, 10)
-	m.LastCalculation = Sim.Date
-
 	return newMarketValue
 }
 

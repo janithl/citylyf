@@ -26,8 +26,8 @@ type Company struct {
 	LastRevenue, LastExpenses, LastProfit float64
 }
 
-// CalculateProfit computes net profit every 28 days
-func (c *Company) CalculateProfit() float64 {
+// CalculateProfit computes monthly net profit
+func (c *Company) CalculateProfit(monthLength float64) float64 {
 	lastInflationRate := utils.GetLastValue(Sim.Market.History.InflationRate)
 	lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
 
@@ -54,8 +54,8 @@ func (c *Company) CalculateProfit() float64 {
 
 	// **Apply Corporate Tax (Adjusted for Monthly Periods)**
 	if grossProfit > 0 {
-		monthlyTaxRate := Sim.Government.CorporateTaxRate * 28 / DaysPerYear // Convert annual tax rate to 28-day cycle
-		taxedAmount := math.Ceil(grossProfit * (monthlyTaxRate / 100.0))     // round to nearest dollar
+		monthlyTaxRate := Sim.Government.CorporateTaxRate * monthLength / DaysPerYear // Convert annual tax rate to monthly profit cycle
+		taxedAmount := math.Ceil(grossProfit * (monthlyTaxRate / 100.0))              // round to nearest dollar
 		c.LastProfit = grossProfit - taxedAmount
 
 		// Store unpaid tax in liability account

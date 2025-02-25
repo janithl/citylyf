@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"maps"
 	"math/rand"
 	"time"
 
@@ -31,6 +30,7 @@ func main() {
 	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
 	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
 	peopleService := people.NewPeopleService()
+	calculationService := economy.NewCalculationService(employment.CompanyService)
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
@@ -54,14 +54,7 @@ func main() {
 					employment.AssignJobs()
 					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
 					entities.Sim.Market.ReviseInterestRate()
-
-					// run entities.Sim.Market calculations every month
-					diff := entities.Sim.Date.Sub(entities.Sim.Market.LastCalculation)
-					if diff.Hours()/24 >= 28 {
-						calculateEconomy(employment.CompanyService)
-						entities.Sim.Government.CollectTaxes()
-						entities.Sim.Houses.ReviseRents()
-					}
+					calculationService.CalculateEconomy()
 				}
 			}
 		}
@@ -74,46 +67,6 @@ func main() {
 
 	if *jsonPtr {
 		printFinalState()
-	}
-}
-
-func calculateEconomy(companyService *economy.CompanyService) {
-	// calculate impact of population growth on city economy
-	populationGrowth := entities.Sim.People.PopulationGrowthRate()
-
-	entities.Sim.People.UpdatePopulationValues()
-	entities.Sim.People.CalculateAgeGroups()
-	entities.Sim.People.CalculateUnemployment()
-	entities.Sim.Market.Unemployment = entities.Sim.People.UnemploymentRate()
-
-	entities.Sim.Market.Inflation(populationGrowth)
-	marketGrowth := entities.Sim.Market.MarketGrowth()
-	entities.Sim.Market.UpdateMarketValue(marketGrowth)
-
-	fmt.Printf("[ Econ ] %s\n", entities.Sim.GetStats())
-
-	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
-		newCompany := companyService.GenerateRandomCompany()
-		companyService.AddCompany(newCompany)
-		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
-	}
-
-	totalProfits := 0.0
-	for id, company := range entities.Sim.Companies {
-		totalProfits += company.CalculateProfit()
-		company.DetermineJobOpenings()
-		entities.Sim.Companies[id] = company
-	}
-	entities.Sim.Market.ReportCompanyProfits(totalProfits)
-
-	// do govt interest calcuations
-	monthlyInterestRate := entities.Sim.Market.InterestRate * 28 / 36500
-	entities.Sim.Government.Reserves += int(float64(entities.Sim.Government.Reserves) * monthlyInterestRate)
-
-	// calculate monthly pay and interest for households
-	for household := range maps.Values(entities.Sim.People.Households) {
-		household.CalculateMonthlyBudget(companyService.AddPayToPayroll)
-		household.Savings += int(float64(household.Savings) * monthlyInterestRate)
 	}
 }
 

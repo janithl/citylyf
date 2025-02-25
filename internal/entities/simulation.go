@@ -49,11 +49,13 @@ func (s *Simulation) ChangeSimulationSpeed() {
 }
 
 func (s *Simulation) GetStats() string {
-	return fmt.Sprintf("%s | Reserves: %s | Population: %4d (%+6.2f%%) | Free Houses: %2d | Unemployment: %5.2f%% | Companies: %2d | Market Value: %.2f (%+6.2f%%) | Inflation: %5.2f%%",
+	return fmt.Sprintf("%s | Reserves: %s | Population: %4d (%+6.2f%%) | Free Houses: %2d | "+
+		"Unemployment: %5.2f%% | Companies: %2d | Market Value: %.2f (%+6.2f%%) | Inflation: %5.2f%% | IntRate: %5.2f%%",
 		s.Date.Format("2006-01-02"), utils.FormatCurrency(float64(s.Government.Reserves), "$"),
 		s.People.Population(), s.People.PopulationGrowthRate(), s.Houses.GetFreeHouses(),
 		s.People.UnemploymentRate(), len(s.Companies), s.Market.GetMarketValue(),
-		utils.GetLastValue(s.Market.History.MarketGrowthRate), utils.GetLastValue(s.Market.History.InflationRate))
+		utils.GetLastValue(s.Market.History.MarketGrowthRate),
+		utils.GetLastValue(s.Market.History.InflationRate), s.Market.InterestRate)
 }
 
 // GetCompanyIDs returns a sorted list of company IDs
@@ -89,7 +91,6 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 		Market: Market{
 			InterestRate:           7.0,
 			Unemployment:           0.001,
-			LastCalculation:        startDate,
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,
 			History: MarketHistory{

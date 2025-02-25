@@ -41,7 +41,7 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 		LastProfit:   baseRevenue - expenses,
 	}
 
-	company.CalculateProfit()
+	company.CalculateProfit(31)
 	return &company
 }
 
