@@ -4,11 +4,21 @@ import (
 	"math/rand"
 )
 
+type IntersectionType string
+
+const (
+	NonIntersection IntersectionType = ""
+	Intersection    IntersectionType = "intersection"
+	ThreewayXUp     IntersectionType = "threeway-x-up"
+	ThreewayXDown   IntersectionType = "threeway-x-down"
+	ThreewayYUp     IntersectionType = "threeway-y-up"
+	ThreewayYDown   IntersectionType = "threeway-y-down"
+)
+
 type Tile struct {
 	Elevation    int
 	Road         bool
-	Intersection bool
-	Roundabout   bool
+	Intersection IntersectionType
 }
 
 type Geography struct {
@@ -61,7 +71,7 @@ func (g *Geography) adjacentElevation(w, h, elevation int) bool {
 // setElevation checks if a tile exists and updates the elevation
 // to the given element (h, w) is at a given elevation
 func (g *Geography) setElevation(x, y, elevation int) {
-	if x < 0 || x >= g.Size || y < 0 || y >= g.Size { // bounds check
+	if !g.BoundsCheck(x, y) {
 		return
 	}
 
@@ -83,33 +93,67 @@ func (g *Geography) GetRoads() []Road {
 	return g.roads
 }
 
+func (g *Geography) CheckRoad(x, y int) bool {
+	if !g.BoundsCheck(x, y) {
+		return false
+	}
+
+	return g.tiles[x][y].Road
+}
+
+// setIntersectionType sets the type of intersection based on surrounding tiles
+func (g *Geography) setIntersectionType(x, y int) {
+	if !g.BoundsCheck(x, y) {
+		return
+	}
+
+	top := g.CheckRoad(x, y+1)
+	bottom := g.CheckRoad(x, y-1)
+	right := g.CheckRoad(x+1, y)
+	left := g.CheckRoad(x-1, y)
+	switch {
+	case top && bottom && left && right:
+		g.tiles[x][y].Intersection = Intersection
+	case top && bottom && left:
+		g.tiles[x][y].Intersection = ThreewayYUp
+	case top && bottom && right:
+		g.tiles[x][y].Intersection = ThreewayYDown
+	case top && left && right:
+		g.tiles[x][y].Intersection = ThreewayXDown
+	case bottom && left && right:
+		g.tiles[x][y].Intersection = ThreewayXUp
+	default:
+		g.tiles[x][y].Intersection = NonIntersection
+	}
+}
+
 // add a new road
 func (g *Geography) addRoad(r *Road) {
 	g.roads = append(g.roads, *r)
 	for _, segment := range r.Segments {
 		if segment.Direction == DirX {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
-				if g.tiles[i][segment.Start.Y].Road {
-					g.tiles[i][segment.Start.Y].Intersection = true
-				} else {
+				if g.BoundsCheck(i, segment.Start.Y) {
 					g.tiles[i][segment.Start.Y].Road = true
 				}
+				g.setIntersectionType(i-1, segment.Start.Y)
 			}
+			g.setIntersectionType(segment.End.X, segment.Start.Y)
 		} else if segment.Direction == DirY {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
-				if g.tiles[segment.Start.X][i].Road {
-					g.tiles[segment.Start.X][i].Intersection = true
-				} else {
+				if g.BoundsCheck(segment.Start.X, i) {
 					g.tiles[segment.Start.X][i].Road = true
 				}
+				g.setIntersectionType(segment.Start.X, i-1)
 			}
+			g.setIntersectionType(segment.Start.X, segment.End.Y)
 		}
 	}
 }
 
 // bounds check
 func (g *Geography) BoundsCheck(x, y int) bool {
-	return x >= 0 && y >= 0 && x < Sim.Geography.Size && y < Sim.Geography.Size
+	return x >= 0 && y >= 0 && x < g.Size && y < g.Size
 }
 
 // check if coordinates are within a road segment, and that road's direction

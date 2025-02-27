@@ -171,6 +171,20 @@ func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOp
 	default:
 		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 	}
+
+	// Tree Debug
+	// if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel && x%3 == 0 {
+	// 	switch y % 4 {
+	// 	case 0:
+	// 		screen.DrawImage(assets.Assets.Sprites["bush-small"].Image, op)
+	// 	case 1:
+	// 		screen.DrawImage(assets.Assets.Sprites["bush-large"].Image, op)
+	// 	case 2:
+	// 		screen.DrawImage(assets.Assets.Sprites["tree-conifer"].Image, op)
+	// 	case 3:
+	// 		screen.DrawImage(assets.Assets.Sprites["tree-slanted"].Image, op)
+	// 	}
+	// }
 }
 
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
@@ -196,8 +210,11 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			wr.tileRender(screen, op, tiles, x, y)
 
 			// Draw roads if necessary
-			if tiles[x][y].Intersection {
-				screen.DrawImage(assets.Assets.Sprites["intersection"].Image, op)
+			if tiles[x][y].Intersection != entities.NonIntersection {
+				intersection, exists := assets.Assets.Sprites[string(tiles[x][y].Intersection)]
+				if exists {
+					screen.DrawImage(intersection.Image, op)
+				}
 			} else if tiles[x][y].Road {
 				roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
 				if roadDirection == entities.DirX {
