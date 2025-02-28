@@ -13,6 +13,10 @@ const (
 	ThreewayXDown   IntersectionType = "threeway-x-down"
 	ThreewayYUp     IntersectionType = "threeway-y-up"
 	ThreewayYDown   IntersectionType = "threeway-y-down"
+	BendTopLeft     IntersectionType = "bend-top-left"
+	BendTopRight    IntersectionType = "bend-top-right"
+	BendBottomLeft  IntersectionType = "bend-bottom-left"
+	BendBottomRight IntersectionType = "bend-bottom-right"
 )
 
 type Tile struct {
@@ -103,7 +107,7 @@ func (g *Geography) CheckRoad(x, y int) bool {
 
 // setIntersectionType sets the type of intersection based on surrounding tiles
 func (g *Geography) setIntersectionType(x, y int) {
-	if !g.BoundsCheck(x, y) {
+	if !g.CheckRoad(x, y) {
 		return
 	}
 
@@ -122,6 +126,14 @@ func (g *Geography) setIntersectionType(x, y int) {
 		g.tiles[x][y].Intersection = ThreewayXDown
 	case bottom && left && right:
 		g.tiles[x][y].Intersection = ThreewayXUp
+	case top && left:
+		g.tiles[x][y].Intersection = BendTopLeft
+	case top && right:
+		g.tiles[x][y].Intersection = BendTopRight
+	case bottom && left:
+		g.tiles[x][y].Intersection = BendBottomLeft
+	case bottom && right:
+		g.tiles[x][y].Intersection = BendBottomRight
 	default:
 		g.tiles[x][y].Intersection = NonIntersection
 	}
