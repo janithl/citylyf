@@ -234,6 +234,11 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			if wr.hoveredTileX == x && wr.hoveredTileY == y {
 				screen.DrawImage(assets.Assets.Sprites["cursorbox"].Image, op)
 			}
+
+			// Draw a highlight around the tile where the road starts
+			if wr.placingRoad && wr.roadStartX == x && wr.roadStartY == y {
+				screen.DrawImage(assets.Assets.Sprites["cursorbox-r"].Image, op)
+			}
 		}
 	}
 }
