@@ -47,7 +47,7 @@ func (p *People) PopulationGrowthRate() float64 {
 }
 
 func (p *People) MoveIn(createHousehold func() *Household) {
-	if Sim.Houses.GetFreeHouses() == 0 || rand.Float64() < 0.85 { // 15% change of moving in if there are free houses
+	if Sim.Houses.GetFreeHouses() == 0 || rand.Float64() < 0.95 { // 5% change of moving in if there are free houses
 		return
 	}
 
@@ -56,7 +56,7 @@ func (p *People) MoveIn(createHousehold func() *Household) {
 	houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
 	if houseId > 0 {
 		h.HouseID = houseId
-		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
+		fmt.Printf("[ Move ] %s family has moved into house #%d, %d houses remain\n", h.FamilyName(), houseId, Sim.Houses.GetFreeHouses())
 		p.Households[h.ID] = h
 	}
 }
@@ -94,6 +94,7 @@ func (p *People) MoveOut(removeEmployeeFromCompany func(companyID int, employeeI
 	for household := range maps.Values(p.Households) {
 		if household.Size() > 0 && household.IsEligibleForMoveOut() {
 			movedName := household.FamilyName()
+			houseID := household.HouseID
 			// remove members from people, their jobs, and deduct from population
 			for _, memberID := range household.MemberIDs {
 				member := p.GetPerson(memberID)
@@ -103,8 +104,8 @@ func (p *People) MoveOut(removeEmployeeFromCompany func(companyID int, employeeI
 				}
 			}
 			delete(p.Households, household.ID)
-			Sim.Houses.MoveOut()
-			fmt.Printf("[ Move ] %s family has moved out of the city, %d houses remain\n", movedName, Sim.Houses.GetFreeHouses())
+			Sim.Houses.MoveOut(houseID)
+			fmt.Printf("[ Move ] %s family has moved out of house #%d and the city, %d houses remain\n", movedName, houseID, Sim.Houses.GetFreeHouses())
 		}
 	}
 }

@@ -44,9 +44,9 @@ func (h *Housing) MoveIn(budget int, bedrooms int) int {
 	return 0
 }
 
-func (h *Housing) MoveOut() {
+func (h *Housing) MoveOut(houseID int) {
 	for i := range h.Houses {
-		if !h.Houses[i].Free {
+		if h.Houses[i].ID == houseID {
 			h.Houses[i].Free = true
 			return
 		}
