@@ -17,14 +17,16 @@ const ageStdDev = 15.0
 type PeopleService struct {
 	LastHouseholdID int
 	LastPersonID    int
-	LastThreeNames  []string
+	LastFiveNames   []string
+	LastTenFamilies []string
 }
 
 func NewPeopleService() *PeopleService {
 	return &PeopleService{
 		LastHouseholdID: 1000,  // start Household IDs from 1000
 		LastPersonID:    10000, // start IDs from 10000
-		LastThreeNames:  make([]string, 3),
+		LastFiveNames:   make([]string, 5),
+		LastTenFamilies: make([]string, 10),
 	}
 }
 
@@ -32,10 +34,11 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 	var name, familyName string
 	var gender entities.Gender
 
-	for name == "" || slices.Contains(ps.LastThreeNames, name) { // prevent repeating names
+	for name == "" || slices.Contains(ps.LastFiveNames, name) || slices.Contains(ps.LastTenFamilies, familyName) { // prevent repeating names
 		name, familyName, gender = getNameAndGender()
 	}
-	ps.LastThreeNames = utils.AddFifo(ps.LastThreeNames, name, 3)
+	ps.LastFiveNames = utils.AddFifo(ps.LastFiveNames, name, 5)
+	ps.LastTenFamilies = utils.AddFifo(ps.LastTenFamilies, familyName, 10)
 
 	meanAge := maleMeanAge
 	if gender == entities.Female {

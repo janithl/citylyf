@@ -9,7 +9,8 @@ type IntersectionType string
 
 const (
 	NonIntersection IntersectionType = ""
-	Intersection    IntersectionType = "intersection"
+	Roundabout      IntersectionType = "roundabout"
+	Fourway         IntersectionType = "fourway"
 	ThreewayXUp     IntersectionType = "threeway-x-up"
 	ThreewayXDown   IntersectionType = "threeway-x-down"
 	ThreewayYUp     IntersectionType = "threeway-y-up"

@@ -92,19 +92,35 @@ func (g *Geography) CheckRoad(x, y int) bool {
 }
 
 // place house
-func (g *Geography) PlaceHouse(x, y int) bool {
+func (g *Geography) PlaceHouse(x, y int, small bool) bool {
 	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House != NonHouse {
 		return false
 	}
 
 	if g.CheckRoad(x, y+1) {
-		g.tiles[x][y].House = HouseX
+		if small {
+			g.tiles[x][y].House = HouseSmallX
+		} else {
+			g.tiles[x][y].House = HouseLargeX
+		}
 	} else if g.CheckRoad(x, y-1) {
-		g.tiles[x][y].House = HouseXBack
+		if small {
+			g.tiles[x][y].House = HouseSmallXBack
+		} else {
+			g.tiles[x][y].House = HouseLargeXBack
+		}
 	} else if g.CheckRoad(x+1, y) {
-		g.tiles[x][y].House = HouseY
+		if small {
+			g.tiles[x][y].House = HouseSmallY
+		} else {
+			g.tiles[x][y].House = HouseLargeY
+		}
 	} else if g.CheckRoad(x-1, y) {
-		g.tiles[x][y].House = HouseYBack
+		if small {
+			g.tiles[x][y].House = HouseSmallYBack
+		} else {
+			g.tiles[x][y].House = HouseLargeYBack
+		}
 	}
 
 	return g.tiles[x][y].House != NonHouse
@@ -122,7 +138,7 @@ func (g *Geography) setIntersectionType(x, y int) {
 	left := g.CheckRoad(x-1, y)
 	switch {
 	case top && bottom && left && right:
-		g.tiles[x][y].Intersection = Intersection
+		g.tiles[x][y].Intersection = Fourway
 	case top && bottom && left:
 		g.tiles[x][y].Intersection = ThreewayYUp
 	case top && bottom && right:
@@ -186,6 +202,19 @@ func (g *Geography) IsWithinRoad(x, y int) Direction {
 		}
 	}
 	return ""
+}
+
+// toggle roundabout
+func (g *Geography) ToggleRoundabout(x, y int) {
+	if !g.BoundsCheck(x, y) {
+		return
+	}
+
+	if g.tiles[x][y].Intersection == Fourway {
+		g.tiles[x][y].Intersection = Roundabout
+	} else if g.tiles[x][y].Intersection == Roundabout {
+		g.tiles[x][y].Intersection = Fourway
+	}
 }
 
 // NewGeography returns a new terrain map

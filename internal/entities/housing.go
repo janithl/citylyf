@@ -7,11 +7,15 @@ import (
 type HouseType string
 
 const (
-	NonHouse   HouseType = ""
-	HouseX     HouseType = "house-x"
-	HouseXBack HouseType = "house-x-back"
-	HouseY     HouseType = "house-y"
-	HouseYBack HouseType = "house-y-back"
+	NonHouse        HouseType = ""
+	HouseSmallX     HouseType = "house-small-x"
+	HouseSmallXBack HouseType = "house-small-x-back"
+	HouseSmallY     HouseType = "house-small-y"
+	HouseSmallYBack HouseType = "house-small-y-back"
+	HouseLargeX     HouseType = "house-large-x"
+	HouseLargeXBack HouseType = "house-large-x-back"
+	HouseLargeY     HouseType = "house-large-y"
+	HouseLargeYBack HouseType = "house-large-y-back"
 )
 
 type House struct {
@@ -78,7 +82,7 @@ func (h *Housing) ReviseRents() {
 }
 
 func (h *Housing) AddHouse(x, y, bedrooms int) {
-	if Sim.Geography.PlaceHouse(x, y) { // house placed!
+	if Sim.Geography.PlaceHouse(x, y, bedrooms < 4) { // house placed!
 		h.LastHouseID++
 		h.Houses = append(h.Houses, House{
 			ID:               h.LastHouseID,

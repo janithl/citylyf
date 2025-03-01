@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
 )
@@ -115,12 +116,12 @@ func (wr *WorldRenderer) Update() error {
 	wr.hoveredTileX, wr.hoveredTileY = wr.screenToGrid(float64(cursorX), float64(cursorY))
 
 	// place house
-	if ebiten.IsKeyPressed(ebiten.KeyH) {
-		entities.Sim.Houses.AddHouse(wr.hoveredTileX, wr.hoveredTileY, 1+rand.Intn(3))
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		entities.Sim.Houses.AddHouse(wr.hoveredTileX, wr.hoveredTileY, 2+rand.Intn(3))
 	}
 
 	// start placing road
-	if ebiten.IsKeyPressed(ebiten.KeyJ) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		wr.placingRoad = true
 		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
 	}
@@ -129,6 +130,11 @@ func (wr *WorldRenderer) Update() error {
 	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		wr.placingRoad = false
 		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
+	}
+
+	// toggle roundabout
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		entities.Sim.Geography.ToggleRoundabout(wr.hoveredTileX, wr.hoveredTileY)
 	}
 
 	return nil
@@ -248,7 +254,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 
 			// Draw a highlight around the tile under the mouse.
 			if wr.hoveredTileX == x && wr.hoveredTileY == y {
-				screen.DrawImage(assets.Assets.Sprites["cursorbox"].Image, op)
+				screen.DrawImage(assets.Assets.Sprites["cursorbox-b"].Image, op)
 			}
 
 			// Draw a highlight around the tile where the road starts
