@@ -13,16 +13,6 @@ import (
 	"github.com/janithl/citylyf/internal/ui"
 )
 
-// TODO
-// ## Turn people, households, houses and companies into a map (done except houses)
-// Household Budgeting - think about childcare expenses, groceries, shopping, vacation, utilities etc
-// Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate (done)
-// People should marry, have babies, get promoted, move out out the house, die etc.
-// Yearly budget - once a year, we show users government income vs expenditure and store these values for recall
-// Calculate realistic government expenses
-// Pension fund with employee + employer + government contributions
-// Companies should be tied to office space/industrial space availability
-// Companies with no employees for a year should shut down
 func main() {
 	jsonPtr := flag.Bool("json", false, "should output be in json?")
 	flag.Parse()
