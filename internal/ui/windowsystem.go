@@ -102,7 +102,7 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 	case "Households":
 		household, exists := entities.Sim.People.Households[index]
 		if exists {
-			fmt.Println(household.FamilyName(), household.Size(), household.MoveInDate.Year())
+			fmt.Println(household.FamilyName(), household.HouseID, household.Size(), household.MoveInDate.Year())
 			fmt.Println(household.GetMemberStats())
 		}
 	}

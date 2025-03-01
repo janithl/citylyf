@@ -5,6 +5,21 @@ import (
 	"math/rand"
 )
 
+type IntersectionType string
+
+const (
+	NonIntersection IntersectionType = ""
+	Intersection    IntersectionType = "intersection"
+	ThreewayXUp     IntersectionType = "threeway-x-up"
+	ThreewayXDown   IntersectionType = "threeway-x-down"
+	ThreewayYUp     IntersectionType = "threeway-y-up"
+	ThreewayYDown   IntersectionType = "threeway-y-down"
+	BendTopLeft     IntersectionType = "bend-top-left"
+	BendTopRight    IntersectionType = "bend-top-right"
+	BendBottomLeft  IntersectionType = "bend-bottom-left"
+	BendBottomRight IntersectionType = "bend-bottom-right"
+)
+
 type Segment struct {
 	Start, End Point
 	Direction  Direction

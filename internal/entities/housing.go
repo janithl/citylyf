@@ -4,6 +4,16 @@ import (
 	"time"
 )
 
+type HouseType string
+
+const (
+	NonHouse   HouseType = ""
+	HouseX     HouseType = "house-x"
+	HouseXBack HouseType = "house-x-back"
+	HouseY     HouseType = "house-y"
+	HouseYBack HouseType = "house-y-back"
+)
+
 type House struct {
 	ID               int
 	Free             bool

@@ -16,7 +16,6 @@
   "threeway-x-down": { "x": 192, "y": 192, "width": 64, "height": 64 },
   "bridge-y": { "x": 0, "y": 256, "width": 64, "height": 64 },
   "bridge-x": { "x": 64, "y": 256, "width": 64, "height": 64 },
-  "house": { "x": 128, "y": 256, "width": 64, "height": 64 },
   "cursorbox-r": { "x": 192, "y": 256, "width": 64, "height": 64 },
   "bend-bottom-right": { "x": 0, "y": 320, "width": 64, "height": 64 },
   "bend-bottom-left": { "x": 64, "y": 320, "width": 64, "height": 64 },
@@ -29,5 +28,9 @@
   "bush-small": { "x": 0, "y": 448, "width": 64, "height": 64 },
   "bush-large": { "x": 64, "y": 448, "width": 64, "height": 64 },
   "tree-conifer": { "x": 128, "y": 448, "width": 64, "height": 64 },
-  "tree-slanted": { "x": 192, "y": 448, "width": 64, "height": 64 }
+  "tree-slanted": { "x": 192, "y": 448, "width": 64, "height": 64 },
+  "house-y": { "x": 0, "y": 512, "width": 64, "height": 64 },
+  "house-y-back": { "x": 64, "y": 512, "width": 64, "height": 64 },
+  "house-x": { "x": 128, "y": 512, "width": 64, "height": 64 },
+  "house-x-back": { "x": 192, "y": 512, "width": 64, "height": 64 }
 }

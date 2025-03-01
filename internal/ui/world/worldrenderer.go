@@ -180,10 +180,6 @@ func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOp
 		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 	}
 
-	if tiles[x][y].House {
-		screen.DrawImage(assets.Assets.Sprites["house"].Image, op)
-	}
-
 	// Tree Debug
 	// if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel && x%3 == 0 {
 	// 	switch y % 4 {
@@ -220,6 +216,14 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			op.GeoM.Translate(scaledX, scaledY)
 
 			wr.tileRender(screen, op, tiles, x, y)
+
+			// Draw houses
+			if tiles[x][y].House != entities.NonHouse {
+				house, exists := assets.Assets.Sprites[string(tiles[x][y].House)]
+				if exists {
+					screen.DrawImage(house.Image, op)
+				}
+			}
 
 			// Draw roads if necessary
 			if tiles[x][y].Intersection != entities.NonIntersection {
