@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -22,6 +23,7 @@ const (
 type Simulation struct {
 	SimulationSpeed SimulationSpeed
 	Date            time.Time
+	Mutex           sync.Mutex
 	Government      Government
 	People          People
 	Houses          *Housing

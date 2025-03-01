@@ -75,7 +75,9 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBa
 			HoverColor: colour.Blue,
 			OnClick: func() {
 				if bar.Enabled {
+					entities.Sim.Mutex.Lock()
 					entities.Sim.ChangeSimulationSpeed()
+					entities.Sim.Mutex.Unlock()
 				}
 			},
 		},

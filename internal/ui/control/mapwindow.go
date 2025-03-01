@@ -67,7 +67,9 @@ func (mw *MapWindow) regenerateMap() {
 	peakProb := 0.001 + 0.00001*float64(mw.peakPerc)
 	rangeProb := 0.0 + 0.0001*float64(mw.rangePerc)
 	cliffProb := 0.0 + 0.0002*float64(mw.cliffPerc)
+	entities.Sim.Mutex.Lock()
 	entities.Sim.RegenerateMap(peakProb, rangeProb, cliffProb)
+	entities.Sim.Mutex.Unlock()
 }
 
 func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {

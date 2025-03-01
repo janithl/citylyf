@@ -51,7 +51,9 @@ func (ws *WindowSystem) closeWindows(title string) {
 		ws.windows[0].CloseWindow()
 		ws.windows = ws.windows[1:]
 		ws.bottomBar.Enabled = true
+		entities.Sim.Mutex.Lock()
 		entities.Sim.ChangeSimulationSpeed()
+		entities.Sim.Mutex.Unlock()
 	}
 
 	for i := range ws.windows {

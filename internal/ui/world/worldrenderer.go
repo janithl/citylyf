@@ -117,7 +117,9 @@ func (wr *WorldRenderer) Update() error {
 
 	// place house
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		entities.Sim.Mutex.Lock()
 		entities.Sim.Houses.AddHouse(wr.hoveredTileX, wr.hoveredTileY, 2+rand.Intn(3))
+		entities.Sim.Mutex.Unlock()
 	}
 
 	// start placing road
@@ -129,12 +131,16 @@ func (wr *WorldRenderer) Update() error {
 	// end placing road
 	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		wr.placingRoad = false
+		entities.Sim.Mutex.Lock()
 		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
+		entities.Sim.Mutex.Unlock()
 	}
 
 	// toggle roundabout
 	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		entities.Sim.Mutex.Lock()
 		entities.Sim.Geography.ToggleRoundabout(wr.hoveredTileX, wr.hoveredTileY)
+		entities.Sim.Mutex.Unlock()
 	}
 
 	return nil
