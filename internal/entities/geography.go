@@ -46,12 +46,15 @@ func (g *Geography) Generate() {
 // adjacentElevation checks if an adjacent element
 // to the given element (h, w) is at a given elevation
 func (g *Geography) adjacentElevation(w, h, elevation int) bool {
-	for y := max(0, h-1); y <= min(g.Size-1, h+1); y++ {
-		for x := max(0, w-1); x <= min(g.Size-1, w+1); x++ {
-			if g.tiles[x][y].Elevation == elevation+1 {
-				// if this element is *not* randomly a cliff, return true
-				return rand.Float64() > g.cliffProbability
-			}
+	adjacentTiles := []Point{
+		{w - 1, h - 1}, {w, h - 1}, {w + 1, h - 1},
+		{w - 1, h}, {w + 1, h},
+		{w - 1, h + 1}, {w, h + 1}, {w + 1, h + 1}}
+
+	for _, tile := range adjacentTiles {
+		if g.BoundsCheck(tile.X, tile.Y) && g.tiles[tile.X][tile.Y].Elevation == elevation+1 {
+			// if this element is *not* randomly a cliff, return true
+			return rand.Float64() > g.cliffProbability
 		}
 	}
 

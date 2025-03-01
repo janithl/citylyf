@@ -52,6 +52,11 @@ func (s *Stepper) SetMaxNumber(maxNumber int) {
 	}
 }
 
+// SetCurrentNumber sets the current stepper value
+func (s *Stepper) SetCurrentNumber(currentNumber int) {
+	s.currentNumber = currentNumber
+}
+
 // NewStepper creates a new stepper with an optional callback
 func NewStepper(x, y, currentNumber, maxNumber int, stepperType StepperType, onChange func(int)) *Stepper {
 	if maxNumber < currentNumber {

@@ -24,12 +24,12 @@ type Simulation struct {
 	SimulationSpeed SimulationSpeed
 	Date            time.Time
 	Mutex           sync.Mutex
-	Government      Government
-	People          People
+	Government      *Government
+	People          *People
 	Houses          *Housing
-	Market          Market
+	Market          *Market
 	Companies       map[int]*Company
-	Geography       Geography
+	Geography       *Geography
 	tickNumber      int
 }
 
@@ -74,7 +74,7 @@ func (s *Simulation) GetCompanyIDs() []int {
 }
 
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
-	s.Geography = *NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
+	s.Geography = NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
 
 var Sim Simulation
@@ -84,8 +84,8 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 	return Simulation{
 		SimulationSpeed: Pause,
 		Date:            startDate,
-		Government:      *NewGovernment(governmentReserves, startDate),
-		People: People{
+		Government:      NewGovernment(governmentReserves, startDate),
+		People: &People{
 			PopulationValues: []int{0},
 			LabourForce:      0,
 			Unemployed:       0,
@@ -96,7 +96,7 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 			LastHouseID: 100,
 			Houses:      []House{},
 		},
-		Market: Market{
+		Market: &Market{
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,
 			History: MarketHistory{
@@ -109,6 +109,6 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 			},
 		},
 		Companies: make(map[int]*Company),
-		Geography: *NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		Geography: NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
 	}
 }

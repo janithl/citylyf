@@ -64,12 +64,21 @@ func (mw *MapWindow) setPerc(perc string, value int) {
 }
 
 func (mw *MapWindow) regenerateMap() {
-	peakProb := 0.001 + 0.00001*float64(mw.peakPerc)
-	rangeProb := 0.0 + 0.0001*float64(mw.rangePerc)
-	cliffProb := 0.0 + 0.0002*float64(mw.cliffPerc)
+	peakProb := 0.00005 * float64(mw.peakPerc)
+	rangeProb := 0.0005 * float64(mw.rangePerc)
+	cliffProb := 0.01 * float64(mw.cliffPerc)
 	entities.Sim.Mutex.Lock()
 	entities.Sim.RegenerateMap(peakProb, rangeProb, cliffProb)
 	entities.Sim.Mutex.Unlock()
+}
+
+func (mw *MapWindow) resetValues() {
+	mw.peakPerc = 30
+	mw.rangePerc = 10
+	mw.cliffPerc = 10
+	mw.steppers[0].SetCurrentNumber(mw.peakPerc)
+	mw.steppers[1].SetCurrentNumber(mw.rangePerc)
+	mw.steppers[2].SetCurrentNumber(mw.cliffPerc)
 }
 
 func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {
@@ -78,9 +87,9 @@ func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {
 		y:         y,
 		width:     width,
 		height:    height,
-		peakPerc:  50,
-		rangePerc: 50,
-		cliffPerc: 50,
+		peakPerc:  30,
+		rangePerc: 10,
+		cliffPerc: 10,
 	}
 
 	mw.stepperLabels = []*Label{
@@ -97,6 +106,7 @@ func NewMapWindow(x, y, width, height int, closeFunc func()) *MapWindow {
 
 	mw.buttons = []*Button{
 		{Label: "Done", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.Red, OnClick: closeFunc},
+		{Label: "Reset Values", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.DarkMagenta, OnClick: mw.resetValues},
 		{Label: "Regenerate Map", X: 0, Y: 0, Width: 240, Height: buttonHeight, Color: colour.Black, HoverColor: colour.DarkGreen, OnClick: mw.regenerateMap},
 	}
 
