@@ -40,6 +40,9 @@ func (p *People) UnemploymentRate() float64 {
 
 func (p *People) PopulationGrowthRate() float64 {
 	lastPopulationValue := p.PopulationValues[len(p.PopulationValues)-1]
+	if lastPopulationValue == 0 {
+		return 0.0
+	}
 	return 100.0 * float64(p.Population()-lastPopulationValue) / float64(lastPopulationValue)
 }
 
