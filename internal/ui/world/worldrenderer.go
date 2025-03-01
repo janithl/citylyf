@@ -2,6 +2,7 @@ package world
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
@@ -113,11 +114,18 @@ func (wr *WorldRenderer) Update() error {
 	cursorX, cursorY := ebiten.CursorPosition()
 	wr.hoveredTileX, wr.hoveredTileY = wr.screenToGrid(float64(cursorX), float64(cursorY))
 
+	// place house
+	if ebiten.IsKeyPressed(ebiten.KeyH) {
+		entities.Sim.Houses.AddHouse(wr.hoveredTileX, wr.hoveredTileY, 1+rand.Intn(3))
+	}
+
+	// start placing road
 	if ebiten.IsKeyPressed(ebiten.KeyJ) {
 		wr.placingRoad = true
 		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
 	}
 
+	// end placing road
 	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		wr.placingRoad = false
 		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
@@ -170,6 +178,10 @@ func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOp
 		screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
 	default:
 		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
+	}
+
+	if tiles[x][y].House {
+		screen.DrawImage(assets.Assets.Sprites["house"].Image, op)
 	}
 
 	// Tree Debug

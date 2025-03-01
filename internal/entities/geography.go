@@ -23,6 +23,7 @@ type Tile struct {
 	Elevation    int
 	Road         bool
 	Intersection IntersectionType
+	House        bool
 }
 
 type Geography struct {
@@ -105,6 +106,16 @@ func (g *Geography) CheckRoad(x, y int) bool {
 	return g.tiles[x][y].Road
 }
 
+// place house
+func (g *Geography) PlaceHouse(x, y int) bool {
+	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House {
+		return false
+	}
+
+	g.tiles[x][y].House = true
+	return true
+}
+
 // setIntersectionType sets the type of intersection based on surrounding tiles
 func (g *Geography) setIntersectionType(x, y int) {
 	if !g.CheckRoad(x, y) {
@@ -145,7 +156,7 @@ func (g *Geography) addRoad(r *Road) {
 	for _, segment := range r.Segments {
 		if segment.Direction == DirX {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
-				if g.BoundsCheck(i, segment.Start.Y) {
+				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
 					g.tiles[i][segment.Start.Y].Road = true
 				}
 				g.setIntersectionType(i-1, segment.Start.Y)
@@ -153,7 +164,7 @@ func (g *Geography) addRoad(r *Road) {
 			g.setIntersectionType(segment.End.X, segment.Start.Y)
 		} else if segment.Direction == DirY {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
-				if g.BoundsCheck(segment.Start.X, i) {
+				if g.BoundsCheck(segment.Start.X, i) && !g.tiles[segment.Start.X][i].House {
 					g.tiles[segment.Start.X][i].Road = true
 				}
 				g.setIntersectionType(segment.Start.X, i-1)

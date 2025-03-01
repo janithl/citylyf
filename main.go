@@ -27,7 +27,7 @@ func main() {
 	jsonPtr := flag.Bool("json", false, "should output be in json?")
 	flag.Parse()
 
-	entities.Sim = entities.NewSimulation(2020, 10+rand.Intn(10), 100000)
+	entities.Sim = entities.NewSimulation(2020, 100000)
 	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
 	peopleService := people.NewPeopleService()
 	calculationService := economy.NewCalculationService(employment.CompanyService)

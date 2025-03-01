@@ -24,7 +24,7 @@ type Simulation struct {
 	Date            time.Time
 	Government      Government
 	People          People
-	Houses          Housing
+	Houses          *Housing
 	Market          Market
 	Companies       map[int]*Company
 	Geography       Geography
@@ -77,7 +77,7 @@ func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
 
 var Sim Simulation
 
-func NewSimulation(startYear int, houses int, governmentReserves int) Simulation {
+func NewSimulation(startYear, governmentReserves int) Simulation {
 	startDate := time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC)
 	return Simulation{
 		SimulationSpeed: Pause,
@@ -90,7 +90,10 @@ func NewSimulation(startYear int, houses int, governmentReserves int) Simulation
 			People:           make(map[int]*Person),
 			Households:       make(map[int]*Household),
 		},
-		Houses: *NewHousing(houses),
+		Houses: &Housing{
+			LastHouseID: 100,
+			Houses:      []House{},
+		},
 		Market: Market{
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,

@@ -44,15 +44,17 @@ func (p *People) PopulationGrowthRate() float64 {
 }
 
 func (p *People) MoveIn(createHousehold func() *Household) {
-	for i := 0; i < rand.Intn(1+(Sim.Houses.GetFreeHouses()/4)); i++ {
-		h := createHousehold()
-		monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)        // 25% of yearly income towards rent / 12
-		houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
-		if houseId > 0 {
-			h.HouseID = houseId
-			fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
-			p.Households[h.ID] = h
-		}
+	if Sim.Houses.GetFreeHouses() == 0 || rand.Float64() < 0.85 { // 15% change of moving in if there are free houses
+		return
+	}
+
+	h := createHousehold()
+	monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)        // 25% of yearly income towards rent / 12
+	houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
+	if houseId > 0 {
+		h.HouseID = houseId
+		fmt.Printf("[ Move ] %s family has moved into a house, %d houses remain\n", h.FamilyName(), Sim.Houses.GetFreeHouses())
+		p.Households[h.ID] = h
 	}
 }
 

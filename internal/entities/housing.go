@@ -1,12 +1,20 @@
 package entities
 
 import (
-	"math/rand"
 	"time"
 )
 
+type House struct {
+	ID               int
+	Free             bool
+	Bedrooms         int
+	MonthlyRent      int
+	LastRentRevision time.Time
+}
+
 type Housing struct {
-	Houses []House
+	LastHouseID int
+	Houses      []House
 }
 
 func (h *Housing) MoveIn(budget int, bedrooms int) int {
@@ -59,25 +67,15 @@ func (h *Housing) ReviseRents() {
 	}
 }
 
-type House struct {
-	ID               int
-	Free             bool
-	Bedrooms         int
-	MonthlyRent      int
-	LastRentRevision time.Time
-}
-
-func NewHousing(count int) *Housing {
-	housing := &Housing{}
-	for i := 0; i < count; i++ {
-		bedrooms := 1 + rand.Intn(3)
-		housing.Houses = append(housing.Houses, House{
-			ID:               100 + i,
+func (h *Housing) AddHouse(x, y, bedrooms int) {
+	if Sim.Geography.PlaceHouse(x, y) { // house placed!
+		h.LastHouseID++
+		h.Houses = append(h.Houses, House{
+			ID:               h.LastHouseID,
 			Free:             true,
 			Bedrooms:         bedrooms,
 			MonthlyRent:      1200 + 200*(bedrooms-1),
 			LastRentRevision: Sim.Date,
 		})
 	}
-	return housing
 }
