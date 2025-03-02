@@ -1,14 +1,18 @@
 package assets
 
 import (
+	"embed"
 	"encoding/json"
 	"image"
+	"io/fs"
 	"log"
-	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
+
+//go:embed *.png *.json
+var assetsFolder embed.FS
 
 // Sprite represents an extracted image from the spritesheet
 type Sprite struct {
@@ -34,7 +38,7 @@ var Assets *AssetManager
 
 // LoadSpritesheet loads a multi-line sprite sheet
 func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
-	img, _, err := ebitenutil.NewImageFromFile(path)
+	img, _, err := ebitenutil.NewImageFromFileSystem(assetsFolder, path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +73,7 @@ func LoadImage(path string) *ebiten.Image {
 // LoadVariableSpritesheet loads a spritesheet and extracts sprites using JSON definitions
 func LoadVariableSpritesheet(imagePath, jsonPath string) {
 	// Load JSON file
-	data, err := os.ReadFile(jsonPath)
+	data, err := fs.ReadFile(assetsFolder, jsonPath)
 	if err != nil {
 		log.Fatal("Failed to load sprite JSON:", err)
 	}
@@ -84,7 +88,7 @@ func LoadVariableSpritesheet(imagePath, jsonPath string) {
 	}
 
 	// Load the spritesheet image
-	img, _, err := ebitenutil.NewImageFromFile(imagePath)
+	img, _, err := ebitenutil.NewImageFromFileSystem(assetsFolder, imagePath)
 	if err != nil {
 		log.Fatal("Failed to load spritesheet:", err)
 	}

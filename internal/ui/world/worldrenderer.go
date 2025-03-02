@@ -272,7 +272,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 }
 
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
-	assets.LoadVariableSpritesheet("internal/ui/assets/geo-spritesheet.png", "internal/ui/assets/sprites.json")
+	assets.LoadVariableSpritesheet("geo-spritesheet.png", "sprites.json")
 
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
