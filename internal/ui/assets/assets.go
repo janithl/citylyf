@@ -27,25 +27,26 @@ type Animation struct {
 
 // AssetManager manages all game assets
 type AssetManager struct {
-	SpriteSheet *ebiten.Image
-	Animations  map[string]Animation // Stores animations by name
-	Sprites     map[string]Sprite
+	Animations map[string]Animation // Stores animations by name
+	Sprites    map[string]Sprite
 }
 
 // Global instance
-var AnimationAssets *AssetManager
 var Assets *AssetManager
+
+func init() {
+	// Initialize asset manager
+	Assets = &AssetManager{
+		Sprites:    make(map[string]Sprite),
+		Animations: make(map[string]Animation),
+	}
+}
 
 // LoadSpritesheet loads a multi-line sprite sheet
 func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
 	img, _, err := ebitenutil.NewImageFromFileSystem(assetsFolder, path)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	AnimationAssets = &AssetManager{
-		SpriteSheet: img,
-		Animations:  make(map[string]Animation),
 	}
 
 	// Extract animations based on row mappings
@@ -57,21 +58,12 @@ func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, row
 			)).(*ebiten.Image)
 			frames = append(frames, frame)
 		}
-		AnimationAssets.Animations[name] = Animation{Frames: frames}
+		Assets.Animations[name] = Animation{Frames: frames}
 	}
-}
-
-// Load Single Image
-func LoadImage(path string) *ebiten.Image {
-	img, _, err := ebitenutil.NewImageFromFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return img
 }
 
 // LoadVariableSpritesheet loads a spritesheet and extracts sprites using JSON definitions
-func LoadVariableSpritesheet(imagePath, jsonPath string) {
+func LoadVariableSpritesheet(prefix, imagePath, jsonPath string) {
 	// Load JSON file
 	data, err := fs.ReadFile(assetsFolder, jsonPath)
 	if err != nil {
@@ -93,16 +85,15 @@ func LoadVariableSpritesheet(imagePath, jsonPath string) {
 		log.Fatal("Failed to load spritesheet:", err)
 	}
 
-	// Initialize asset manager
-	Assets = &AssetManager{
-		SpriteSheet: img,
-		Sprites:     make(map[string]Sprite),
+	// add a hyphen
+	if prefix != "" {
+		prefix += "-"
 	}
 
 	// Extract sprites based on JSON data
 	for name, rect := range spriteMap {
 		sprite := img.SubImage(image.Rect(rect.X, rect.Y, rect.X+rect.Width, rect.Y+rect.Height)).(*ebiten.Image)
-		Assets.Sprites[name] = Sprite{
+		Assets.Sprites[prefix+name] = Sprite{
 			Image: sprite,
 			X:     rect.X,
 			Y:     rect.Y,

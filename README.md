@@ -21,4 +21,8 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [ ] Companies with no employees for a year should shut down (tie productivity to employee count?)
 - [ ] Forests and farmland
 - [ ] Housing estates instead of laying down individual houses?
-- [ ] Better UI for road laying 
+- [ ] Better UI for road laying
+- [ ] To enable both of the above, add a way to create rectangular plots using the mouse
+- [ ] "Buildable" bool on tiles
+- [ ] Build animation
+- [x] Break sprites into multiple files

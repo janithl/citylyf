@@ -1,0 +1,10 @@
+{
+  "small-y": { "x": 0, "y": 0, "width": 64, "height": 64 },
+  "small-y-back": { "x": 64, "y": 0, "width": 64, "height": 64 },
+  "small-x": { "x": 128, "y": 0, "width": 64, "height": 64 },
+  "small-x-back": { "x": 192, "y": 0, "width": 64, "height": 64 },
+  "large-y": { "x": 0, "y": 64, "width": 64, "height": 64 },
+  "large-y-back": { "x": 64, "y": 64, "width": 64, "height": 64 },
+  "large-x": { "x": 128, "y": 64, "width": 64, "height": 64 },
+  "large-x-back": { "x": 192, "y": 64, "width": 64, "height": 64 }
+}

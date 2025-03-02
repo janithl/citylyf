@@ -238,20 +238,21 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// Draw roads if necessary
+			// TODO: Expand to chipseal and unsealed roads
 			if tiles[x][y].Intersection != entities.NonIntersection {
-				intersection, exists := assets.Assets.Sprites[string(tiles[x][y].Intersection)]
+				intersection, exists := assets.Assets.Sprites["road-asphalt-"+string(tiles[x][y].Intersection)]
 				if exists {
 					screen.DrawImage(intersection.Image, op)
 				}
 			} else if tiles[x][y].Road {
 				roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
 				if roadDirection == entities.DirX {
-					screen.DrawImage(assets.Assets.Sprites["road-x"].Image, op)
+					screen.DrawImage(assets.Assets.Sprites["road-asphalt-x"].Image, op)
 					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
 						screen.DrawImage(assets.Assets.Sprites["bridge-x"].Image, op)
 					}
 				} else if roadDirection == entities.DirY {
-					screen.DrawImage(assets.Assets.Sprites["road-y"].Image, op)
+					screen.DrawImage(assets.Assets.Sprites["road-asphalt-y"].Image, op)
 					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
 						screen.DrawImage(assets.Assets.Sprites["bridge-y"].Image, op)
 					}
@@ -272,7 +273,9 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 }
 
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
-	assets.LoadVariableSpritesheet("geo-spritesheet.png", "sprites.json")
+	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
+	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")
+	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
 
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{

@@ -1,0 +1,14 @@
+{
+  "asphalt-y": { "x": 0, "y": 0, "width": 64, "height": 64 },
+  "asphalt-x": { "x": 64, "y": 0, "width": 64, "height": 64 },
+  "asphalt-fourway": { "x": 128, "y": 0, "width": 64, "height": 64 },
+  "asphalt-roundabout": { "x": 192, "y": 0, "width": 64, "height": 64 },
+  "asphalt-threeway-y-up": { "x": 0, "y": 64, "width": 64, "height": 64 },
+  "asphalt-threeway-y-down": { "x": 64, "y": 64, "width": 64, "height": 64 },
+  "asphalt-threeway-x-up": { "x": 128, "y": 64, "width": 64, "height": 64 },
+  "asphalt-threeway-x-down": { "x": 192, "y": 64, "width": 64, "height": 64 },
+  "asphalt-bend-bottom-right": { "x": 0, "y": 128, "width": 64, "height": 64 },
+  "asphalt-bend-bottom-left": { "x": 64, "y": 128, "width": 64, "height": 64 },
+  "asphalt-bend-top-left": { "x": 128, "y": 128, "width": 64, "height": 64 },
+  "asphalt-bend-top-right": { "x": 192, "y": 128, "width": 64, "height": 64 }
+}
