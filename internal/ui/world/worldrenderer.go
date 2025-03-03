@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 const (
@@ -23,7 +24,7 @@ const (
 type WorldRenderer struct {
 	playerX, playerY, cameraX, cameraY, zoomFactor float64
 	width, height, hoveredTileX, hoveredTileY      int
-	roadStartX, roadStartY                         int
+	startTileX, startTileY                         int
 	placingRoad                                    entities.RoadType
 }
 
@@ -125,16 +126,16 @@ func (wr *WorldRenderer) Update() error {
 	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		wr.placingRoad = entities.Asphalt
-		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
+		wr.startTileX, wr.startTileY = wr.hoveredTileX, wr.hoveredTileY
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
 		wr.placingRoad = entities.Unsealed
-		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
+		wr.startTileX, wr.startTileY = wr.hoveredTileX, wr.hoveredTileY
 	}
 
 	// end placing road
 	if wr.placingRoad != "" && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		entities.Sim.Mutex.Lock()
-		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, wr.placingRoad)
+		entities.PlaceRoad(wr.startTileX, wr.startTileY, wr.hoveredTileX, wr.hoveredTileY, wr.placingRoad)
 		entities.Sim.Mutex.Unlock()
 		wr.placingRoad = ""
 	}
@@ -281,7 +282,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// Draw a highlight around the tile where the road starts
-			if wr.placingRoad != "" && wr.roadStartX == x && wr.roadStartY == y {
+			if wr.placingRoad != "" && utils.IsWithinRange(wr.startTileX, wr.hoveredTileX, x) && utils.IsWithinRange(wr.startTileY, wr.hoveredTileY, y) {
 				screen.DrawImage(assets.Assets.Sprites["cursorbox-r"].Image, op)
 			}
 		}

@@ -29,3 +29,8 @@ func AddFifo[T int | float64 | string](s []T, element T, maxLength int) []T {
 	}
 	return append(s, element)
 }
+
+// Check if a target is within a range
+func IsWithinRange(limit1, limit2, target int) bool {
+	return min(limit1, limit2) <= target && target <= max(limit1, limit2)
+}
