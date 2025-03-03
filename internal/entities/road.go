@@ -29,9 +29,9 @@ type Segment struct {
 type RoadType string
 
 const (
-	Asphalt  RoadType = "Asphalt"
-	Chipseal RoadType = "Chipseal"
-	Unsealed RoadType = "Unsealed"
+	Asphalt  RoadType = "asphalt"
+	Chipseal RoadType = "chipseal"
+	Unsealed RoadType = "unsealed"
 )
 
 type Road struct {

@@ -24,7 +24,7 @@ type WorldRenderer struct {
 	playerX, playerY, cameraX, cameraY, zoomFactor float64
 	width, height, hoveredTileX, hoveredTileY      int
 	roadStartX, roadStartY                         int
-	placingRoad                                    bool
+	placingRoad                                    entities.RoadType
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -122,18 +122,21 @@ func (wr *WorldRenderer) Update() error {
 		entities.Sim.Mutex.Unlock()
 	}
 
-	// start placing road
+	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		wr.placingRoad = true
+		wr.placingRoad = entities.Asphalt
+		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
+		wr.placingRoad = entities.Unsealed
 		wr.roadStartX, wr.roadStartY = wr.hoveredTileX, wr.hoveredTileY
 	}
 
 	// end placing road
-	if wr.placingRoad && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		wr.placingRoad = false
+	if wr.placingRoad != "" && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		entities.Sim.Mutex.Lock()
-		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, entities.Asphalt)
+		entities.PlaceRoad(wr.roadStartX, wr.roadStartY, wr.hoveredTileX, wr.hoveredTileY, wr.placingRoad)
 		entities.Sim.Mutex.Unlock()
+		wr.placingRoad = ""
 	}
 
 	// toggle roundabout
@@ -238,23 +241,36 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// Draw roads if necessary
-			// TODO: Expand to chipseal and unsealed roads
-			if tiles[x][y].Intersection != entities.NonIntersection {
-				intersection, exists := assets.Assets.Sprites["road-asphalt-"+string(tiles[x][y].Intersection)]
-				if exists {
-					screen.DrawImage(intersection.Image, op)
-				}
-			} else if tiles[x][y].Road {
-				roadDirection := entities.Sim.Geography.IsWithinRoad(x, y)
-				if roadDirection == entities.DirX {
-					screen.DrawImage(assets.Assets.Sprites["road-asphalt-x"].Image, op)
-					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
-						screen.DrawImage(assets.Assets.Sprites["bridge-x"].Image, op)
+			if tiles[x][y].Road {
+				roadDirection, roadType := entities.Sim.Geography.IsWithinRoad(x, y)
+				roadPrefix := "road-" + string(roadType) + "-"
+
+				// check intersection and draw
+				if roadType != "" && tiles[x][y].Intersection != entities.NonIntersection {
+					intersection, exists := assets.Assets.Sprites[roadPrefix+string(tiles[x][y].Intersection)]
+					if exists {
+						screen.DrawImage(intersection.Image, op)
 					}
-				} else if roadDirection == entities.DirY {
-					screen.DrawImage(assets.Assets.Sprites["road-asphalt-y"].Image, op)
+				} else {
+					// draw correct road
+					var roadTile assets.Sprite
+					var exists bool
+					if roadDirection == entities.DirX {
+						roadTile, exists = assets.Assets.Sprites[roadPrefix+"x"]
+					} else if roadDirection == entities.DirY {
+						roadTile, exists = assets.Assets.Sprites[roadPrefix+"y"]
+					}
+					if exists {
+						screen.DrawImage(roadTile.Image, op)
+					}
+
+					// draw correct bridge
 					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
-						screen.DrawImage(assets.Assets.Sprites["bridge-y"].Image, op)
+						if roadDirection == entities.DirX {
+							screen.DrawImage(assets.Assets.Sprites["bridge-x"].Image, op)
+						} else if roadDirection == entities.DirY {
+							screen.DrawImage(assets.Assets.Sprites["bridge-y"].Image, op)
+						}
 					}
 				}
 			}
@@ -265,7 +281,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// Draw a highlight around the tile where the road starts
-			if wr.placingRoad && wr.roadStartX == x && wr.roadStartY == y {
+			if wr.placingRoad != "" && wr.roadStartX == x && wr.roadStartY == y {
 				screen.DrawImage(assets.Assets.Sprites["cursorbox-r"].Image, op)
 			}
 		}

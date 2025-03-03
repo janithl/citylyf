@@ -10,5 +10,17 @@
   "asphalt-bend-bottom-right": { "x": 0, "y": 128, "width": 64, "height": 64 },
   "asphalt-bend-bottom-left": { "x": 64, "y": 128, "width": 64, "height": 64 },
   "asphalt-bend-top-left": { "x": 128, "y": 128, "width": 64, "height": 64 },
-  "asphalt-bend-top-right": { "x": 192, "y": 128, "width": 64, "height": 64 }
+  "asphalt-bend-top-right": { "x": 192, "y": 128, "width": 64, "height": 64 },
+  "unsealed-y": { "x": 0, "y": 192, "width": 64, "height": 64 },
+  "unsealed-x": { "x": 64, "y": 192, "width": 64, "height": 64 },
+  "unsealed-fourway": { "x": 128, "y": 192, "width": 64, "height": 64 },
+  "unsealed-roundabout": { "x": 192, "y": 192, "width": 64, "height": 64 },
+  "unsealed-threeway-y-up": { "x": 0, "y": 256, "width": 64, "height": 64 },
+  "unsealed-threeway-y-down": { "x": 64, "y": 256, "width": 64, "height": 64 },
+  "unsealed-threeway-x-up": { "x": 128, "y": 256, "width": 64, "height": 64 },
+  "unsealed-threeway-x-down": { "x": 192, "y": 256, "width": 64, "height": 64 },
+  "unsealed-bend-bottom-right": { "x": 0, "y": 320, "width": 64, "height": 64 },
+  "unsealed-bend-bottom-left": { "x": 64, "y": 320, "width": 64, "height": 64 },
+  "unsealed-bend-top-left": { "x": 128, "y": 320, "width": 64, "height": 64 },
+  "unsealed-bend-top-right": { "x": 192, "y": 320, "width": 64, "height": 64 }
 }

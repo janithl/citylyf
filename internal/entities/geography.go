@@ -192,19 +192,19 @@ func (g *Geography) BoundsCheck(x, y int) bool {
 	return x >= 0 && y >= 0 && x < g.Size && y < g.Size
 }
 
-// check if coordinates are within a road segment, and that road's direction
-func (g *Geography) IsWithinRoad(x, y int) Direction {
+// check if coordinates are within a road segment, and that road's direction and type
+func (g *Geography) IsWithinRoad(x, y int) (Direction, RoadType) {
 	for _, road := range g.roads {
 		for _, segment := range road.Segments {
 			if segment.Direction == DirX && y == segment.Start.Y && x >= segment.Start.X && x <= segment.End.X {
-				return DirX
+				return DirX, road.Type
 			}
 			if segment.Direction == DirY && x == segment.Start.X && y >= segment.Start.Y && y <= segment.End.Y {
-				return DirY
+				return DirY, road.Type
 			}
 		}
 	}
-	return ""
+	return "", ""
 }
 
 // toggle roundabout
