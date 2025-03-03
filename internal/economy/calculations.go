@@ -46,7 +46,7 @@ func (cs *CalculationService) CalculateEconomy() {
 
 	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
 		newCompany := cs.companyService.GenerateRandomCompany()
-		cs.companyService.AddCompany(newCompany)
+		entities.Sim.Companies.Add(newCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 

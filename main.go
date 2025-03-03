@@ -18,14 +18,16 @@ func main() {
 	flag.Parse()
 
 	entities.Sim = entities.NewSimulation(2020, 100000)
-	employment := economy.Employment{CompanyService: economy.NewCompanyService()}
+	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
 	peopleService := people.NewPeopleService()
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
 	// set up some initial entities.Sim.Companies
 	for i := 0; i < 4+rand.Intn(4); i++ {
+		entities.Sim.Mutex.Lock()
 		newCompany := employment.CompanyService.GenerateRandomCompany()
-		employment.CompanyService.AddCompany(newCompany)
+		entities.Sim.Companies.Add(newCompany)
+		entities.Sim.Mutex.Unlock()
 		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
 	}
 

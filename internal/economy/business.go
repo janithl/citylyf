@@ -7,15 +7,7 @@ import (
 	"github.com/janithl/citylyf/internal/entities"
 )
 
-type CompanyService struct {
-	LastCompanyID int
-}
-
-func NewCompanyService() *CompanyService {
-	return &CompanyService{
-		LastCompanyID: 1000, // start IDs from 1000
-	}
-}
+type CompanyService struct{}
 
 // GenerateRandomCompany creates a company with random industry and financials
 func (c *CompanyService) GenerateRandomCompany() *entities.Company {
@@ -43,18 +35,6 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 
 	company.CalculateProfit(31)
 	return &company
-}
-
-// AddCompany adds a new company
-func (c *CompanyService) AddCompany(company *entities.Company) {
-	c.LastCompanyID += 1
-	company.ID = c.LastCompanyID
-	entities.Sim.Companies[company.ID] = company
-}
-
-// RemoveCompany removes a company
-func (c *CompanyService) RemoveCompany(companyID int) {
-	delete(entities.Sim.Companies, companyID)
 }
 
 // AddEmployeeToCompany adds your ID to the company list of employees

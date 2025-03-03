@@ -28,9 +28,10 @@ type Simulation struct {
 	People          *People
 	Houses          *Housing
 	Market          *Market
-	Companies       map[int]*Company
+	Companies       Companies
 	Geography       *Geography
 	tickNumber      int
+	lastID          int
 }
 
 func (s *Simulation) Tick() {
@@ -73,6 +74,11 @@ func (s *Simulation) GetCompanyIDs() []int {
 	return IDs
 }
 
+func (s *Simulation) GetNextID() int {
+	s.lastID++
+	return s.lastID
+}
+
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
 	s.Geography = NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
@@ -93,8 +99,7 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 			Households:       make(map[int]*Household),
 		},
 		Houses: &Housing{
-			LastHouseID: 100,
-			Houses:      []House{},
+			Houses: []House{},
 		},
 		Market: &Market{
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
@@ -110,5 +115,6 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 		},
 		Companies: make(map[int]*Company),
 		Geography: NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		lastID:    10000,
 	}
 }

@@ -26,9 +26,9 @@ type House struct {
 	LastRentRevision time.Time
 }
 
+// TODO make this a type alias for a map like companies
 type Housing struct {
-	LastHouseID int
-	Houses      []House
+	Houses []House
 }
 
 func (h *Housing) MoveIn(budget int, bedrooms int) int {
@@ -83,9 +83,9 @@ func (h *Housing) ReviseRents() {
 
 func (h *Housing) AddHouse(x, y, bedrooms int) {
 	if Sim.Geography.PlaceHouse(x, y, bedrooms < 4) { // house placed!
-		h.LastHouseID++
+		houseID := Sim.GetNextID()
 		h.Houses = append(h.Houses, House{
-			ID:               h.LastHouseID,
+			ID:               houseID,
 			Free:             true,
 			Bedrooms:         bedrooms,
 			MonthlyRent:      1200 + 200*(bedrooms-1),

@@ -10,6 +10,20 @@ import (
 	"github.com/janithl/citylyf/internal/utils"
 )
 
+type Companies map[int]*Company
+
+// Add adds a new company
+func (c Companies) Add(company *Company) {
+	Sim.lastID += 1
+	company.ID = Sim.lastID
+	c[company.ID] = company
+}
+
+// Remove removes a company
+func (c Companies) Remove(companyID int) {
+	delete(c, companyID)
+}
+
 // Company represents a business entity with jobs
 type Company struct {
 	ID           int

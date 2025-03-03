@@ -15,16 +15,12 @@ const femaleMeanAge = 39.0
 const ageStdDev = 15.0
 
 type PeopleService struct {
-	LastHouseholdID int
-	LastPersonID    int
 	LastFiveNames   []string
 	LastTenFamilies []string
 }
 
 func NewPeopleService() *PeopleService {
 	return &PeopleService{
-		LastHouseholdID: 1000,  // start Household IDs from 1000
-		LastPersonID:    10000, // start IDs from 10000
 		LastFiveNames:   make([]string, 5),
 		LastTenFamilies: make([]string, 10),
 	}
@@ -56,9 +52,7 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 
 	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(age-25), 1)
 
-	ps.LastPersonID += 1
 	return &entities.Person{
-		ID:             ps.LastPersonID,
 		FirstName:      name,
 		FamilyName:     familyName,
 		Birthdate:      getRandomBirthdate(age),
@@ -75,21 +69,24 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 
 func (ps *PeopleService) CreateHousehold() *entities.Household {
 	var p, q *entities.Person
-	ps.LastHouseholdID += 1
+	householdID := entities.Sim.GetNextID()
+
 	household := &entities.Household{
-		ID:         ps.LastHouseholdID,
+		ID:         householdID,
 		MemberIDs:  []int{},
 		MoveInDate: entities.Sim.Date,
 		LastPayDay: entities.Sim.Date,
 	}
 
 	p = ps.CreateRandomPerson(16, 100)
+	p.ID = entities.Sim.GetNextID()
 	entities.Sim.People.AddPerson(p)
 	household.MemberIDs = append(household.MemberIDs, p.ID)
 	household.Savings = p.Savings
 
 	if p.Relationship == entities.Married {
 		q = ps.CreateRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
+		q.ID = entities.Sim.GetNextID()
 		entities.Sim.People.AddPerson(q)
 		q.Relationship = entities.Married
 		household.Savings += q.Savings
@@ -101,15 +98,19 @@ func (ps *PeopleService) CreateHousehold() *entities.Household {
 	}
 
 	if rand.Intn(100) < 58 {
-		kidIDs := ps.createKids(p, q)
-		household.MemberIDs = append(household.MemberIDs, kidIDs...)
+		kids := ps.createKids(p, q)
+		for _, kid := range kids {
+			kid.ID = entities.Sim.GetNextID()
+			entities.Sim.People.AddPerson(kid)
+			household.MemberIDs = append(household.MemberIDs, kid.ID)
+		}
 	}
 
 	return household
 }
 
-func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []int {
-	var kidIDs []int
+func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []*entities.Person {
+	var kids []*entities.Person
 	numberOfKids := 0
 
 	randomKids := rand.Intn(100)
@@ -150,10 +151,9 @@ func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []in
 		if kid != nil {
 			kid.Relationship = entities.Single
 			kid.FamilyName = p.FamilyName
-			entities.Sim.People.AddPerson(kid)
-			kidIDs = append(kidIDs, kid.ID)
+			kids = append(kids, kid)
 		}
 	}
 
-	return kidIDs
+	return kids
 }
