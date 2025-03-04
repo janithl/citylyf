@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"maps"
 	"math"
 	"math/rand"
 	"slices"
@@ -14,14 +15,23 @@ type Companies map[int]*Company
 
 // Add adds a new company
 func (c Companies) Add(company *Company) {
-	Sim.lastID += 1
-	company.ID = Sim.lastID
+	company.ID = Sim.GetNextID()
 	c[company.ID] = company
 }
 
 // Remove removes a company
 func (c Companies) Remove(companyID int) {
 	delete(c, companyID)
+}
+
+// GetIDs returns a sorted list of company IDs
+func (c Companies) GetIDs() []int {
+	IDs := []int{}
+	for company := range maps.Values(c) {
+		IDs = append(IDs, company.ID)
+	}
+	slices.Sort(IDs)
+	return IDs
 }
 
 // Company represents a business entity with jobs

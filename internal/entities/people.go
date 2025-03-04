@@ -52,11 +52,11 @@ func (p *People) MoveIn(createHousehold func() *Household) {
 	}
 
 	h := createHousehold()
-	monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)        // 25% of yearly income towards rent / 12
-	houseId := Sim.Houses.MoveIn(int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
-	if houseId > 0 {
-		h.HouseID = houseId
-		fmt.Printf("[ Move ] %s family has moved into house #%d, %d houses remain\n", h.FamilyName(), houseId, Sim.Houses.GetFreeHouses())
+	monthlyRentBudget := float64(h.AnnualIncome()) / (4 * 12)              // 25% of yearly income towards rent / 12
+	houseID := Sim.Houses.MoveIn(h.ID, int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
+	if houseID > 0 {
+		h.HouseID = houseID
+		fmt.Printf("[ Move ] %s family has moved into house #%d, %d houses remain\n", h.FamilyName(), houseID, Sim.Houses.GetFreeHouses())
 		p.Households[h.ID] = h
 	}
 }

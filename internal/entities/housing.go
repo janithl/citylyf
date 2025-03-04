@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"maps"
+	"slices"
 	"time"
 )
 
@@ -19,77 +21,70 @@ const (
 )
 
 type House struct {
-	ID               int
-	Free             bool
-	Bedrooms         int
-	MonthlyRent      int
-	LastRentRevision time.Time
+	ID, HouseholdID, Bedrooms, MonthlyRent int
+	LastRentRevision                       time.Time
 }
 
-// TODO make this a type alias for a map like companies
-type Housing struct {
-	Houses []House
+type Housing map[int]*House
+
+// GetIDs returns a sorted list of house IDs
+func (h Housing) GetIDs() []int {
+	IDs := []int{}
+	for house := range maps.Values(h) {
+		IDs = append(IDs, house.ID)
+	}
+	slices.Sort(IDs)
+	return IDs
 }
 
-func (h *Housing) MoveIn(budget int, bedrooms int) int {
-	for i := range h.Houses {
-		if h.Houses[i].Free &&
-			h.Houses[i].Bedrooms >= bedrooms &&
-			h.Houses[i].MonthlyRent <= budget {
-			h.Houses[i].Free = false
-			h.Houses[i].LastRentRevision = Sim.Date // Lock in rents for 1 year
-			return h.Houses[i].ID
+func (h Housing) MoveIn(householdID, budget, bedrooms int) int {
+	for _, id := range h.GetIDs() {
+		if h[id].HouseholdID == 0 &&
+			h[id].Bedrooms >= bedrooms &&
+			h[id].MonthlyRent <= budget {
+			h[id].HouseholdID = householdID
+			h[id].LastRentRevision = Sim.Date // Lock in rents for 1 year
+			return h[id].ID
 		}
 	}
 	return 0
 }
 
-func (h *Housing) MoveOut(houseID int) {
-	for i := range h.Houses {
-		if h.Houses[i].ID == houseID {
-			h.Houses[i].Free = true
-			return
-		}
+func (h Housing) MoveOut(houseID int) {
+	house, exists := h[houseID]
+	if exists {
+		house.HouseholdID = 0
 	}
 }
 
-func (h *Housing) GetFreeHouses() int {
+func (h Housing) GetFreeHouses() int {
 	freeCount := 0
-	for _, house := range h.Houses {
-		if house.Free {
+	for _, id := range h.GetIDs() {
+		if h[id].HouseholdID == 0 {
 			freeCount++
 		}
 	}
 	return freeCount
 }
 
-func (h *Housing) GetHouse(id int) *House {
-	for _, house := range h.Houses {
-		if house.ID == id {
-			return &house
-		}
-	}
-	return nil
-}
-
-func (h *Housing) ReviseRents() {
-	for i, house := range h.Houses {
-		if Sim.Date.Sub(house.LastRentRevision).Hours() > HoursPerYear { // Revise rents every year
-			h.Houses[i].MonthlyRent += int(float64(house.MonthlyRent) * Sim.Market.InterestRate() / 100)
-			h.Houses[i].LastRentRevision = Sim.Date
+func (h Housing) ReviseRents() {
+	for _, id := range h.GetIDs() {
+		if Sim.Date.Sub(h[id].LastRentRevision).Hours() > HoursPerYear { // Revise rents every year
+			h[id].MonthlyRent += int(float64(h[id].MonthlyRent) * Sim.Market.InterestRate() / 100)
+			h[id].LastRentRevision = Sim.Date
 		}
 	}
 }
 
-func (h *Housing) AddHouse(x, y, bedrooms int) {
+func (h Housing) AddHouse(x, y, bedrooms int) {
 	if Sim.Geography.PlaceHouse(x, y, bedrooms < 4) { // house placed!
 		houseID := Sim.GetNextID()
-		h.Houses = append(h.Houses, House{
+		h[houseID] = &House{
 			ID:               houseID,
-			Free:             true,
+			HouseholdID:      0,
 			Bedrooms:         bedrooms,
 			MonthlyRent:      1200 + 200*(bedrooms-1),
 			LastRentRevision: Sim.Date,
-		})
+		}
 	}
 }

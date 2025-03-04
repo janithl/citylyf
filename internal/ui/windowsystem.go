@@ -129,7 +129,7 @@ func NewWindowSystem() *WindowSystem {
 		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
 			func() []control.Statable {
 				companies := []control.Statable{}
-				for _, companyID := range entities.Sim.GetCompanyIDs() {
+				for _, companyID := range entities.Sim.Companies.GetIDs() {
 					company, exists := entities.Sim.Companies[companyID]
 					if exists {
 						companies = append(companies, company)

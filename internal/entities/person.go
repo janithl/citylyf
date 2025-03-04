@@ -16,19 +16,16 @@ const (
 const HoursPerYear = HoursPerDay * DaysPerYear
 
 type Person struct {
-	ID             int            // Unique identifier for the person
-	FirstName      string         // Name of the person
-	FamilyName     string         // Family name
-	Birthdate      time.Time      // Age of the person
-	Gender         Gender         // Gender of the person
-	EducationLevel EducationLevel // Person's education level
-	Occupation     Job            // Job title or role
-	Industry       Industry       // Industry of the job
-	CareerLevel    CareerLevel    // Their career level
-	EmployerID     int            // Their employer id
-	AnnualIncome   int            // Annual income
-	Savings        int            // Total personal savings
-	Relationship   RelationshipStatus
+	ID, EmployerID        int // Unique identifier for the person, and their employer
+	FirstName, FamilyName string
+	Birthdate             time.Time      // Age of the person
+	Gender                Gender         // Gender of the person
+	EducationLevel        EducationLevel // Person's education level
+	Occupation            Job            // Job title or role
+	Industry              Industry       // Industry of the job
+	CareerLevel           CareerLevel    // Their career level
+	AnnualIncome, Savings int            // Annual income and total personal savings
+	Relationship          RelationshipStatus
 }
 
 func (p *Person) Age() int {

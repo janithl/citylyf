@@ -2,9 +2,8 @@ package entities
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -26,12 +25,12 @@ type Simulation struct {
 	Mutex           sync.Mutex
 	Government      *Government
 	People          *People
-	Houses          *Housing
-	Market          *Market
+	Houses          Housing
 	Companies       Companies
+	Market          *Market
 	Geography       *Geography
 	tickNumber      int
-	lastID          int
+	lastID          atomic.Uint32
 }
 
 func (s *Simulation) Tick() {
@@ -59,35 +58,24 @@ func (s *Simulation) GetStats() string {
 	return fmt.Sprintf("%s | Reserves: %s | Population: %d (%+06.2f%%) | Houses: %d (%d Free) | "+
 		"Unemployment: %05.2f%% | Companies: %d | Market Value: %.2f (%+06.2f%%) | Inflation: %05.2f%% | IntRate: %05.2f%%",
 		s.Date.Format("2006-01-02"), utils.FormatCurrency(float64(s.Government.Reserves), "$"), s.People.Population(),
-		s.People.PopulationGrowthRate(), len(s.Houses.Houses), s.Houses.GetFreeHouses(), s.People.UnemploymentRate(),
+		s.People.PopulationGrowthRate(), len(s.Houses), s.Houses.GetFreeHouses(), s.People.UnemploymentRate(),
 		len(s.Companies), s.Market.MarketValue(), utils.GetLastValue(s.Market.History.MarketGrowthRate),
 		s.Market.InflationRate(), s.Market.InterestRate())
 }
 
-// GetCompanyIDs returns a sorted list of company IDs
-func (s *Simulation) GetCompanyIDs() []int {
-	IDs := []int{}
-	for company := range maps.Values(s.Companies) {
-		IDs = append(IDs, company.ID)
-	}
-	slices.Sort(IDs)
-	return IDs
-}
-
 func (s *Simulation) GetNextID() int {
-	s.lastID++
-	return s.lastID
+	return int(s.lastID.Add(1))
 }
 
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
 	s.Geography = NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
 
-var Sim Simulation
+var Sim *Simulation
 
-func NewSimulation(startYear, governmentReserves int) Simulation {
+func NewSimulation(startYear, governmentReserves int) *Simulation {
 	startDate := time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC)
-	return Simulation{
+	sim := &Simulation{
 		SimulationSpeed: Pause,
 		Date:            startDate,
 		Government:      NewGovernment(governmentReserves, startDate),
@@ -98,9 +86,8 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 			People:           make(map[int]*Person),
 			Households:       make(map[int]*Household),
 		},
-		Houses: &Housing{
-			Houses: []House{},
-		},
+		Houses:    make(map[int]*House),
+		Companies: make(map[int]*Company),
 		Market: &Market{
 			NextRateRevision:       startDate.AddDate(0, 3, 0),
 			MonthsOfNegativeGrowth: 0,
@@ -113,8 +100,8 @@ func NewSimulation(startYear, governmentReserves int) Simulation {
 				CompanyProfits:   []float64{0.001},
 			},
 		},
-		Companies: make(map[int]*Company),
 		Geography: NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
-		lastID:    10000,
 	}
+	sim.lastID.Add(10000) // start IDs at 10000
+	return sim
 }
