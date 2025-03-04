@@ -151,7 +151,7 @@ func (wr *WorldRenderer) Update() error {
 }
 
 // Renders the base tile
-func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
 	// Check neighbors (prevent out-of-bounds errors)
 	left, right, top, bottom := tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation
 	if x > 0 {
@@ -211,6 +211,50 @@ func (wr *WorldRenderer) tileRender(screen *ebiten.Image, op *ebiten.DrawImageOp
 	// }
 }
 
+// Renders houses
+func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	if tiles[x][y].House == entities.NonHouse { // not a house
+		return
+	}
+
+	house, exists := assets.Assets.Sprites[string(tiles[x][y].House)]
+	if exists {
+		screen.DrawImage(house.Image, op)
+	}
+}
+
+// Renders roads
+func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	if !tiles[x][y].Road { // not a road
+		return
+	}
+
+	roadDirection, roadType := entities.Sim.Geography.IsWithinRoad(x, y)
+	roadPrefix := "road-" + string(roadType) + "-"
+
+	// check intersection and draw
+	if roadType != "" && tiles[x][y].Intersection != entities.NonIntersection {
+		intersection, exists := assets.Assets.Sprites[roadPrefix+string(tiles[x][y].Intersection)]
+		if exists {
+			screen.DrawImage(intersection.Image, op)
+		}
+	} else {
+		// draw correct road
+		roadTile, exists := assets.Assets.Sprites[roadPrefix+string(roadDirection)]
+		if exists {
+			screen.DrawImage(roadTile.Image, op)
+		}
+
+		// draw correct bridge
+		if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
+			bridge, exists := assets.Assets.Sprites["bridge-"+string(roadDirection)]
+			if exists {
+				screen.DrawImage(bridge.Image, op)
+			}
+		}
+	}
+}
+
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	tiles := entities.Sim.Geography.GetTiles()
 	// Use the same offsets as in isoTransform.
@@ -231,50 +275,9 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			scaledY := offsetY + (isoY-wr.cameraY-offsetY)*wr.zoomFactor
 			op.GeoM.Translate(scaledX, scaledY)
 
-			wr.tileRender(screen, op, tiles, x, y)
-
-			// Draw houses
-			if tiles[x][y].House != entities.NonHouse {
-				house, exists := assets.Assets.Sprites[string(tiles[x][y].House)]
-				if exists {
-					screen.DrawImage(house.Image, op)
-				}
-			}
-
-			// Draw roads if necessary
-			if tiles[x][y].Road {
-				roadDirection, roadType := entities.Sim.Geography.IsWithinRoad(x, y)
-				roadPrefix := "road-" + string(roadType) + "-"
-
-				// check intersection and draw
-				if roadType != "" && tiles[x][y].Intersection != entities.NonIntersection {
-					intersection, exists := assets.Assets.Sprites[roadPrefix+string(tiles[x][y].Intersection)]
-					if exists {
-						screen.DrawImage(intersection.Image, op)
-					}
-				} else {
-					// draw correct road
-					var roadTile assets.Sprite
-					var exists bool
-					if roadDirection == entities.DirX {
-						roadTile, exists = assets.Assets.Sprites[roadPrefix+"x"]
-					} else if roadDirection == entities.DirY {
-						roadTile, exists = assets.Assets.Sprites[roadPrefix+"y"]
-					}
-					if exists {
-						screen.DrawImage(roadTile.Image, op)
-					}
-
-					// draw correct bridge
-					if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
-						if roadDirection == entities.DirX {
-							screen.DrawImage(assets.Assets.Sprites["bridge-x"].Image, op)
-						} else if roadDirection == entities.DirY {
-							screen.DrawImage(assets.Assets.Sprites["bridge-y"].Image, op)
-						}
-					}
-				}
-			}
+			wr.renderBaseTiles(screen, op, tiles, x, y)
+			wr.renderHouses(screen, op, tiles, x, y)
+			wr.renderRoads(screen, op, tiles, x, y)
 
 			// Draw a highlight around the tile under the mouse.
 			if wr.hoveredTileX == x && wr.hoveredTileY == y {
