@@ -9,19 +9,15 @@ import (
 type HouseType string
 
 const (
-	NonHouse        HouseType = ""
-	HouseSmallX     HouseType = "house-small-x"
-	HouseSmallXBack HouseType = "house-small-x-back"
-	HouseSmallY     HouseType = "house-small-y"
-	HouseSmallYBack HouseType = "house-small-y-back"
-	HouseLargeX     HouseType = "house-large-x"
-	HouseLargeXBack HouseType = "house-large-x-back"
-	HouseLargeY     HouseType = "house-large-y"
-	HouseLargeYBack HouseType = "house-large-y-back"
+	HouseSmall HouseType = "house-small"
+	HouseLarge HouseType = "house-large"
 )
 
 type House struct {
 	ID, HouseholdID, Bedrooms, MonthlyRent int
+	HouseType                              HouseType
+	Location                               Point
+	RoadDirection                          Direction
 	LastRentRevision                       time.Time
 }
 
@@ -76,14 +72,32 @@ func (h Housing) ReviseRents() {
 	}
 }
 
+func (h Housing) GetLocationHouse(x, y int) *House {
+	for house := range maps.Values(h) {
+		if house.Location.X == x && house.Location.Y == y {
+			return house
+		}
+	}
+	return nil
+}
+
 func (h Housing) AddHouse(x, y, bedrooms int) {
-	if Sim.Geography.PlaceHouse(x, y, bedrooms < 4) { // house placed!
+	if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // house placeable!
+		Sim.Geography.placeHouse(x, y)
 		houseID := Sim.GetNextID()
+		houseType := HouseSmall
+		if bedrooms > 3 {
+			houseType = HouseLarge
+		}
+
 		h[houseID] = &House{
 			ID:               houseID,
 			HouseholdID:      0,
 			Bedrooms:         bedrooms,
 			MonthlyRent:      1200 + 200*(bedrooms-1),
+			HouseType:        houseType,
+			Location:         Point{x, y},
+			RoadDirection:    roadDir,
 			LastRentRevision: Sim.Date,
 		}
 	}

@@ -213,13 +213,25 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 
 // Renders houses
 func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	if tiles[x][y].House == entities.NonHouse { // not a house
+	if !tiles[x][y].House { // not a house
 		return
 	}
 
-	house, exists := assets.Assets.Sprites[string(tiles[x][y].House)]
-	if exists {
-		screen.DrawImage(house.Image, op)
+	entities.Sim.Mutex.Lock()
+	house := entities.Sim.Houses.GetLocationHouse(x, y)
+	entities.Sim.Mutex.Unlock()
+
+	lighting := "dark"
+	if house.HouseholdID != 0 {
+		lighting = "light"
+	}
+
+	if outline, exists := assets.Assets.Sprites[string(house.HouseType)+"-outline-"+lighting]; exists {
+		screen.DrawImage(outline.Image, op)
+	}
+
+	if houseSprite, exists := assets.Assets.Sprites[string(house.HouseType)+"-"+string(house.RoadDirection)]; exists {
+		screen.DrawImage(houseSprite.Image, op)
 	}
 }
 
@@ -234,21 +246,18 @@ func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageO
 
 	// check intersection and draw
 	if roadType != "" && tiles[x][y].Intersection != entities.NonIntersection {
-		intersection, exists := assets.Assets.Sprites[roadPrefix+string(tiles[x][y].Intersection)]
-		if exists {
+		if intersection, exists := assets.Assets.Sprites[roadPrefix+string(tiles[x][y].Intersection)]; exists {
 			screen.DrawImage(intersection.Image, op)
 		}
 	} else {
 		// draw correct road
-		roadTile, exists := assets.Assets.Sprites[roadPrefix+string(roadDirection)]
-		if exists {
+		if roadTile, exists := assets.Assets.Sprites[roadPrefix+string(roadDirection)]; exists {
 			screen.DrawImage(roadTile.Image, op)
 		}
 
 		// draw correct bridge
 		if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
-			bridge, exists := assets.Assets.Sprites["bridge-"+string(roadDirection)]
-			if exists {
+			if bridge, exists := assets.Assets.Sprites["bridge-"+string(roadDirection)]; exists {
 				screen.DrawImage(bridge.Image, op)
 			}
 		}

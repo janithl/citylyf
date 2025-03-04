@@ -6,9 +6,8 @@ import (
 
 type Tile struct {
 	Elevation    int
-	Road         bool
+	Road, House  bool
 	Intersection IntersectionType
-	House        HouseType
 }
 
 type Geography struct {
@@ -95,38 +94,27 @@ func (g *Geography) CheckRoad(x, y int) bool {
 }
 
 // place house
-func (g *Geography) PlaceHouse(x, y int, small bool) bool {
-	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House != NonHouse {
-		return false
+func (g *Geography) placeHouse(x, y int) {
+	g.tiles[x][y].House = true
+}
+
+// get access road
+func (g *Geography) getAccessRoad(x, y int) Direction {
+	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House {
+		return ""
 	}
 
 	if g.CheckRoad(x, y+1) {
-		if small {
-			g.tiles[x][y].House = HouseSmallX
-		} else {
-			g.tiles[x][y].House = HouseLargeX
-		}
+		return DirX
 	} else if g.CheckRoad(x, y-1) {
-		if small {
-			g.tiles[x][y].House = HouseSmallXBack
-		} else {
-			g.tiles[x][y].House = HouseLargeXBack
-		}
+		return DirXBack
 	} else if g.CheckRoad(x+1, y) {
-		if small {
-			g.tiles[x][y].House = HouseSmallY
-		} else {
-			g.tiles[x][y].House = HouseLargeY
-		}
+		return DirY
 	} else if g.CheckRoad(x-1, y) {
-		if small {
-			g.tiles[x][y].House = HouseSmallYBack
-		} else {
-			g.tiles[x][y].House = HouseLargeYBack
-		}
+		return DirYBack
 	}
 
-	return g.tiles[x][y].House != NonHouse
+	return ""
 }
 
 // setIntersectionType sets the type of intersection based on surrounding tiles
@@ -169,7 +157,7 @@ func (g *Geography) addRoad(r *Road) {
 	for _, segment := range r.Segments {
 		if segment.Direction == DirX {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
-				if g.BoundsCheck(i, segment.Start.Y) && g.tiles[i][segment.Start.Y].House == NonHouse {
+				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
 					g.tiles[i][segment.Start.Y].Road = true
 				}
 				g.setIntersectionType(i-1, segment.Start.Y)
@@ -177,7 +165,7 @@ func (g *Geography) addRoad(r *Road) {
 			g.setIntersectionType(segment.End.X, segment.Start.Y)
 		} else if segment.Direction == DirY {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
-				if g.BoundsCheck(segment.Start.X, i) && g.tiles[segment.Start.X][i].House == NonHouse {
+				if g.BoundsCheck(segment.Start.X, i) && !g.tiles[segment.Start.X][i].House {
 					g.tiles[segment.Start.X][i].Road = true
 				}
 				g.setIntersectionType(segment.Start.X, i-1)
