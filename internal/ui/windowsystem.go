@@ -96,7 +96,7 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 	case "Companies":
 		company, exists := entities.Sim.Companies[index]
 		if exists {
-			fmt.Println(company.Name, company.CompanyAge(), company.Industry, company.GetNumberOfEmployees(), company.GetNumberOfJobOpenings())
+			fmt.Println(company.Name, company.CompanyAge(), company.Industry, company.GetNumberOfEmployees(), len(company.JobOpenings))
 			for _, emp := range company.GetEmployees() {
 				fmt.Println(emp)
 			}

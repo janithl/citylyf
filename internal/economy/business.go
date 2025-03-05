@@ -21,16 +21,20 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 	companySuffix := []string{"Corp", "Industries", "Systems", "Group", "Technologies", "Enterprises"}
 	companyName := fmt.Sprintf("%s %s", companyNames[rand.Intn(len(companyNames))], companySuffix[rand.Intn(len(companySuffix))])
 
+	minimumEmployees := 4 + rand.Intn(4)
 	company := entities.Company{
 		Name:         companyName,
 		Industry:     entities.GetRandomIndustry(),
 		FoundingDate: entities.Sim.Date,
-		JobOpenings:  make(map[entities.CareerLevel]int),
+		JobOpenings:  []*entities.CompanyJob{},
+		Employees:    []int{},
+		MinEmployees: minimumEmployees,
+		MaxEmployees: minimumEmployees + rand.Intn(8),
 		LastRevenue:  baseRevenue,
 		LastExpenses: expenses,
+		LastProfit:   baseRevenue - expenses,
 		FixedCosts:   expenses,
 		Payroll:      0,
-		LastProfit:   baseRevenue - expenses,
 	}
 
 	company.CalculateProfit(31)

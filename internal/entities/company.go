@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"math"
-	"math/rand"
 	"slices"
 	"time"
 
@@ -34,20 +33,26 @@ func (c Companies) GetIDs() []int {
 	return IDs
 }
 
+// CompanyJob represents the jobs at a company
+type CompanyJob struct {
+	Industry               Industry
+	Job                    Job
+	EducationLevels        []EducationLevel
+	BaseSalary             int
+	SalaryRange, Increment float64
+}
+
 // Company represents a business entity with jobs
 type Company struct {
-	ID           int
-	Name         string
-	Industry     Industry
-	FoundingDate time.Time
-	JobOpenings  map[CareerLevel]int // Available job positions at each level
-	Employees    []int               // Employee IDs
-	TaxPayable   float64
-	FixedCosts   float64
-	Payroll      float64
-
-	// Historical
-	LastRevenue, LastExpenses, LastProfit float64
+	ID                                    int
+	Name                                  string
+	Industry                              Industry
+	FoundingDate                          time.Time
+	JobOpenings                           []*CompanyJob // Available job positions at each level
+	Employees                             []int         // Employee IDs
+	MinEmployees, MaxEmployees            int           // Possible range of employees
+	TaxPayable, FixedCosts, Payroll       float64       // Costs
+	LastRevenue, LastExpenses, LastProfit float64       // Historical data
 }
 
 // CalculateProfit computes monthly net profit
@@ -95,15 +100,6 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 	return c.LastProfit
 }
 
-// GetNumberOfJobOpenings returns the number of job openings
-func (c *Company) GetNumberOfJobOpenings() int {
-	openings := 0
-	for i := 0; i < len(CareerLevels); i++ {
-		openings += c.JobOpenings[CareerLevels[i]]
-	}
-	return openings
-}
-
 // GetNumberOfEmployees returns the total number of employees
 func (c *Company) GetNumberOfEmployees() int {
 	return len(c.Employees)
@@ -126,15 +122,8 @@ func (c *Company) RemoveEmployee(employeeID int) {
 }
 
 // DetermineJobOpenings calculates jobs available based on economic factors
-func (c *Company) DetermineJobOpenings() {
+func (c *Company) DetermineJobOpenings(getCompanyJobs func(industry Industry, openings int) []*CompanyJob) {
 	lastMarketSentiment := utils.GetLastValue(Sim.Market.History.MarketSentiment)
-
-	baseJobs := map[CareerLevel]int{
-		EntryLevel:     rand.Intn(10) + 5, // 5-15 jobs
-		MidLevel:       rand.Intn(5) + 2,  // 2-7 jobs
-		SeniorLevel:    rand.Intn(3) + 1,  // 1-4 jobs
-		ExecutiveLevel: rand.Intn(2),      // 0-1 jobs
-	}
 
 	// Adjust based on economic conditions
 	marketMultiplier := 1.0
@@ -162,14 +151,13 @@ func (c *Company) DetermineJobOpenings() {
 		marketMultiplier -= 0.5 // If losing money, reduce hiring
 	}
 
-	// Apply adjustments
-	for level, jobs := range baseJobs {
-		adjustedJobs := int(math.Round(float64(jobs) * marketMultiplier))
-		if adjustedJobs < 0 {
-			adjustedJobs = 0 // Prevent negative jobs
-		}
-		c.JobOpenings[level] = adjustedJobs
+	c.MaxEmployees += int(math.Round(float64(c.MaxEmployees) * marketMultiplier))
+	employeeShortfall := c.MaxEmployees - len(c.Employees)
+	if employeeShortfall <= 0 { // already at capacity, stop
+		return
 	}
+
+	c.JobOpenings = getCompanyJobs(c.Industry, employeeShortfall)
 }
 
 func (c *Company) CompanyAge() int {

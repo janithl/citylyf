@@ -51,10 +51,10 @@ func (cs *CalculationService) CalculateEconomy() {
 	}
 
 	totalProfits := 0.0
-	for id, company := range entities.Sim.Companies {
+	for _, company := range entities.Sim.Companies {
 		totalProfits += company.CalculateProfit(daysSinceLastCalculation)
-		company.DetermineJobOpenings()
-		entities.Sim.Companies[id] = company
+		company.DetermineJobOpenings(GetCompanyJobOpenings)
+		entities.Sim.Companies[company.ID] = company
 	}
 	entities.Sim.Market.ReportCompanyProfits(totalProfits)
 

@@ -23,7 +23,7 @@ func main() {
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
 	// set up some initial entities.Sim.Companies
-	for i := 0; i < 4+rand.Intn(4); i++ {
+	for i := 0; i < 8+rand.Intn(8); i++ {
 		entities.Sim.Mutex.Lock()
 		newCompany := employment.CompanyService.GenerateRandomCompany()
 		entities.Sim.Companies.Add(newCompany)

@@ -44,7 +44,7 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 	education := getEducationLevel(age)
 	careerLevel := getCareerLevel(age, education)
 
-	var job economy.IndustryJob
+	var job entities.CompanyJob
 	var salary float64
 	if careerLevel != entities.Unemployed {
 		job, salary = economy.GetIndustryJob(education, careerLevel)

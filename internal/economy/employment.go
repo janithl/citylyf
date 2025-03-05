@@ -2,6 +2,7 @@ package economy
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/janithl/citylyf/internal/entities"
 )
@@ -33,13 +34,14 @@ func (e *Employment) AssignJobs() {
 
 // findSuitableJob finds an appropriate job for a person based on their industry and career level
 func (e *Employment) findSuitableJob(p entities.Person) (companyID int, remaining int) {
-	for id, company := range entities.Sim.Companies {
+	for _, company := range entities.Sim.Companies {
 		if company.Industry == p.Industry {
-			if openings, exists := company.JobOpenings[p.CareerLevel]; exists && openings > 0 {
-				openings--
-				company.JobOpenings[p.CareerLevel] = openings
-				entities.Sim.Companies[id] = company
-				return company.ID, company.GetNumberOfJobOpenings()
+			for i, opening := range company.JobOpenings {
+				if opening.Job == p.Occupation {
+					company.JobOpenings = slices.Delete(company.JobOpenings, i, i+1)
+					entities.Sim.Companies[company.ID] = company
+					return company.ID, len(company.JobOpenings)
+				}
 			}
 		}
 	}
