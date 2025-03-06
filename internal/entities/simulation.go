@@ -22,7 +22,7 @@ const (
 type Simulation struct {
 	SimulationSpeed SimulationSpeed
 	Date            time.Time
-	Mutex           sync.Mutex
+	Mutex           sync.RWMutex
 	Government      *Government
 	People          *People
 	Houses          Housing

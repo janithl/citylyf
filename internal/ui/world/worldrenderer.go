@@ -217,9 +217,9 @@ func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImage
 		return
 	}
 
-	entities.Sim.Mutex.Lock()
+	entities.Sim.Mutex.RLock()
 	house := entities.Sim.Houses.GetLocationHouse(x, y)
-	entities.Sim.Mutex.Unlock()
+	entities.Sim.Mutex.RUnlock()
 
 	lighting := "dark"
 	if house.HouseholdID != 0 {

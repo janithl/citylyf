@@ -40,16 +40,16 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
+				entities.Sim.Mutex.Lock()
 				if entities.Sim.SimulationSpeed != entities.Pause {
-					entities.Sim.Mutex.Lock()
 					entities.Sim.Tick()
 					entities.Sim.People.MoveIn(peopleService.CreateHousehold)
 					employment.AssignJobs()
 					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
 					entities.Sim.Market.ReviseInterestRate()
 					calculationService.CalculateEconomy()
-					entities.Sim.Mutex.Unlock()
 				}
+				entities.Sim.Mutex.Unlock()
 			}
 		}
 	}()
