@@ -140,6 +140,11 @@ func (wr *WorldRenderer) Update() error {
 		wr.placingRoad = ""
 	}
 
+	// cancel road placing
+	if wr.placingRoad != "" && inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		wr.placingRoad = ""
+	}
+
 	// toggle roundabout
 	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
 		entities.Sim.Mutex.Lock()
