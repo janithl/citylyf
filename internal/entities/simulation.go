@@ -67,11 +67,19 @@ func (s *Simulation) GetNextID() int {
 	return int(s.lastID.Add(1))
 }
 
+func (s *Simulation) SendStats() {
+	select {
+	case SimStats <- s.GetStats():
+	default:
+	}
+}
+
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
 	s.Geography = NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
 }
 
 var Sim *Simulation
+var SimStats chan string
 
 func NewSimulation(startYear, governmentReserves int) *Simulation {
 	startDate := time.Date(startYear, time.January, 1, 0, 0, 0, 0, time.UTC)
@@ -102,6 +110,8 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 		},
 		Geography: NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
 	}
-	sim.lastID.Add(10000) // start IDs at 10000
+	sim.lastID.Add(10000)           // start IDs at 10000
+	SimStats = make(chan string, 1) // create the stats channel
+
 	return sim
 }

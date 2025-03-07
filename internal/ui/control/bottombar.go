@@ -13,15 +13,12 @@ type BottomBar struct {
 	toggleWindows             func()
 	screenHeight, screenWidth int
 	bottomButtons             []*Button
+	bottomText                string
 }
 
 func (b *BottomBar) Draw(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, buttonWidth, float32(b.screenHeight-buttonHeight), float32(b.screenWidth-buttonWidth*2), buttonHeight, colour.DarkSemiBlack, false)
-	text := "<<< Close \"Map Control\" to begin the simulation >>>"
-	if b.Enabled {
-		text = entities.Sim.GetStats()
-	}
-	ebitenutil.DebugPrintAt(screen, text, buttonWidth+10, b.screenHeight-buttonHeight+4)
+	ebitenutil.DebugPrintAt(screen, b.bottomText, buttonWidth+10, b.screenHeight-buttonHeight+4)
 
 	for i := range b.bottomButtons {
 		b.bottomButtons[i].Draw(screen)
@@ -29,6 +26,14 @@ func (b *BottomBar) Draw(screen *ebiten.Image) {
 }
 
 func (b *BottomBar) Update() error {
+	if b.Enabled {
+		select { // non-blocking read from stats channel
+		case stats := <-entities.SimStats:
+			b.bottomText = stats
+		default:
+		}
+	}
+
 	buttonColour := colour.DarkSemiBlack
 	switch entities.Sim.SimulationSpeed {
 	case entities.Slow:
@@ -63,6 +68,7 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBa
 		toggleWindows:  toggleWindows,
 		screenHeight:   screenHeight,
 		screenWidth:    screenWidth,
+		bottomText:     "<<< Close \"Map Control\" to begin the simulation >>>",
 	}
 	bar.bottomButtons = []*Button{
 		{

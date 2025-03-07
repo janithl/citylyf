@@ -1,6 +1,9 @@
 package control
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
+)
 
 type GraphWindow struct {
 	dataSource   func() []float64 // Function to dynamically fetch data
@@ -15,7 +18,9 @@ func (gw *GraphWindow) Update() error {
 
 		// Find and update the existing graph
 		if graph, ok := gw.Window.Children[0].(*Graph); ok {
+			entities.Sim.Mutex.RLock()
 			graph.Data = gw.dataSource() // Get fresh data from source
+			entities.Sim.Mutex.RUnlock()
 		}
 	}
 	gw.Window.Update()

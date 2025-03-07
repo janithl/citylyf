@@ -48,6 +48,7 @@ func main() {
 					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
 					entities.Sim.Market.ReviseInterestRate()
 					calculationService.CalculateEconomy()
+					entities.Sim.SendStats()
 				}
 				entities.Sim.Mutex.Unlock()
 			}

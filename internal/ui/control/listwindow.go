@@ -2,6 +2,7 @@ package control
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
 )
 
 type ListWindow struct {
@@ -17,7 +18,9 @@ func (lw *ListWindow) Update() error {
 
 		// Find and update the existing text list
 		if list, ok := lw.Window.Children[0].(*TextList); ok {
+			entities.Sim.Mutex.RLock()
 			list.UpdateItems(lw.dataSource()) // Updates text without resetting buttons
+			entities.Sim.Mutex.RUnlock()
 		}
 	}
 	lw.Window.Update()
