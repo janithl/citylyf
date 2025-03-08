@@ -22,10 +22,11 @@ const (
 )
 
 type WorldRenderer struct {
-	playerX, playerY, cameraX, cameraY, zoomFactor float64
-	width, height, hoveredTileX, hoveredTileY      int
-	startTileX, startTileY                         int
-	placingRoad                                    entities.RoadType
+	playerX, playerY, offsetX, offsetY float64
+	cameraX, cameraY, zoomFactor       float64
+	width, height                      int
+	cursorTile, startTile              entities.Point
+	placingRoad                        entities.RoadType
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -36,23 +37,32 @@ func (wr *WorldRenderer) isoTransform(x, y float64) (float64, float64) {
 }
 
 // Converts screen coordinates to grid coordinates.
-func (wr *WorldRenderer) screenToGrid(screenX, screenY float64) (int, int) {
-	// Use the same offsets as in isoTransform.
-	offsetX := float64(wr.width) / 2
-	offsetY := float64(wr.height) / 4
-
+func (wr *WorldRenderer) screenToGrid(screenX, screenY float64) entities.Point {
 	// Invert the camera/zoom transformation.
-	isoX := (screenX-offsetX)/wr.zoomFactor + offsetX + wr.cameraX
-	isoY := (screenY-offsetY)/wr.zoomFactor + offsetY + wr.cameraY
+	isoX := (screenX-wr.offsetX)/wr.zoomFactor + wr.offsetX + wr.cameraX
+	isoY := (screenY-wr.offsetY)/wr.zoomFactor + wr.offsetY + wr.cameraY
 
 	// Invert the isometric transform.
-	A := isoX - offsetX
-	B := isoY - offsetY
+	A := isoX - wr.offsetX
+	B := isoY - wr.offsetY
 
 	x := math.Floor(A/float64(tileWidth)+2*B/float64(tileHeight)) - 1
 	y := math.Floor(2*B/float64(tileHeight) - A/float64(tileWidth))
 
-	return int(x), int(y)
+	return entities.Point{X: int(x), Y: int(y)}
+}
+
+func (wr *WorldRenderer) elevationToZ(elevation int) float64 {
+	switch {
+	case elevation < entities.Sim.Geography.SeaLevel:
+		return 0
+	case elevation == 8:
+		return -24
+	case elevation == 7:
+		return -16
+	default:
+		return -8
+	}
 }
 
 func (wr *WorldRenderer) handleMovement() {
@@ -114,28 +124,28 @@ func (wr *WorldRenderer) Update() error {
 
 	// Get mouse position and convert screen coordinates to isometric tile coordinates
 	cursorX, cursorY := ebiten.CursorPosition()
-	wr.hoveredTileX, wr.hoveredTileY = wr.screenToGrid(float64(cursorX), float64(cursorY))
+	wr.cursorTile = wr.screenToGrid(float64(cursorX), float64(cursorY))
 
 	// place house
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		entities.Sim.Mutex.Lock()
-		entities.Sim.Houses.AddHouse(wr.hoveredTileX, wr.hoveredTileY, 2+rand.Intn(3))
+		entities.Sim.Houses.AddHouse(wr.cursorTile.X, wr.cursorTile.Y, 2+rand.Intn(3))
 		entities.Sim.Mutex.Unlock()
 	}
 
 	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
 		wr.placingRoad = entities.Asphalt
-		wr.startTileX, wr.startTileY = wr.hoveredTileX, wr.hoveredTileY
+		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
 		wr.placingRoad = entities.Unsealed
-		wr.startTileX, wr.startTileY = wr.hoveredTileX, wr.hoveredTileY
+		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
 	// end placing road
 	if wr.placingRoad != "" && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		entities.Sim.Mutex.Lock()
-		entities.PlaceRoad(wr.startTileX, wr.startTileY, wr.hoveredTileX, wr.hoveredTileY, wr.placingRoad)
+		entities.PlaceRoad(wr.startTile.X, wr.startTile.Y, wr.cursorTile.X, wr.cursorTile.Y, wr.placingRoad)
 		entities.Sim.Mutex.Unlock()
 		wr.placingRoad = ""
 	}
@@ -148,7 +158,7 @@ func (wr *WorldRenderer) Update() error {
 	// toggle roundabout
 	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
 		entities.Sim.Mutex.Lock()
-		entities.Sim.Geography.ToggleRoundabout(wr.hoveredTileX, wr.hoveredTileY)
+		entities.Sim.Geography.ToggleRoundabout(wr.cursorTile.X, wr.cursorTile.Y)
 		entities.Sim.Mutex.Unlock()
 	}
 
@@ -269,38 +279,42 @@ func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageO
 	}
 }
 
+func (wr *WorldRenderer) getImageOptions(point entities.Point) *ebiten.DrawImageOptions {
+	isoX, isoY := wr.isoTransform(float64(point.X), float64(point.Y))
+
+	op := &ebiten.DrawImageOptions{}
+
+	// Apply zoom factor
+	op.GeoM.Scale(wr.zoomFactor, wr.zoomFactor)
+
+	// Adjust position using the same offset.
+	scaledX := wr.offsetX + (isoX-wr.cameraX-wr.offsetX)*wr.zoomFactor
+	scaledY := wr.offsetY + (isoY-wr.cameraY-wr.offsetY)*wr.zoomFactor
+	op.GeoM.Translate(scaledX, scaledY)
+
+	return op
+}
+
 func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	tiles := entities.Sim.Geography.GetTiles()
-	// Use the same offsets as in isoTransform.
-	offsetX := float64(wr.width) / 2
-	offsetY := float64(wr.height) / 4
-
 	for x := range tiles {
 		for y := range tiles[x] {
-			isoX, isoY := wr.isoTransform(float64(x), float64(y))
-
-			op := &ebiten.DrawImageOptions{}
-
-			// Apply zoom factor
-			op.GeoM.Scale(wr.zoomFactor, wr.zoomFactor)
-
-			// Adjust position using the same offset.
-			scaledX := offsetX + (isoX-wr.cameraX-offsetX)*wr.zoomFactor
-			scaledY := offsetY + (isoY-wr.cameraY-offsetY)*wr.zoomFactor
-			op.GeoM.Translate(scaledX, scaledY)
-
+			op := wr.getImageOptions(entities.Point{X: x, Y: y})
 			wr.renderBaseTiles(screen, op, tiles, x, y)
 			wr.renderHouses(screen, op, tiles, x, y)
 			wr.renderRoads(screen, op, tiles, x, y)
 
-			// Draw a highlight around the tile under the mouse.
-			if wr.hoveredTileX == x && wr.hoveredTileY == y {
-				screen.DrawImage(assets.Assets.Sprites["cursorbox-b"].Image, op)
+			// for the UI, translate depending on elevation
+			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor)
+
+			// draw a cursor around the tile under the mouse.
+			if x == wr.cursorTile.X && y == wr.cursorTile.Y {
+				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, op)
 			}
 
-			// Draw a highlight around the tile where the road starts
-			if wr.placingRoad != "" && utils.IsWithinRange(wr.startTileX, wr.hoveredTileX, x) && utils.IsWithinRange(wr.startTileY, wr.hoveredTileY, y) {
-				screen.DrawImage(assets.Assets.Sprites["cursorbox-r"].Image, op)
+			// draw a highlight around the tile where the road starts
+			if wr.placingRoad != "" && utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
+				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}
 	}
@@ -310,6 +324,7 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
 	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")
 	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
+	assets.LoadVariableSpritesheet("ui", "spritesheet-ui.png", "spriteinfo-ui.json")
 
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
@@ -320,5 +335,7 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 		zoomFactor: 0.25,
 		width:      screenWidth,
 		height:     screenHeight,
+		offsetX:    float64(screenWidth) / 2,
+		offsetY:    float64(screenHeight) / 4,
 	}
 }
