@@ -301,19 +301,21 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 		for y := range tiles[x] {
 			op := wr.getImageOptions(entities.Point{X: x, Y: y})
 			wr.renderBaseTiles(screen, op, tiles, x, y)
-			wr.renderHouses(screen, op, tiles, x, y)
 			wr.renderRoads(screen, op, tiles, x, y)
-
-			// for the UI, translate depending on elevation
-			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor)
 
 			// draw a cursor around the tile under the mouse.
 			if x == wr.cursorTile.X && y == wr.cursorTile.Y {
-				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, op)
+				opCursor := wr.getImageOptions(entities.Point{X: x, Y: y})
+				opCursor.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
+				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, opCursor)
 			}
+
+			// draw houses and trees last, because they're on the top layer
+			wr.renderHouses(screen, op, tiles, x, y)
 
 			// draw a highlight around the tile where the road starts
 			if wr.placingRoad != "" && utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
+				op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}
