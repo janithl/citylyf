@@ -2,6 +2,7 @@ package entities
 
 import (
 	"maps"
+	"math/rand/v2"
 	"slices"
 	"time"
 )
@@ -81,24 +82,41 @@ func (h Housing) GetLocationHouse(x, y int) *House {
 	return nil
 }
 
-func (h Housing) AddHouse(x, y, bedrooms int) {
-	if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // house placeable!
-		Sim.Geography.placeHouse(x, y)
-		houseID := Sim.GetNextID()
-		houseType := HouseSmall
-		if bedrooms > 3 {
-			houseType = HouseLarge
-		}
+func (h Housing) PlaceHousing() {
+	if h.GetFreeHouses() > 5 { // enough free houses, no need to place more
+		return
+	}
 
-		h[houseID] = &House{
-			ID:               houseID,
-			HouseholdID:      0,
-			Bedrooms:         bedrooms,
-			MonthlyRent:      1200 + 200*(bedrooms-1),
-			HouseType:        houseType,
-			Location:         Point{x, y},
-			RoadDirection:    roadDir,
-			LastRentRevision: Sim.Date,
+	bedrooms := 2 + rand.IntN(3)
+	for x := 0; x < Sim.Geography.Size; x++ {
+		for y := 0; y < Sim.Geography.Size; y++ {
+			if !Sim.Geography.tiles[x][y].House && Sim.Geography.tiles[x][y].Zone == ResidentialZone {
+				Sim.Geography.tiles[x][y].Zone = ""
+
+				roadDir := Sim.Geography.getAccessRoad(x, y)
+				if roadDir == "" {
+					return
+				}
+
+				Sim.Geography.tiles[x][y].House = true
+				houseID := Sim.GetNextID()
+				houseType := HouseSmall
+				if bedrooms > 3 {
+					houseType = HouseLarge
+				}
+
+				h[houseID] = &House{
+					ID:               houseID,
+					HouseholdID:      0,
+					Bedrooms:         bedrooms,
+					MonthlyRent:      1200 + 200*(bedrooms-1),
+					HouseType:        houseType,
+					Location:         Point{x, y},
+					RoadDirection:    roadDir,
+					LastRentRevision: Sim.Date,
+				}
+				return
+			}
 		}
 	}
 }

@@ -16,7 +16,7 @@ func main() {
 	savePathPtr := flag.String("savePath", "", "where should we load/save the game?")
 	flag.Parse()
 
-	if *savePathPtr != "" { // load sim from savegame file
+	if *savePathPtr != "" && checkFileExists(*savePathPtr) { // load sim from savegame file
 		loadGame(*savePathPtr)
 	} else { // create a new simulation
 		entities.Sim = entities.NewSimulation(2020, 100000)
@@ -26,7 +26,7 @@ func main() {
 	peopleService := people.NewPeopleService()
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
-	if *savePathPtr == "" {
+	if *savePathPtr == "" && checkFileExists(*savePathPtr) {
 		// set up some initial entities.Sim.Companies
 		for i := 0; i < 4+rand.Intn(4); i++ {
 			entities.Sim.Mutex.Lock()
@@ -49,6 +49,7 @@ func main() {
 				entities.Sim.Mutex.Lock()
 				if entities.Sim.SimulationSpeed != entities.Pause {
 					entities.Sim.Tick()
+					entities.Sim.Houses.PlaceHousing()
 					entities.Sim.People.MoveIn(peopleService.CreateHousehold)
 					employment.AssignJobs()
 					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)

@@ -2,7 +2,6 @@ package world
 
 import (
 	"math"
-	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -27,6 +26,7 @@ type WorldRenderer struct {
 	width, height                      int
 	cursorTile, startTile              entities.Point
 	placingRoad                        entities.RoadType
+	placingZone                        entities.Zone
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -126,33 +126,43 @@ func (wr *WorldRenderer) Update() error {
 	cursorX, cursorY := ebiten.CursorPosition()
 	wr.cursorTile = wr.screenToGrid(float64(cursorX), float64(cursorY))
 
-	// place house
+	// start placing residential zone
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		entities.Sim.Mutex.Lock()
-		entities.Sim.Houses.AddHouse(wr.cursorTile.X, wr.cursorTile.Y, 2+rand.Intn(3))
-		entities.Sim.Mutex.Unlock()
+		wr.placingRoad = ""
+		wr.placingZone = entities.ResidentialZone
+		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
 	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
+		wr.placingZone = ""
 		wr.placingRoad = entities.Asphalt
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
+		wr.placingZone = ""
 		wr.placingRoad = entities.Unsealed
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
-	// end placing road
-	if wr.placingRoad != "" && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		entities.Sim.Mutex.Lock()
-		entities.PlaceRoad(wr.startTile.X, wr.startTile.Y, wr.cursorTile.X, wr.cursorTile.Y, wr.placingRoad)
-		entities.Sim.Mutex.Unlock()
-		wr.placingRoad = ""
+	// end placing road/zone
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		if wr.placingRoad != "" {
+			entities.Sim.Mutex.Lock()
+			entities.PlaceRoad(wr.startTile, wr.cursorTile, wr.placingRoad)
+			entities.Sim.Mutex.Unlock()
+			wr.placingRoad = ""
+		} else if wr.placingZone != "" {
+			entities.Sim.Mutex.Lock()
+			entities.Sim.Geography.PlaceZone(wr.startTile, wr.cursorTile, wr.placingZone)
+			entities.Sim.Mutex.Unlock()
+			wr.placingZone = ""
+		}
 	}
 
-	// cancel road placing
-	if wr.placingRoad != "" && inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	// cancel road/zone placing
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		wr.placingRoad = ""
+		wr.placingZone = ""
 	}
 
 	// toggle roundabout
@@ -313,9 +323,14 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			// draw houses and trees last, because they're on the top layer
 			wr.renderHouses(screen, op, tiles, x, y)
 
+			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
+			// draw zones
+			if tiles[x][y].Zone == entities.ResidentialZone {
+				screen.DrawImage(assets.Assets.Sprites["ui-zone-residential"].Image, op)
+			}
+
 			// draw a highlight around the tile where the road starts
-			if wr.placingRoad != "" && utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
-				op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
+			if (wr.placingRoad != "" || wr.placingZone != "") && utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}

@@ -59,3 +59,8 @@ func loadGame(path string) {
 
 	entities.LoadSimulationFromSave(path, saveGame.Sim, uint32(saveGame.LastID), saveGame.Tiles, saveGame.Roads)
 }
+
+func checkFileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}

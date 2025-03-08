@@ -8,6 +8,7 @@ type Tile struct {
 	Elevation    int
 	Road, House  bool
 	Intersection IntersectionType
+	Zone         Zone
 }
 
 type Geography struct {
@@ -93,9 +94,15 @@ func (g *Geography) CheckRoad(x, y int) bool {
 	return g.tiles[x][y].Road
 }
 
-// place house
-func (g *Geography) placeHouse(x, y int) {
-	g.tiles[x][y].House = true
+// place residential zone
+func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
+	for x := min(start.X, end.X); x <= max(start.X, end.X); x++ {
+		for y := min(start.Y, end.Y); y <= max(start.Y, end.Y); y++ {
+			if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // zone placeable!
+				g.tiles[x][y].Zone = zone
+			}
+		}
+	}
 }
 
 // get access road
@@ -159,6 +166,7 @@ func (g *Geography) addRoad(r *Road) {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
 				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
 					g.tiles[i][segment.Start.Y].Road = true
+					g.tiles[i][segment.Start.Y].Zone = ""
 				}
 				g.setIntersectionType(i-1, segment.Start.Y)
 			}
@@ -167,6 +175,7 @@ func (g *Geography) addRoad(r *Road) {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
 				if g.BoundsCheck(segment.Start.X, i) && !g.tiles[segment.Start.X][i].House {
 					g.tiles[segment.Start.X][i].Road = true
+					g.tiles[segment.Start.X][i].Zone = ""
 				}
 				g.setIntersectionType(segment.Start.X, i-1)
 			}
