@@ -26,7 +26,7 @@ func main() {
 	peopleService := people.NewPeopleService()
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
-	if *savePathPtr == "" && checkFileExists(*savePathPtr) {
+	if len(entities.Sim.Companies) == 0 {
 		// set up some initial entities.Sim.Companies
 		for i := 0; i < 4+rand.Intn(4); i++ {
 			entities.Sim.Mutex.Lock()
