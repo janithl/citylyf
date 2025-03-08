@@ -116,10 +116,12 @@ func NewWindowSystem() *WindowSystem {
 		windows:        []control.Window{},
 	}
 
-	mapWin := *control.NewWindow(10, 10, 240, 200, "Map Control", ws.closeWindows)
-	mapWin.AddChild(control.NewMapWindow(0, 0, 240, 180, func() { ws.closeWindows("Map Control") }))
-	ws.windows = append(ws.windows, mapWin)
-	ws.windows[0].IsVisible = true
+	if entities.Sim.SavePath == "" {
+		mapWin := *control.NewWindow(10, 10, 240, 200, "Map Control", ws.closeWindows)
+		mapWin.AddChild(control.NewMapWindow(0, 0, 240, 180, func() { ws.closeWindows("Map Control") }))
+		ws.windows = append(ws.windows, mapWin)
+		ws.windows[0].IsVisible = true
+	}
 
 	ppWin := *control.NewWindow(970, 10, 300, 270, "Population Pyramid", ws.closeWindows)
 	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 300, Height: 250})
@@ -173,7 +175,10 @@ func NewWindowSystem() *WindowSystem {
 			func() []float64 { return entities.Sim.Market.History.InterestRate }),
 	}
 
-	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)
-
+	bottomBarEnabled := true
+	if entities.Sim.SavePath == "" {
+		bottomBarEnabled = false
+	}
+	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows, bottomBarEnabled)
 	return ws
 }

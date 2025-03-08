@@ -61,9 +61,9 @@ func (b *BottomBar) Update() error {
 	return nil
 }
 
-func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBar {
+func NewBottomBar(screenHeight, screenWidth int, toggleWindows func(), enabled bool) *BottomBar {
 	bar := &BottomBar{
-		Enabled:        false,
+		Enabled:        enabled,
 		WindowsVisible: false,
 		toggleWindows:  toggleWindows,
 		screenHeight:   screenHeight,

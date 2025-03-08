@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -14,25 +13,32 @@ import (
 )
 
 func main() {
-	jsonPtr := flag.Bool("json", false, "should output be in json?")
+	savePathPtr := flag.String("savePath", "", "where should we load/save the game?")
 	flag.Parse()
 
-	entities.Sim = entities.NewSimulation(2020, 100000)
+	if *savePathPtr != "" { // load sim from savegame file
+		loadGame(*savePathPtr)
+	} else { // create a new simulation
+		entities.Sim = entities.NewSimulation(2020, 100000)
+	}
+
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
 	peopleService := people.NewPeopleService()
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
-	// set up some initial entities.Sim.Companies
-	for i := 0; i < 4+rand.Intn(4); i++ {
-		entities.Sim.Mutex.Lock()
-		newCompany := employment.CompanyService.GenerateRandomCompany()
-		entities.Sim.Companies.Add(newCompany)
-		entities.Sim.Mutex.Unlock()
-		fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
+	if *savePathPtr == "" {
+		// set up some initial entities.Sim.Companies
+		for i := 0; i < 4+rand.Intn(4); i++ {
+			entities.Sim.Mutex.Lock()
+			newCompany := employment.CompanyService.GenerateRandomCompany()
+			entities.Sim.Companies.Add(newCompany)
+			entities.Sim.Mutex.Unlock()
+			fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
+		}
 	}
 
 	ticker := time.NewTicker(100 * time.Millisecond) // tick every 1/10th of a second
-	done := make(chan bool)
+	done := make(chan bool)                          // channel to send kill signal to goroutine
 
 	go func() {
 		for {
@@ -60,29 +66,7 @@ func main() {
 	ticker.Stop()
 	done <- true
 
-	if *jsonPtr {
-		printFinalState()
+	if *savePathPtr != "" {
+		saveGame(*savePathPtr)
 	}
-}
-
-func printFinalState() {
-	peopleJson, err := json.Marshal(entities.Sim.People)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	compJson, err := json.Marshal(entities.Sim.Companies)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	houseJson, err := json.Marshal(entities.Sim.Houses)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("[ JSON ] Population: ", string(peopleJson))
-	fmt.Println("[ JSON ] Companies: ", string(compJson))
-	fmt.Println("[ JSON ] Houses: ", string(houseJson))
 }

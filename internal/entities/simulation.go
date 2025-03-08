@@ -31,6 +31,7 @@ type Simulation struct {
 	Geography       *Geography
 	tickNumber      int
 	lastID          atomic.Uint32
+	SavePath        string
 }
 
 func (s *Simulation) Tick() {
@@ -114,4 +115,14 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 	SimStats = make(chan string, 1) // create the stats channel
 
 	return sim
+}
+
+func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [][]Tile, roads []Road) {
+	Sim = sim
+	Sim.lastID.Add(lastID)
+	Sim.SavePath = path
+
+	Sim.Geography.tiles = tiles
+	Sim.Geography.roads = roads
+	SimStats = make(chan string, 1)
 }
