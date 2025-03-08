@@ -23,14 +23,15 @@ func BenchmarkSim(b *testing.B) {
 	}
 
 	simSize := entities.Sim.Geography.Size
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 5; i++ {
 		x, y := rand.IntN(simSize), rand.IntN(simSize)
-		entities.PlaceRoad(x-1, y, x+1, y, entities.Asphalt)
-		entities.Sim.Houses.AddHouse(x, y+1, 2+rand.IntN(3))
+		entities.PlaceRoad(entities.Point{X: x - 1, Y: y}, entities.Point{X: x + 1, Y: y}, entities.Asphalt)
+		entities.Sim.Geography.PlaceZone(entities.Point{X: x - 2, Y: y - 1}, entities.Point{X: x + 2, Y: y + 1}, entities.ResidentialZone)
 	}
 
 	for i := 0; i < b.N; i++ {
 		entities.Sim.Tick()
+		entities.Sim.Houses.PlaceHousing()
 		entities.Sim.People.MoveIn(peopleService.CreateHousehold)
 		employment.AssignJobs()
 		entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
