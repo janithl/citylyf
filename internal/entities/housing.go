@@ -91,7 +91,7 @@ func (h Housing) PlaceHousing() {
 	for x := 0; x < Sim.Geography.Size; x++ {
 		for y := 0; y < Sim.Geography.Size; y++ {
 			if !Sim.Geography.tiles[x][y].House && Sim.Geography.tiles[x][y].Zone == ResidentialZone {
-				Sim.Geography.tiles[x][y].Zone = ""
+				Sim.Geography.tiles[x][y].Zone = NoZone
 
 				roadDir := Sim.Geography.getAccessRoad(x, y)
 				if roadDir == "" {

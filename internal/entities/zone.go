@@ -5,4 +5,5 @@ type Zone string
 
 const (
 	ResidentialZone Zone = "ResidentialZone"
+	NoZone          Zone = ""
 )

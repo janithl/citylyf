@@ -32,6 +32,7 @@ const (
 	Asphalt  RoadType = "asphalt"
 	Chipseal RoadType = "chipseal"
 	Unsealed RoadType = "unsealed"
+	NoRoad   RoadType = ""
 )
 
 type Road struct {

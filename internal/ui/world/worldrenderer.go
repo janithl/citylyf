@@ -128,41 +128,41 @@ func (wr *WorldRenderer) Update() error {
 
 	// start placing residential zone
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		wr.placingRoad = ""
+		wr.placingRoad = entities.NoRoad
 		wr.placingZone = entities.ResidentialZone
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
 	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		wr.placingZone = ""
+		wr.placingZone = entities.NoZone
 		wr.placingRoad = entities.Asphalt
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
-		wr.placingZone = ""
+		wr.placingZone = entities.NoZone
 		wr.placingRoad = entities.Unsealed
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
 	// end placing road/zone
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		if wr.placingRoad != "" {
+		if wr.placingRoad != entities.NoRoad {
 			entities.Sim.Mutex.Lock()
 			entities.PlaceRoad(wr.startTile, wr.cursorTile, wr.placingRoad)
 			entities.Sim.Mutex.Unlock()
-			wr.placingRoad = ""
-		} else if wr.placingZone != "" {
+			wr.placingRoad = entities.NoRoad
+		} else if wr.placingZone != entities.NoZone {
 			entities.Sim.Mutex.Lock()
 			entities.Sim.Geography.PlaceZone(wr.startTile, wr.cursorTile, wr.placingZone)
 			entities.Sim.Mutex.Unlock()
-			wr.placingZone = ""
+			wr.placingZone = entities.NoZone
 		}
 	}
 
 	// cancel road/zone placing
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		wr.placingRoad = ""
-		wr.placingZone = ""
+		wr.placingRoad = entities.NoRoad
+		wr.placingZone = entities.NoZone
 	}
 
 	// toggle roundabout
@@ -330,7 +330,8 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// draw a highlight around the tile where the road starts
-			if (wr.placingRoad != "" || wr.placingZone != "") && utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
+			if (wr.placingRoad != entities.NoRoad || wr.placingZone != entities.NoZone) &&
+				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}

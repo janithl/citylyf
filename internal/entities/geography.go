@@ -166,7 +166,7 @@ func (g *Geography) addRoad(r *Road) {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
 				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
 					g.tiles[i][segment.Start.Y].Road = true
-					g.tiles[i][segment.Start.Y].Zone = ""
+					g.tiles[i][segment.Start.Y].Zone = NoZone
 				}
 				g.setIntersectionType(i-1, segment.Start.Y)
 			}
@@ -175,7 +175,7 @@ func (g *Geography) addRoad(r *Road) {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
 				if g.BoundsCheck(segment.Start.X, i) && !g.tiles[segment.Start.X][i].House {
 					g.tiles[segment.Start.X][i].Road = true
-					g.tiles[segment.Start.X][i].Zone = ""
+					g.tiles[segment.Start.X][i].Zone = NoZone
 				}
 				g.setIntersectionType(segment.Start.X, i-1)
 			}
