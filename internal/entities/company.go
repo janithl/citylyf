@@ -33,18 +33,51 @@ func (c Companies) GetIDs() []int {
 	return IDs
 }
 
+func (c Companies) PlaceRetail(newCompany *Company) {
+	for x := 0; x < Sim.Geography.Size; x++ {
+		for y := 0; y < Sim.Geography.Size; y++ {
+			if !Sim.Geography.tiles[x][y].Shop && Sim.Geography.tiles[x][y].Zone == RetailZone {
+				Sim.Geography.tiles[x][y].Zone = NoZone
+
+				roadDir := Sim.Geography.getAccessRoad(x, y)
+				if roadDir == "" {
+					return
+				}
+
+				Sim.Geography.tiles[x][y].Shop = true
+				newCompany.Location = Point{X: x, Y: y}
+				newCompany.RoadDirection = roadDir
+				c.Add(newCompany)
+
+				return
+			}
+		}
+	}
+}
+
+func (c Companies) GetLocationCompany(x, y int) *Company {
+	for company := range maps.Values(c) {
+		if company.Location.X == x && company.Location.Y == y {
+			return company
+		}
+	}
+	return nil
+}
+
 // Company represents a business entity with jobs
 type Company struct {
-	ID           int
-	Name         string
-	Industry     Industry
-	CompanySize  CompanySize
-	FoundingDate time.Time
-	JobOpenings  map[CareerLevel]int // Available job positions at each level
-	Employees    []int               // Employee IDs
-	TaxPayable   float64
-	FixedCosts   float64
-	Payroll      float64
+	ID            int
+	Name          string
+	Industry      Industry
+	CompanySize   CompanySize
+	Location      Point
+	RoadDirection Direction
+	FoundingDate  time.Time
+	JobOpenings   map[CareerLevel]int // Available job positions at each level
+	Employees     []int               // Employee IDs
+	TaxPayable    float64
+	FixedCosts    float64
+	Payroll       float64
 
 	// Historical
 	LastRevenue, LastExpenses, LastProfit float64
@@ -159,11 +192,11 @@ func (c *Company) DetermineJobOpenings() {
 	// Apply adjustments
 	for level, jobs := range baseJobs {
 		adjustedJobs := int(math.Round(float64(jobs) * marketMultiplier))
-		if openings, exists := c.JobOpenings[level]; exists { // if job openings already exists, use that value
+		if openings, exists := c.JobOpenings[level]; exists && openings > 0 { // if job openings already exists, use that value
 			adjustedJobs = int(math.Round(float64(openings) * marketMultiplier))
 		}
-		if adjustedJobs < 0 {
-			adjustedJobs = 0 // Prevent negative jobs
+		if adjustedJobs < 1 {
+			adjustedJobs = 1 // Prevent zero or negative jobs
 		}
 		c.JobOpenings[level] = adjustedJobs
 	}

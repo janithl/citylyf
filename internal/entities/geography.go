@@ -5,10 +5,10 @@ import (
 )
 
 type Tile struct {
-	Elevation    int
-	Road, House  bool
-	Intersection IntersectionType
-	Zone         Zone
+	Elevation         int
+	Road, House, Shop bool
+	Intersection      IntersectionType
+	Zone              Zone
 }
 
 type Geography struct {
@@ -98,7 +98,7 @@ func (g *Geography) CheckRoad(x, y int) bool {
 func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
 	for x := min(start.X, end.X); x <= max(start.X, end.X); x++ {
 		for y := min(start.Y, end.Y); y <= max(start.Y, end.Y); y++ {
-			if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // zone placeable!
+			if roadDir := Sim.Geography.getAccessRoad(x, y); !g.tiles[x][y].House && !g.tiles[x][y].Shop && roadDir != "" { // zone placeable!
 				g.tiles[x][y].Zone = zone
 			}
 		}

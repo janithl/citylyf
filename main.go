@@ -28,7 +28,7 @@ func main() {
 
 	if len(entities.Sim.Companies) == 0 {
 		// set up some initial entities.Sim.Companies
-		for i := 0; i < 4+rand.Intn(4); i++ {
+		for i := 0; i < 8+rand.Intn(8); i++ {
 			entities.Sim.Mutex.Lock()
 			newCompany := employment.CompanyService.GenerateRandomCompany(entities.GetRandomCompanySize(), entities.GetRandomIndustry())
 			entities.Sim.Companies.Add(newCompany)

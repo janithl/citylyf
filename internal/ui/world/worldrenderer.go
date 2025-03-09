@@ -2,6 +2,7 @@ package world
 
 import (
 	"math"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -118,18 +119,15 @@ func (wr *WorldRenderer) handleZoom() {
 	}
 }
 
-func (wr *WorldRenderer) Update() error {
-	wr.handleMovement()
-	wr.handleZoom()
-
-	// Get mouse position and convert screen coordinates to isometric tile coordinates
-	cursorX, cursorY := ebiten.CursorPosition()
-	wr.cursorTile = wr.screenToGrid(float64(cursorX), float64(cursorY))
-
+func (wr *WorldRenderer) getUserInput() {
 	// start placing residential zone
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		wr.placingRoad = entities.NoRoad
 		wr.placingZone = entities.ResidentialZone
+		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyY) {
+		wr.placingRoad = entities.NoRoad
+		wr.placingZone = entities.RetailZone
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
@@ -171,6 +169,16 @@ func (wr *WorldRenderer) Update() error {
 		entities.Sim.Geography.ToggleRoundabout(wr.cursorTile.X, wr.cursorTile.Y)
 		entities.Sim.Mutex.Unlock()
 	}
+}
+
+func (wr *WorldRenderer) Update() error {
+	wr.handleMovement()
+	wr.handleZoom()
+
+	// Get mouse position and convert screen coordinates to isometric tile coordinates
+	cursorX, cursorY := ebiten.CursorPosition()
+	wr.cursorTile = wr.screenToGrid(float64(cursorX), float64(cursorY))
+	wr.getUserInput()
 
 	return nil
 }
@@ -260,6 +268,21 @@ func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImage
 	}
 }
 
+// Renders retail
+func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	if !tiles[x][y].Shop { // not a house
+		return
+	}
+
+	entities.Sim.Mutex.RLock()
+	company := entities.Sim.Companies.GetLocationCompany(x, y)
+	entities.Sim.Mutex.RUnlock()
+
+	if retailSprite, exists := assets.Assets.Sprites[strings.ToLower(string(company.Industry))+"-small-"+string(company.RoadDirection)]; exists {
+		screen.DrawImage(retailSprite.Image, op)
+	}
+}
+
 // Renders roads
 func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
 	if !tiles[x][y].Road { // not a road
@@ -322,11 +345,14 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 
 			// draw houses and trees last, because they're on the top layer
 			wr.renderHouses(screen, op, tiles, x, y)
+			wr.renderRetail(screen, op, tiles, x, y)
 
 			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
 			// draw zones
-			if tiles[x][y].Zone == entities.ResidentialZone {
-				screen.DrawImage(assets.Assets.Sprites["ui-zone-residential"].Image, op)
+			if tiles[x][y].Zone != entities.NoZone {
+				if zone, exists := assets.Assets.Sprites["ui-"+string(tiles[x][y].Zone)]; exists {
+					screen.DrawImage(zone.Image, op)
+				}
 			}
 
 			// draw a highlight around the tile where the road starts
@@ -341,6 +367,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
 	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")
+	assets.LoadVariableSpritesheet("retail", "spritesheet-retail.png", "spriteinfo-retail.json")
 	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
 	assets.LoadVariableSpritesheet("ui", "spritesheet-ui.png", "spriteinfo-ui.json")
 

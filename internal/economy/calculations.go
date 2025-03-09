@@ -3,7 +3,7 @@ package economy
 import (
 	"fmt"
 	"maps"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/janithl/citylyf/internal/entities"
@@ -44,10 +44,10 @@ func (cs *CalculationService) CalculateEconomy() {
 
 	fmt.Printf("[ Econ ] %s | Next calculation on %s\n", entities.Sim.GetStats(), cs.nextCalculation.Format("2006-01-02"))
 
-	if marketGrowth > 0 && rand.Intn(100) < 5 { // 5% chance of a company being formed during the good times
-		newCompany := cs.companyService.GenerateRandomCompany(entities.GetRandomCompanySize(), entities.GetRandomIndustry())
-		entities.Sim.Companies.Add(newCompany)
-		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
+	if marketGrowth > 0 && rand.IntN(100) < 25 { // 25% chance of a company being formed during the good times, for now limit it to retail
+		newRetailCompany := cs.companyService.GenerateRandomCompany(entities.Micro, entities.Retail)
+		entities.Sim.Companies.PlaceRetail(newRetailCompany)
+		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newRetailCompany.Name, newRetailCompany.Industry)
 	}
 
 	totalProfits := 0.0

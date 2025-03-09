@@ -4,6 +4,7 @@ package entities
 type Zone string
 
 const (
-	ResidentialZone Zone = "ResidentialZone"
+	ResidentialZone Zone = "zone-residential"
+	RetailZone      Zone = "zone-retail"
 	NoZone          Zone = ""
 )
