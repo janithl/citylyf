@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"math"
-	"math/rand"
 	"slices"
 	"time"
 
@@ -39,6 +38,7 @@ type Company struct {
 	ID           int
 	Name         string
 	Industry     Industry
+	CompanySize  CompanySize
 	FoundingDate time.Time
 	JobOpenings  map[CareerLevel]int // Available job positions at each level
 	Employees    []int               // Employee IDs
@@ -128,13 +128,7 @@ func (c *Company) RemoveEmployee(employeeID int) {
 // DetermineJobOpenings calculates jobs available based on economic factors
 func (c *Company) DetermineJobOpenings() {
 	lastMarketSentiment := utils.GetLastValue(Sim.Market.History.MarketSentiment)
-
-	baseJobs := map[CareerLevel]int{
-		EntryLevel:     rand.Intn(10) + 5, // 5-15 jobs
-		MidLevel:       rand.Intn(5) + 2,  // 2-7 jobs
-		SeniorLevel:    rand.Intn(3) + 1,  // 1-4 jobs
-		ExecutiveLevel: rand.Intn(2),      // 0-1 jobs
-	}
+	baseJobs := c.CompanySize.GetBaseJobs()
 
 	// Adjust based on economic conditions
 	marketMultiplier := 1.0
@@ -165,6 +159,9 @@ func (c *Company) DetermineJobOpenings() {
 	// Apply adjustments
 	for level, jobs := range baseJobs {
 		adjustedJobs := int(math.Round(float64(jobs) * marketMultiplier))
+		if openings, exists := c.JobOpenings[level]; exists { // if job openings already exists, use that value
+			adjustedJobs = int(math.Round(float64(openings) * marketMultiplier))
+		}
 		if adjustedJobs < 0 {
 			adjustedJobs = 0 // Prevent negative jobs
 		}
@@ -182,5 +179,5 @@ func (c *Company) GetID() int {
 }
 
 func (c *Company) GetStats() string {
-	return fmt.Sprintf("%4d %-28s %2d Empls   %d %-18s %-10s", c.ID, c.Name, c.GetNumberOfEmployees(), c.FoundingDate.Year(), c.Industry, utils.FormatCurrency(c.LastProfit, "$"))
+	return fmt.Sprintf("%5d %-25s %-5s %02d/%02d %4d %-18s %-10s", c.ID, c.Name, c.CompanySize, c.GetNumberOfEmployees(), c.GetNumberOfJobOpenings(), c.FoundingDate.Year(), c.Industry, utils.FormatCurrency(c.LastProfit, "$"))
 }

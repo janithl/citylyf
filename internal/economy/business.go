@@ -9,15 +9,16 @@ import (
 type CompanyService struct{}
 
 // GenerateRandomCompany creates a company with random industry and financials
-func (c *CompanyService) GenerateRandomCompany() *entities.Company {
+func (c *CompanyService) GenerateRandomCompany(companySize entities.CompanySize, industry entities.Industry) *entities.Company {
 	// Assign financials based on industry type
-	baseRevenue := rand.Float64()*5_000_000 + 1_000_000 // Revenue between $1M - $6M
-	expenseRatio := rand.Float64()*0.4 + 0.5            // Expenses are 50-90% of revenue
+	baseRevenue := companySize.GetBaseRevenue()
+	expenseRatio := rand.Float64()*0.4 + 0.5 // Expenses are 50-90% of revenue
 	expenses := baseRevenue * expenseRatio
 
 	company := entities.Company{
 		Name:         entities.Sim.NameService.GetCompanyName(),
-		Industry:     entities.GetRandomIndustry(),
+		Industry:     industry,
+		CompanySize:  companySize,
 		FoundingDate: entities.Sim.Date,
 		JobOpenings:  make(map[entities.CareerLevel]int),
 		LastRevenue:  baseRevenue,
@@ -28,6 +29,7 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 	}
 
 	company.CalculateProfit(31)
+	company.DetermineJobOpenings()
 	return &company
 }
 

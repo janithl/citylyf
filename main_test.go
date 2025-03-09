@@ -18,7 +18,7 @@ func BenchmarkSim(b *testing.B) {
 	entities.Sim.SimulationSpeed = entities.Slow
 
 	for i := 0; i < 10; i++ {
-		newCompany := employment.CompanyService.GenerateRandomCompany()
+		newCompany := employment.CompanyService.GenerateRandomCompany(entities.GetRandomCompanySize(), entities.GetRandomIndustry())
 		entities.Sim.Companies.Add(newCompany)
 	}
 

@@ -30,7 +30,7 @@ func main() {
 		// set up some initial entities.Sim.Companies
 		for i := 0; i < 4+rand.Intn(4); i++ {
 			entities.Sim.Mutex.Lock()
-			newCompany := employment.CompanyService.GenerateRandomCompany()
+			newCompany := employment.CompanyService.GenerateRandomCompany(entities.GetRandomCompanySize(), entities.GetRandomIndustry())
 			entities.Sim.Companies.Add(newCompany)
 			entities.Sim.Mutex.Unlock()
 			fmt.Printf("[ Econ ] %s (%s) founded!\n", newCompany.Name, newCompany.Industry)
