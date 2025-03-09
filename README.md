@@ -17,7 +17,7 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [ ] Calculate realistic government expenses - e.g. laying down roads and building houses should cost the govt money
 - [ ] Pension fund with employee + employer + government contributions
 - [ ] Companies should be tied to office space/industrial space availability
-- [ ] Retail companies + shops
+- [x] Retail companies + shops
 - [ ] Companies with no employees for a year should shut down (tie productivity to employee count?)
 - [ ] Forests and farmland
 - [x] Housing estates instead of laying down individual houses?
