@@ -98,7 +98,7 @@ func (g *Geography) CheckRoad(x, y int) bool {
 func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
 	for x := min(start.X, end.X); x <= max(start.X, end.X); x++ {
 		for y := min(start.Y, end.Y); y <= max(start.Y, end.Y); y++ {
-			if roadDir := Sim.Geography.getAccessRoad(x, y); !g.tiles[x][y].House && !g.tiles[x][y].Shop && roadDir != "" { // zone placeable!
+			if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // zone placeable!
 				g.tiles[x][y].Zone = zone
 			}
 		}
@@ -107,7 +107,7 @@ func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
 
 // get access road
 func (g *Geography) getAccessRoad(x, y int) Direction {
-	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House {
+	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House || g.tiles[x][y].Shop {
 		return ""
 	}
 

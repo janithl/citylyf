@@ -26,7 +26,11 @@ func BenchmarkSim(b *testing.B) {
 	for i := 0; i < 5; i++ {
 		x, y := rand.IntN(simSize), rand.IntN(simSize)
 		entities.PlaceRoad(entities.Point{X: x - 1, Y: y}, entities.Point{X: x + 1, Y: y}, entities.Asphalt)
-		entities.Sim.Geography.PlaceZone(entities.Point{X: x - 2, Y: y - 1}, entities.Point{X: x + 2, Y: y + 1}, entities.ResidentialZone)
+		zone := entities.ResidentialZone
+		if i > 3 {
+			zone = entities.RetailZone
+		}
+		entities.Sim.Geography.PlaceZone(entities.Point{X: x - 2, Y: y - 1}, entities.Point{X: x + 2, Y: y + 1}, zone)
 	}
 
 	for i := 0; i < b.N; i++ {
