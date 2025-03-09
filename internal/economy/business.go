@@ -1,7 +1,6 @@
 package economy
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/janithl/citylyf/internal/entities"
@@ -16,13 +15,8 @@ func (c *CompanyService) GenerateRandomCompany() *entities.Company {
 	expenseRatio := rand.Float64()*0.4 + 0.5            // Expenses are 50-90% of revenue
 	expenses := baseRevenue * expenseRatio
 
-	// Generate a random company name
-	companyNames := []string{"Global", "NextGen", "Quantum", "Future", "Vertex", "Synergy", "Omni", "Pinnacle", "Apex", "Horizon"}
-	companySuffix := []string{"Corp", "Industries", "Systems", "Group", "Technologies", "Enterprises"}
-	companyName := fmt.Sprintf("%s %s", companyNames[rand.Intn(len(companyNames))], companySuffix[rand.Intn(len(companySuffix))])
-
 	company := entities.Company{
-		Name:         companyName,
+		Name:         entities.Sim.NameService.GetCompanyName(),
 		Industry:     entities.GetRandomIndustry(),
 		FoundingDate: entities.Sim.Date,
 		JobOpenings:  make(map[entities.CareerLevel]int),

@@ -29,6 +29,7 @@ type Animation struct {
 type AssetManager struct {
 	Animations map[string]Animation // Stores animations by name
 	Sprites    map[string]Sprite
+	Names      map[string][]string
 }
 
 // Global instance
@@ -39,7 +40,9 @@ func init() {
 	Assets = &AssetManager{
 		Sprites:    make(map[string]Sprite),
 		Animations: make(map[string]Animation),
+		Names:      make(map[string][]string),
 	}
+	LoadNames()
 }
 
 // LoadSpritesheet loads a multi-line sprite sheet
@@ -98,5 +101,19 @@ func LoadVariableSpritesheet(prefix, imagePath, jsonPath string) {
 			X:     rect.X,
 			Y:     rect.Y,
 		}
+	}
+}
+
+// LoadNames loads the names.json
+func LoadNames() {
+	// Load JSON file
+	data, err := fs.ReadFile(assetsFolder, "names.json")
+	if err != nil {
+		log.Fatal("Failed to load names JSON:", err)
+	}
+
+	// Parse JSON
+	if err := json.Unmarshal(data, &Assets.Names); err != nil {
+		log.Fatal("Failed to parse sprite JSON:", err)
 	}
 }

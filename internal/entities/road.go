@@ -1,9 +1,6 @@
 package entities
 
-import (
-	"fmt"
-	"math/rand"
-)
+import "fmt"
 
 type IntersectionType string
 
@@ -71,10 +68,11 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 	}
 
 	road := &Road{
-		Name:     fmt.Sprintf("Street %d", rand.Intn(100)),
+		Name:     Sim.NameService.GetRoadName(),
 		Type:     roadType,
 		Segments: segments,
 	}
 
 	Sim.Geography.addRoad(road)
+	fmt.Printf("[ Road ] %s opened!\n", road.Name)
 }

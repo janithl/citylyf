@@ -3,38 +3,20 @@ package people
 import (
 	"math"
 	"math/rand"
-	"slices"
 
 	"github.com/janithl/citylyf/internal/economy"
 	"github.com/janithl/citylyf/internal/entities"
-	"github.com/janithl/citylyf/internal/utils"
 )
 
 const maleMeanAge = 37.0
 const femaleMeanAge = 39.0
 const ageStdDev = 15.0
 
-type PeopleService struct {
-	LastFiveNames   []string
-	LastTenFamilies []string
-}
-
-func NewPeopleService() *PeopleService {
-	return &PeopleService{
-		LastFiveNames:   make([]string, 5),
-		LastTenFamilies: make([]string, 10),
-	}
-}
+type PeopleService struct{}
 
 func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Person {
-	var name, familyName string
-	var gender entities.Gender
-
-	for name == "" || slices.Contains(ps.LastFiveNames, name) || slices.Contains(ps.LastTenFamilies, familyName) { // prevent repeating names
-		name, familyName, gender = getNameAndGender()
-	}
-	ps.LastFiveNames = utils.AddFifo(ps.LastFiveNames, name, 5)
-	ps.LastTenFamilies = utils.AddFifo(ps.LastTenFamilies, familyName, 10)
+	gender := entities.GetRandomGender()
+	name, familyName := entities.Sim.NameService.GetPersonName(gender)
 
 	meanAge := maleMeanAge
 	if gender == entities.Female {

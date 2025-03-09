@@ -13,7 +13,7 @@ import (
 func BenchmarkSim(b *testing.B) {
 	entities.Sim = entities.NewSimulation(2020, 100000)
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
-	peopleService := people.NewPeopleService()
+	peopleService := people.PeopleService{}
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 	entities.Sim.SimulationSpeed = entities.Slow
 

@@ -23,7 +23,7 @@ func main() {
 	}
 
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
-	peopleService := people.NewPeopleService()
+	peopleService := people.PeopleService{}
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
 	if len(entities.Sim.Companies) == 0 {

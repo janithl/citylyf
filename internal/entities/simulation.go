@@ -32,6 +32,7 @@ type Simulation struct {
 	tickNumber      int
 	lastID          atomic.Uint32
 	SavePath        string
+	NameService     *NameService
 }
 
 func (s *Simulation) Tick() {
@@ -109,7 +110,8 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 				CompanyProfits:   []float64{0.001},
 			},
 		},
-		Geography: NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		Geography:   NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		NameService: NewNameService(),
 	}
 	sim.lastID.Add(10000)           // start IDs at 10000
 	SimStats = make(chan string, 1) // create the stats channel
