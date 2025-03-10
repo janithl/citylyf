@@ -113,10 +113,10 @@ func (g *Geography) getAccessRoad(x, y int) Direction {
 
 	if g.CheckRoad(x, y+1) {
 		return DirX
-	} else if g.CheckRoad(x, y-1) {
-		return DirXBack
 	} else if g.CheckRoad(x+1, y) {
 		return DirY
+	} else if g.CheckRoad(x, y-1) {
+		return DirXBack
 	} else if g.CheckRoad(x-1, y) {
 		return DirYBack
 	}

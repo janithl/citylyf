@@ -18,7 +18,10 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [ ] Pension fund with employee + employer + government contributions
 - [ ] Companies should be tied to office space/industrial space availability
 - [x] Retail companies + shops
+- [ ] Shops/offices should be like houses, built and kept unoccupied until a company moves in
 - [ ] Companies with no employees for a year should shut down (tie productivity to employee count?)
+- [ ] Land use type to track tile land use instead of the current booleans
+- [ ] Regions to track population and simulate traffic between them
 - [ ] Forests and farmland
 - [x] Housing estates instead of laying down individual houses?
 - [x] Better UI for road laying
