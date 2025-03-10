@@ -16,7 +16,7 @@ type Geography struct {
 	biasX, biasY                                        int // bias x and y create a vector along which mountain ranges form
 	peakProbability, rangeProbability, cliffProbability float64
 	tiles                                               [][]Tile
-	roads                                               []Road
+	roads                                               []*Road
 }
 
 // Generate generates the terrain map
@@ -81,8 +81,13 @@ func (g *Geography) GetTiles() [][]Tile {
 	return g.tiles
 }
 
+// bounds check
+func (g *Geography) BoundsCheck(x, y int) bool {
+	return x >= 0 && y >= 0 && x < g.Size && y < g.Size
+}
+
 // accessor for roads
-func (g *Geography) GetRoads() []Road {
+func (g *Geography) GetRoads() []*Road {
 	return g.roads
 }
 
@@ -92,6 +97,23 @@ func (g *Geography) CheckRoad(x, y int) bool {
 	}
 
 	return g.tiles[x][y].Road
+}
+
+// CheckRoadStartEnd returns the first road that starts or ends at x, y
+func (g *Geography) GetRoadByStartEnd(roadType RoadType, x, y int) (*Road, int) {
+	for _, road := range g.roads {
+		segs := len(road.Segments)
+		if road.Type != roadType || segs == 0 {
+			continue
+		}
+		if road.Segments[0].Start.X == x && road.Segments[0].Start.Y == y {
+			return road, 0
+		}
+		if road.Segments[segs-1].End.X == x && road.Segments[segs-1].End.Y == y {
+			return road, segs - 1
+		}
+	}
+	return nil, 0
 }
 
 // place residential zone
@@ -160,8 +182,12 @@ func (g *Geography) setIntersectionType(x, y int) {
 
 // add a new road
 func (g *Geography) addRoad(r *Road) {
-	g.roads = append(g.roads, *r)
-	for _, segment := range r.Segments {
+	g.roads = append(g.roads, r)
+	g.placeRoadSegments(r.Segments)
+}
+
+func (g *Geography) placeRoadSegments(segments []Segment) {
+	for _, segment := range segments {
 		if segment.Direction == DirX {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
 				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
@@ -182,11 +208,6 @@ func (g *Geography) addRoad(r *Road) {
 			g.setIntersectionType(segment.Start.X, segment.End.Y)
 		}
 	}
-}
-
-// bounds check
-func (g *Geography) BoundsCheck(x, y int) bool {
-	return x >= 0 && y >= 0 && x < g.Size && y < g.Size
 }
 
 // check if coordinates are within a road segment, and that road's direction and type

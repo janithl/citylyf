@@ -42,9 +42,27 @@ func (r *Road) IsTraversable(x, y int) bool {
 	return Sim.Geography.tiles[x][y].Elevation < Sim.Geography.SeaLevel+3
 }
 
+func (r *Road) AddSegments(segments []Segment, start bool) {
+	if start {
+		r.Segments = append(r.Segments, segments...)
+	} else {
+		r.Segments = append(segments, r.Segments...)
+	}
+}
+
 func PlaceRoad(start, end Point, roadType RoadType) {
 	if start.X == end.Y && start.Y == end.Y {
 		return
+	}
+
+	var road *Road
+	var roadStart bool
+	if r, index := Sim.Geography.GetRoadByStartEnd(roadType, start.X, start.Y); r != nil {
+		road = r
+		roadStart = index == 0
+	} else if r, index := Sim.Geography.GetRoadByStartEnd(roadType, end.X, end.Y); r != nil {
+		road = r
+		roadStart = index == 0
 	}
 
 	segments := []Segment{}
@@ -67,12 +85,17 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 		})
 	}
 
-	road := &Road{
-		Name:     Sim.NameService.GetRoadName(),
-		Type:     roadType,
-		Segments: segments,
+	if road != nil {
+		road.AddSegments(segments, roadStart)
+		Sim.Geography.placeRoadSegments(segments)
+		fmt.Printf("[ Road ] %s extended!\n", road.Name)
+	} else {
+		road = &Road{
+			Name:     Sim.NameService.GetRoadName(),
+			Type:     roadType,
+			Segments: segments,
+		}
+		Sim.Geography.addRoad(road)
+		fmt.Printf("[ Road ] %s opened!\n", road.Name)
 	}
-
-	Sim.Geography.addRoad(road)
-	fmt.Printf("[ Road ] %s opened!\n", road.Name)
 }

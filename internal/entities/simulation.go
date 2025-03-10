@@ -119,7 +119,7 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 	return sim
 }
 
-func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [][]Tile, roads []Road) {
+func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [][]Tile, roads []*Road) {
 	Sim = sim
 	Sim.lastID.Add(lastID)
 	Sim.SavePath = path

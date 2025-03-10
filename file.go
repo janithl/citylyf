@@ -13,7 +13,7 @@ type SaveGame struct {
 	Sim    *entities.Simulation
 	LastID int
 	Tiles  [][]entities.Tile
-	Roads  []entities.Road
+	Roads  []*entities.Road
 }
 
 func saveGame(path string) {
