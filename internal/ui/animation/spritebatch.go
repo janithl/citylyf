@@ -1,7 +1,10 @@
-package ui
+package animation
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
 )
 
@@ -23,7 +26,7 @@ func (b *SpriteBatch) AddSprite(animation string, frameIndex int, x, y float64) 
 }
 
 // Draw renders all queued sprites
-func (b *SpriteBatch) Draw(screen *ebiten.Image) {
+func (b *SpriteBatch) Draw(screen *ebiten.Image, getImageOptions func(entities.Point) *ebiten.DrawImageOptions) {
 	for _, sprite := range b.Sprites {
 		anim, exists := assets.Assets.Animations[sprite.AnimationName]
 		if !exists || len(anim.Frames) == 0 {
@@ -31,9 +34,7 @@ func (b *SpriteBatch) Draw(screen *ebiten.Image) {
 		}
 
 		frame := anim.Frames[sprite.FrameIndex%len(anim.Frames)]
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(sprite.X, sprite.Y)
-		screen.DrawImage(frame, op)
+		screen.DrawImage(frame, getImageOptions(entities.Point{X: int(math.Round(sprite.X)), Y: int(math.Round(sprite.Y))}))
 	}
 
 	b.Sprites = nil // Clear after drawing

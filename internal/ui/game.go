@@ -14,16 +14,12 @@ const (
 )
 
 type Game struct {
-	animations    []Animation
 	worldRenderer world.WorldRenderer
 	windowSystem  WindowSystem
 }
 
 func (g *Game) Update() error {
 	g.worldRenderer.Update()
-	for i := range g.animations {
-		g.animations[i].Update()
-	}
 	g.windowSystem.Update()
 
 	return nil
@@ -32,9 +28,6 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colour.Gray)
 	g.worldRenderer.Draw(screen)
-	for i := range g.animations {
-		g.animations[i].Draw(screen)
-	}
 	g.windowSystem.Draw(screen)
 }
 
@@ -47,19 +40,6 @@ func RunGame() {
 	ebiten.SetWindowTitle("citylyf")
 
 	game := &Game{
-		animations: []Animation{
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, 0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, -0.28),
-
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, -0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0),
-
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, -0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, 0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
-		},
 		worldRenderer: *world.NewWorldRenderer(screenWidth, screenHeight),
 		windowSystem:  *NewWindowSystem(),
 	}

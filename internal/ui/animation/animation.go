@@ -1,15 +1,16 @@
-package ui
+package animation
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
 )
 
 type Animation struct {
-	X, Y, SpeedX, SpeedY float64
-	batch                SpriteBatch
-	frameIndex           int
-	frameCount           int
+	X, Y, EndX, EndY, SpeedX, SpeedY float64
+	batch                            SpriteBatch
+	frameIndex                       int
+	frameCount                       int
 }
 
 func (a *Animation) Update() error {
@@ -25,7 +26,7 @@ func (a *Animation) Update() error {
 	return nil
 }
 
-func (a *Animation) Draw(screen *ebiten.Image) {
+func (a *Animation) Draw(screen *ebiten.Image, getImageOptions func(entities.Point) *ebiten.DrawImageOptions) {
 	// Queue animated character rendering based on direction of walk
 	switch {
 	case a.SpeedX > 0 && a.SpeedY > 0:
@@ -49,10 +50,10 @@ func (a *Animation) Draw(screen *ebiten.Image) {
 	}
 
 	// Execute batch render
-	a.batch.Draw(screen)
+	a.batch.Draw(screen, getImageOptions)
 }
 
-func NewAnimation(x, y, speedX, speedY float64) *Animation {
+func NewAnimation(startX, startY, endX, endY, speed float64) *Animation {
 	animations := map[string]int{
 		"walk_front_1": 0,
 		"walk_front_2": 1,
@@ -67,9 +68,11 @@ func NewAnimation(x, y, speedX, speedY float64) *Animation {
 	// shout out to https://bossnelnel.itch.io/8-direction-top-down-character-sprites for the amazing sprites
 	assets.LoadAnimationSpritesheet("human-green.png", 23, 36, 9, 8, animations)
 	return &Animation{
-		X:      x,
-		Y:      y,
-		SpeedX: speedX,
-		SpeedY: speedY,
+		X:      startX,
+		Y:      startY,
+		EndX:   endX,
+		EndY:   endY,
+		SpeedX: (endX - startX) / speed,
+		SpeedY: (endY - startY) / speed,
 	}
 }

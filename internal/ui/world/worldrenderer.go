@@ -1,12 +1,15 @@
 package world
 
 import (
+	"fmt"
 	"math"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/geo"
+	"github.com/janithl/citylyf/internal/ui/animation"
 	"github.com/janithl/citylyf/internal/ui/assets"
 	"github.com/janithl/citylyf/internal/utils"
 )
@@ -22,12 +25,14 @@ const (
 )
 
 type WorldRenderer struct {
+	animations                         []animation.Animation
 	playerX, playerY, offsetX, offsetY float64
 	cameraX, cameraY, zoomFactor       float64
 	width, height                      int
 	cursorTile, startTile              entities.Point
 	placingRoad                        entities.RoadType
 	placingZone                        entities.Zone
+	placingPath                        bool
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -142,9 +147,22 @@ func (wr *WorldRenderer) getUserInput() {
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
+	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
+		wr.placingPath = true
+		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
+	}
+
 	// end placing road/zone
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		if wr.placingRoad != entities.NoRoad {
+		if wr.placingPath {
+			if path := geo.FindPath(wr.startTile, wr.cursorTile); path != nil {
+				startIsoX, startIsoY := float64(path[0].X), float64(path[0].Y)
+				endIsoX, endIsoY := float64(path[len(path)-1].X), float64(path[len(path)-1].Y)
+				fmt.Println(path, startIsoX, startIsoY, endIsoX, endIsoY)
+				wr.animations = append(wr.animations, *animation.NewAnimation(startIsoX, startIsoY, endIsoX, endIsoY, 100))
+			}
+			wr.placingPath = false
+		} else if wr.placingRoad != entities.NoRoad {
 			entities.Sim.Mutex.Lock()
 			entities.PlaceRoad(wr.startTile, wr.cursorTile, wr.placingRoad)
 			entities.Sim.Mutex.Unlock()
@@ -161,6 +179,7 @@ func (wr *WorldRenderer) getUserInput() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		wr.placingRoad = entities.NoRoad
 		wr.placingZone = entities.NoZone
+		wr.placingPath = false
 	}
 
 	// toggle roundabout
@@ -172,6 +191,9 @@ func (wr *WorldRenderer) getUserInput() {
 }
 
 func (wr *WorldRenderer) Update() error {
+	for i := range wr.animations {
+		wr.animations[i].Update()
+	}
 	wr.handleMovement()
 	wr.handleZoom()
 
@@ -361,6 +383,10 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}
+	}
+	for i := range wr.animations {
+		// op := wr.getImageOptions(entities.Point{X: int(wr.animations[i].X), Y: int(wr.animations[i].Y)})
+		wr.animations[i].Draw(screen, wr.getImageOptions)
 	}
 }
 
