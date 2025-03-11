@@ -2,56 +2,46 @@ package people
 
 import (
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/janithl/citylyf/internal/entities"
 )
 
 // getAge generates a random age based on a bell curve
-func getAge(mean, stdDev float64, minAge, maxAge int) int {
+func getAge(mean, stdDev float64, minAge, maxAge int) (years int, months int) {
 	if minAge < 0 {
 		minAge = 0
 	}
-	if maxAge < minAge {
-		maxAge = minAge
+	if maxAge-minAge < 1 {
+		return minAge, 0
 	}
 
 	maxCalculations := 100
 	for i := 0; i < maxCalculations; i++ {
-		// Box-Muller transform to generate normal distribution
-		u1 := rand.Float64()
-		u2 := rand.Float64()
-		z := math.Sqrt(-2*math.Log(u1)) * math.Cos(2*math.Pi*u2)
-
-		// Scale and shift to get the desired mean and standard deviation
-		age := mean + z*stdDev
+		age := mean + rand.NormFloat64()*stdDev
 
 		// Ensure age is within bounds
-		if int(age) >= minAge && int(age) <= maxAge {
-			return int(math.Round(age))
+		if age >= float64(minAge) && age <= float64(maxAge) {
+			return int(math.Round(age)), 1 + (int(age*12) % 12)
 		}
 	}
 
-	return int(minAge + rand.Intn(maxAge))
+	return int(minAge + rand.IntN(maxAge-minAge)), 1 + rand.IntN(12)
 }
 
 // getRandomBirthdate generates a random birthdate given the age
-func getRandomBirthdate(age int) time.Time {
+func getRandomBirthdate(ageY int, ageM int) time.Time {
 	currentDate := entities.Sim.Date
-
-	year := currentDate.Year() - age
-
-	// Generate a random month (1-12)
-	month := time.Month(rand.Intn(12) + 1)
+	year := currentDate.Year() - ageY
 
 	// Generate a random day based on the month and year
 	// Use time.Date to determine the last day of the month
-	day := rand.Intn(time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()) + 1
+	day := rand.IntN(time.Date(year, time.Month(ageM), 0, 0, 0, 0, 0, time.UTC).Day()) + 1
+	birthdate := time.Date(year, time.Month(ageM), day, 0, 0, 0, 0, time.UTC)
 
-	birthdate := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 	if currentDate.Before(birthdate) {
-		return currentDate.AddDate(0, -rand.Intn(12), -rand.Intn(28))
+		return currentDate.AddDate(0, -rand.IntN(12), -rand.IntN(28))
 	} else {
 		return birthdate
 	}

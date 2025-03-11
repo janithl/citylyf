@@ -22,9 +22,9 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 	if gender == entities.Female {
 		meanAge = femaleMeanAge
 	}
-	age := getAge(meanAge, ageStdDev, minAge, maxAge)
-	education := getEducationLevel(age)
-	careerLevel := getCareerLevel(age, education)
+	ageY, ageM := getAge(meanAge, ageStdDev, minAge, maxAge)
+	education := getEducationLevel(ageY)
+	careerLevel := getCareerLevel(ageY, education)
 
 	var job economy.IndustryJob
 	var salary float64
@@ -32,12 +32,12 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 		job, salary = economy.GetIndustryJob(education, careerLevel)
 	}
 
-	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(age-25), 1)
+	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(ageY-25), 1)
 
 	return &entities.Person{
 		FirstName:      name,
 		FamilyName:     familyName,
-		Birthdate:      getRandomBirthdate(age),
+		Birthdate:      getRandomBirthdate(ageY, ageM),
 		Gender:         gender,
 		EducationLevel: education,
 		Occupation:     job.Job,
@@ -45,7 +45,7 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 		CareerLevel:    careerLevel,
 		AnnualIncome:   int(salary),
 		Savings:        int(savings),
-		Relationship:   entities.GetRelationshipStatus(age),
+		Relationship:   entities.GetRelationshipStatus(ageY),
 	}
 }
 
