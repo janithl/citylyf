@@ -47,15 +47,6 @@ func (ws *WindowSystem) Draw(screen *ebiten.Image) {
 }
 
 func (ws *WindowSystem) closeWindows(title string) {
-	if title == "Map Control" {
-		ws.windows[0].CloseWindow()
-		ws.windows = ws.windows[1:]
-		ws.bottomBar.Enabled = true
-		entities.Sim.Mutex.Lock()
-		entities.Sim.ChangeSimulationSpeed()
-		entities.Sim.Mutex.Unlock()
-	}
-
 	for i := range ws.windows {
 		if ws.windows[i].Title == title {
 			ws.windows[i].CloseWindow()
@@ -116,13 +107,6 @@ func NewWindowSystem() *WindowSystem {
 		windows:        []control.Window{},
 	}
 
-	if entities.Sim.SavePath == "" {
-		mapWin := *control.NewWindow(10, 10, 240, 200, "Map Control", ws.closeWindows)
-		mapWin.AddChild(control.NewMapWindow(0, 0, 240, 180, func() { ws.closeWindows("Map Control") }))
-		ws.windows = append(ws.windows, mapWin)
-		ws.windows[0].IsVisible = true
-	}
-
 	ppWin := *control.NewWindow(970, 10, 300, 270, "Population Pyramid", ws.closeWindows)
 	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 300, Height: 250})
 	ws.windows = append(ws.windows, ppWin)
@@ -175,10 +159,6 @@ func NewWindowSystem() *WindowSystem {
 			func() []float64 { return entities.Sim.Market.History.InterestRate }),
 	}
 
-	bottomBarEnabled := true
-	if entities.Sim.SavePath == "" {
-		bottomBarEnabled = false
-	}
-	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows, bottomBarEnabled)
+	ws.bottomBar = control.NewBottomBar(screenHeight, screenWidth, ws.toggleAllWindows)
 	return ws
 }

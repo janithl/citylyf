@@ -171,7 +171,11 @@ func (wr *WorldRenderer) getUserInput() {
 	}
 }
 
-func (wr *WorldRenderer) Update() error {
+func (wr *WorldRenderer) Update(mapRegenMode bool) error {
+	if mapRegenMode {
+		return nil
+	}
+
 	wr.handleMovement()
 	wr.handleZoom()
 

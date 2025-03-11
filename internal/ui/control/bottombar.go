@@ -9,7 +9,7 @@ import (
 )
 
 type BottomBar struct {
-	Enabled, WindowsVisible   bool
+	WindowsVisible            bool
 	toggleWindows             func()
 	screenHeight, screenWidth int
 	bottomButtons             []*Button
@@ -26,12 +26,10 @@ func (b *BottomBar) Draw(screen *ebiten.Image) {
 }
 
 func (b *BottomBar) Update() error {
-	if b.Enabled {
-		select { // non-blocking read from stats channel
-		case stats := <-entities.SimStats:
-			b.bottomText = stats
-		default:
-		}
+	select { // non-blocking read from stats channel
+	case stats := <-entities.SimStats:
+		b.bottomText = stats
+	default:
 	}
 
 	buttonColour := colour.DarkSemiBlack
@@ -61,9 +59,8 @@ func (b *BottomBar) Update() error {
 	return nil
 }
 
-func NewBottomBar(screenHeight, screenWidth int, toggleWindows func(), enabled bool) *BottomBar {
+func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBar {
 	bar := &BottomBar{
-		Enabled:        enabled,
 		WindowsVisible: false,
 		toggleWindows:  toggleWindows,
 		screenHeight:   screenHeight,
@@ -80,11 +77,10 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func(), enabled b
 			Color:      colour.DarkSemiBlack,
 			HoverColor: colour.Blue,
 			OnClick: func() {
-				if bar.Enabled {
-					entities.Sim.Mutex.Lock()
-					entities.Sim.ChangeSimulationSpeed()
-					entities.Sim.Mutex.Unlock()
-				}
+				entities.Sim.Mutex.Lock()
+				entities.Sim.ChangeSimulationSpeed()
+				entities.Sim.Mutex.Unlock()
+
 			},
 		},
 		{
@@ -96,9 +92,8 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func(), enabled b
 			Color:      colour.DarkSemiBlack,
 			HoverColor: colour.DarkGreen,
 			OnClick: func() {
-				if bar.Enabled {
-					toggleWindows()
-				}
+				toggleWindows()
+
 			},
 		},
 	}

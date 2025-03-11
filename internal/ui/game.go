@@ -4,7 +4,9 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/colour"
+	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/ui/world"
 )
 
@@ -14,17 +16,16 @@ const (
 )
 
 type Game struct {
-	animations    []Animation
-	worldRenderer world.WorldRenderer
-	windowSystem  WindowSystem
+	worldRenderer *world.WorldRenderer
+	windowSystem  *WindowSystem
+	mapRegenMode  bool
+	mapControl    *control.MapControl
 }
 
 func (g *Game) Update() error {
-	g.worldRenderer.Update()
-	for i := range g.animations {
-		g.animations[i].Update()
-	}
+	g.worldRenderer.Update(g.mapRegenMode)
 	g.windowSystem.Update()
+	g.mapControl.Update()
 
 	return nil
 }
@@ -32,14 +33,22 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(colour.Gray)
 	g.worldRenderer.Draw(screen)
-	for i := range g.animations {
-		g.animations[i].Draw(screen)
+	if g.mapRegenMode {
+		g.mapControl.Draw(screen)
+	} else {
+		g.windowSystem.Draw(screen)
 	}
-	g.windowSystem.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
+}
+
+func (g *Game) EndRegenMode() {
+	g.mapRegenMode = false
+	entities.Sim.Mutex.Lock()
+	entities.Sim.ChangeSimulationSpeed()
+	entities.Sim.Mutex.Unlock()
 }
 
 func RunGame() {
@@ -47,22 +56,12 @@ func RunGame() {
 	ebiten.SetWindowTitle("citylyf")
 
 	game := &Game{
-		animations: []Animation{
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.4, 0),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, 0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0.28, -0.28),
-
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, -0.4),
-			*NewAnimation(screenWidth/2, screenHeight/2, 0, 0),
-
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, -0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.28, 0.28),
-			*NewAnimation(screenWidth/2, screenHeight/2, -0.4, 0),
-		},
-		worldRenderer: *world.NewWorldRenderer(screenWidth, screenHeight),
-		windowSystem:  *NewWindowSystem(),
+		worldRenderer: world.NewWorldRenderer(screenWidth, screenHeight),
+		windowSystem:  NewWindowSystem(),
+		mapRegenMode:  entities.Sim.SavePath == "",
 	}
+	game.mapControl = control.NewMapControl(0, 0, 240, 140, game.EndRegenMode)
+	game.mapControl.SetOffset(screenWidth-240, screenHeight-140)
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
