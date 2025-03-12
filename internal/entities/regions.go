@@ -1,12 +1,15 @@
 package entities
 
+import "math"
+
 const (
 	PopulationWeight    = 0.7
 	JobAttractionWeight = 0.9
+	ScalingConstant     = 0.15
 )
 
 type Trip struct {
-	DestinationID, MonthlyCount int
+	DestinationID, DailyTrips int
 }
 
 type Region struct {
@@ -46,6 +49,32 @@ func (r Regions) CalculateRegionalStats() {
 						}
 					}
 				}
+			}
+		}
+	}
+	r.CalculateRegionalTraffic()
+}
+
+func (r Regions) CalculateRegionalTraffic() {
+	for _, r1 := range r {
+		r1.Trips = []*Trip{}
+		for _, r2 := range r {
+			if r1.ID == r2.ID {
+				continue // Ignore same-region trips
+			}
+
+			distance := math.Sqrt(math.Pow(float64(r1.Start.X)-float64(r2.Start.X), 2) +
+				math.Pow(float64(r1.Start.Y)-float64(r2.Start.Y), 2)) // TODO: Improve this
+
+			if distance < 1 {
+				distance = 1 // Avoid division by zero
+			}
+
+			shoppingTrips := float64(r1.Population*r2.Shops) / math.Pow(distance, PopulationWeight)
+			workTrips := float64(r1.Population*r2.Jobs) / math.Pow(distance, JobAttractionWeight)
+			trips := int(math.Round(ScalingConstant * (workTrips + shoppingTrips)))
+			if trips > 0 {
+				r1.Trips = append(r1.Trips, &Trip{DestinationID: r2.ID, DailyTrips: trips})
 			}
 		}
 	}
