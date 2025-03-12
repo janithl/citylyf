@@ -77,7 +77,7 @@ func (s *Simulation) SendStats() {
 }
 
 func (s *Simulation) RegenerateMap(peakProb, rangeProb, cliffProb float64) {
-	s.Geography = NewGeography(64, 8, 3, peakProb, rangeProb, cliffProb)
+	s.Geography = NewGeography(64, 8, 8, 3, peakProb, rangeProb, cliffProb)
 }
 
 var Sim *Simulation
@@ -110,7 +110,7 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 				CompanyProfits:   []float64{0.001},
 			},
 		},
-		Geography:   NewGeography(64, 8, 3, 0.0015, 0.005, 0.01),
+		Geography:   NewGeography(64, 8, 8, 3, 0.0015, 0.005, 0.01),
 		NameService: NewNameService(),
 	}
 	sim.lastID.Add(10000)           // start IDs at 10000

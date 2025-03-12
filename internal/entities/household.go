@@ -29,12 +29,28 @@ func (h *Household) FamilyName() string {
 	return ""
 }
 
-func (h *Household) AnnualIncome() int {
+func (h *Household) GetMembers() []*Person {
+	members := []*Person{}
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil {
+			members = append(members, p)
+		}
+	}
+	return members
+}
+
+// if potential = true, this returns the ideal annual income if all employeable people are employed
+func (h *Household) AnnualIncome(potential bool) int {
 	income := 0
 	for _, memberID := range h.MemberIDs {
 		p := Sim.People.GetPerson(memberID)
 		if p != nil {
-			income += p.AnnualIncome
+			if potential && p.IsEmployable() {
+				income += p.AnnualIncome
+			} else {
+				income += p.CurrentIncome()
+			}
 		}
 	}
 	return income
@@ -59,8 +75,8 @@ func (h *Household) CalculateMonthlyBudget(addPayToPayroll func(companyID int, p
 	pay := 0.0
 	for _, memberID := range h.MemberIDs {
 		p := Sim.People.GetPerson(memberID)
-		if p != nil && p.IsEmployed() {
-			memberPay := float64(p.AnnualIncome) * daysSinceLastPay / DaysPerYear
+		if p != nil {
+			memberPay := float64(p.CurrentIncome()) * daysSinceLastPay / DaysPerYear
 			p.Savings += int(memberPay)
 			addPayToPayroll(p.EmployerID, memberPay) // deduct from company
 			pay += memberPay
@@ -78,7 +94,7 @@ func (h *Household) GetID() int {
 }
 
 func (h *Household) GetStats() string {
-	return fmt.Sprintf("%-24s %d Membs   %s   %s", h.FamilyName()+" family", h.Size(),
+	return fmt.Sprintf("%-30s %02d/%02d   %s   %s", h.FamilyName()+" family", h.Size(), h.GetEmployedCount(),
 		"Moved in "+h.MoveInDate.Format("2006-01-02"), utils.FormatCurrency(float64(h.Savings), "$"))
 }
 
@@ -91,4 +107,15 @@ func (h *Household) GetMemberStats() string {
 		}
 	}
 	return stats
+}
+
+func (h *Household) GetEmployedCount() int {
+	employed := 0
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil && p.IsEmployed() {
+			employed++
+		}
+	}
+	return employed
 }

@@ -21,5 +21,7 @@ const (
 	SoftwareEngineer     Job = "Software Engineer"
 	StoreManager         Job = "Store Manager"
 	SupplyChainManager   Job = "Supply Chain Manager"
+	RetailSalesAssociate Job = "RetailSalesAssociate"
+	StockClerk           Job = "StockClerk"
 	Teacher              Job = "Teacher"
 )

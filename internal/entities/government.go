@@ -33,7 +33,7 @@ func (g *Government) CollectTaxes() {
 	// Collect household income taxes
 	personalTaxesCollected := 0
 	for household := range maps.Values(Sim.People.Households) {
-		householdTax := g.CalculateIncomeTax(household.AnnualIncome())
+		householdTax := g.CalculateIncomeTax(household.AnnualIncome(false))
 
 		// Deduct tax from household wealth
 		household.Savings -= householdTax

@@ -17,6 +17,7 @@ type Geography struct {
 	peakProbability, rangeProbability, cliffProbability float64
 	tiles                                               [][]Tile
 	roads                                               []*Road
+	Regions                                             Regions
 }
 
 // Generate generates the terrain map
@@ -239,14 +240,14 @@ func (g *Geography) ToggleRoundabout(x, y int) {
 }
 
 // NewGeography returns a new terrain map
-func NewGeography(size, maxElevation, SeaLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
-	tiles := make([][]Tile, size)
-	for i := 0; i < size; i++ {
-		tiles[i] = make([]Tile, size)
+func NewGeography(mapSize, regionSize, maxElevation, SeaLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
+	tiles := make([][]Tile, mapSize)
+	for i := 0; i < mapSize; i++ {
+		tiles[i] = make([]Tile, mapSize)
 	}
 
 	geography := &Geography{
-		Size:             size,
+		Size:             mapSize,
 		MaxElevation:     maxElevation,
 		SeaLevel:         SeaLevel,
 		biasX:            rand.Intn(6) - 3,
@@ -255,6 +256,7 @@ func NewGeography(size, maxElevation, SeaLevel int, peakProbability, rangeProbab
 		rangeProbability: rangeProbability,
 		cliffProbability: cliffProbability,
 		tiles:            tiles,
+		Regions:          NewRegions(mapSize, regionSize),
 	}
 	// generate the terrain
 	geography.Generate()

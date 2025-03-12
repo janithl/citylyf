@@ -68,7 +68,8 @@ func (cs *CalculationService) CalculateEconomy() {
 		household.Savings += int(float64(household.Savings) * monthlyInterestRate)
 	}
 
-	// collect taxes and revise rents
+	// collect taxes, revise rents and calculate regional stats
 	entities.Sim.Government.CollectTaxes()
 	entities.Sim.Houses.ReviseRents()
+	entities.Sim.Geography.Regions.CalculateRegionalStats()
 }

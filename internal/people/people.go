@@ -3,6 +3,7 @@ package people
 import (
 	"math"
 	"math/rand"
+	"strings"
 
 	"github.com/janithl/citylyf/internal/economy"
 	"github.com/janithl/citylyf/internal/entities"
@@ -111,6 +112,10 @@ func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []*e
 		numberOfKids = 5
 	}
 
+	familyName := p.FamilyName
+	if q != nil && !strings.Contains(familyName, "-") && rand.Float32() < 0.1 { // 10% of surnames are double‑barrelled
+		familyName += "-" + q.FamilyName
+	}
 	for i := 0; i < numberOfKids; i++ {
 		var kid *entities.Person
 
@@ -132,7 +137,7 @@ func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []*e
 
 		if kid != nil {
 			kid.Relationship = entities.Single
-			kid.FamilyName = p.FamilyName
+			kid.FamilyName = familyName
 			kids = append(kids, kid)
 		}
 	}

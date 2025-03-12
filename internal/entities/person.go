@@ -41,6 +41,13 @@ func (p *Person) IsEmployed() bool {
 	return p.EmployerID != 0
 }
 
+func (p *Person) CurrentIncome() int {
+	if p.IsEmployed() {
+		return p.AnnualIncome
+	}
+	return 0
+}
+
 func (p *Person) ConsiderRetirement(removeEmployeeFromCompany func(companyID int, employeeID int)) bool {
 	if p.CareerLevel != Retired &&
 		p.Age() >= AgeOfRetirement &&

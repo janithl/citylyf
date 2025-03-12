@@ -1,7 +1,8 @@
 package economy
 
 import (
-	"math/rand"
+	"math"
+	"math/rand/v2"
 	"slices"
 
 	"github.com/janithl/citylyf/internal/entities"
@@ -13,6 +14,7 @@ type IndustryJob struct {
 	Job             entities.Job
 	EducationLevels []entities.EducationLevel
 	SalaryRange     map[entities.CareerLevel][2]int // Min and max salary for each career level
+	JobAbundance    int                             // Higher value = more common job
 }
 
 // Predefined occupations and salary ranges
@@ -27,6 +29,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {90000, 120000},
 			entities.ExecutiveLevel: {120000, 150000},
 		},
+		JobAbundance: 5,
 	},
 	{
 		Industry:        entities.Technology,
@@ -38,6 +41,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {90000, 120000},
 			entities.ExecutiveLevel: {120000, 150000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Telecommunications,
@@ -49,6 +53,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {100000, 125000},
 			entities.ExecutiveLevel: {125000, 150000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Education,
@@ -60,6 +65,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {60000, 80000},
 			entities.ExecutiveLevel: {80000, 100000},
 		},
+		JobAbundance: 8,
 	},
 	{
 		Industry:        entities.Healthcare,
@@ -71,6 +77,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {130000, 180000},
 			entities.ExecutiveLevel: {180000, 250000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Healthcare,
@@ -82,6 +89,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {100000, 150000},
 			entities.ExecutiveLevel: {150000, 200000},
 		},
+		JobAbundance: 6,
 	},
 	{
 		Industry:        entities.Creative,
@@ -93,6 +101,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {50000, 70000},
 			entities.ExecutiveLevel: {70000, 90000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Technology,
@@ -104,6 +113,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {120000, 160000},
 			entities.ExecutiveLevel: {160000, 200000},
 		},
+		JobAbundance: 3,
 	},
 	{
 		Industry:        entities.Healthcare,
@@ -115,6 +125,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {85000, 110000},
 			entities.ExecutiveLevel: {110000, 130000},
 		},
+		JobAbundance: 5,
 	},
 	{
 		Industry:        entities.Retail,
@@ -126,6 +137,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {110000, 140000},
 			entities.ExecutiveLevel: {140000, 180000},
 		},
+		JobAbundance: 3,
 	},
 	{
 		Industry:        entities.Energy,
@@ -137,6 +149,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {120000, 160000},
 			entities.ExecutiveLevel: {160000, 210000},
 		},
+		JobAbundance: 3,
 	},
 	{
 		Industry:        entities.Finance,
@@ -148,6 +161,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {140000, 190000},
 			entities.ExecutiveLevel: {190000, 250000},
 		},
+		JobAbundance: 1,
 	},
 	{
 		Industry:        entities.Automobile,
@@ -159,6 +173,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {90000, 120000},
 			entities.ExecutiveLevel: {120000, 160000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Retail,
@@ -170,6 +185,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {65000, 90000},
 			entities.ExecutiveLevel: {90000, 120000},
 		},
+		JobAbundance: 6,
 	},
 	{
 		Industry:        entities.Finance,
@@ -181,6 +197,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {120000, 160000},
 			entities.ExecutiveLevel: {160000, 220000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Energy,
@@ -192,6 +209,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {100000, 140000},
 			entities.ExecutiveLevel: {140000, 190000},
 		},
+		JobAbundance: 4,
 	},
 	{
 		Industry:        entities.Agriculture,
@@ -203,6 +221,7 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {65000, 90000},
 			entities.ExecutiveLevel: {90000, 120000},
 		},
+		JobAbundance: 6,
 	},
 	{
 		Industry:        entities.Construction,
@@ -214,21 +233,73 @@ var Jobs = []IndustryJob{
 			entities.SeniorLevel:    {90000, 120000},
 			entities.ExecutiveLevel: {120000, 150000},
 		},
+		JobAbundance: 4,
+	},
+	{
+		Industry:        entities.Retail,
+		Job:             entities.RetailSalesAssociate,
+		EducationLevels: []entities.EducationLevel{entities.Unqualified, entities.HighSchool},
+		SalaryRange: map[entities.CareerLevel][2]int{
+			entities.EntryLevel:     {25000, 27500},
+			entities.MidLevel:       {27500, 30000},
+			entities.SeniorLevel:    {30000, 32500},
+			entities.ExecutiveLevel: {32500, 35000},
+		},
+		JobAbundance: 8,
+	},
+	{
+		Industry:        entities.Retail,
+		Job:             entities.StockClerk,
+		EducationLevels: []entities.EducationLevel{entities.Unqualified, entities.HighSchool},
+		SalaryRange: map[entities.CareerLevel][2]int{
+			entities.EntryLevel:     {23000, 24500},
+			entities.MidLevel:       {24500, 26000},
+			entities.SeniorLevel:    {26000, 27500},
+			entities.ExecutiveLevel: {27500, 30000},
+		},
+		JobAbundance: 8,
 	},
 }
 
 // Randomly assigns an industry job
 func GetIndustryJob(education entities.EducationLevel, careerLevel entities.CareerLevel) (IndustryJob, float64) {
-	var selectedJob IndustryJob
+	var filteredJobs []IndustryJob
+	var weights []int
 
-	// Get a job suitable for the education level
-	for !slices.Contains(selectedJob.EducationLevels, education) {
-		selectedJob = Jobs[rand.Intn(len(Jobs))]
+	// Filter jobs by education level and collect weights
+	for _, job := range Jobs {
+		if slices.Contains(job.EducationLevels, education) {
+			filteredJobs = append(filteredJobs, job)
+			weights = append(weights, job.JobAbundance)
+		}
 	}
+
+	// Pick a job based on weight
+	selectedJob := weightedRandomChoice(filteredJobs, weights)
 
 	// Get salary range for the career level
 	salaryRange := selectedJob.SalaryRange[careerLevel]
-	salary := float64(rand.Intn(salaryRange[1]-salaryRange[0]+1) + salaryRange[0])
+	salary := math.Round(float64(salaryRange[0]) + rand.Float64()*float64(salaryRange[1]-salaryRange[0]))
 
 	return selectedJob, salary
+}
+
+// weightedRandomChoice selects an element based on weight
+func weightedRandomChoice(jobs []IndustryJob, weights []int) IndustryJob {
+	totalWeight := 0
+	for _, w := range weights {
+		totalWeight += w
+	}
+
+	r := rand.IntN(totalWeight)
+	cumulative := 0
+
+	for i, w := range weights {
+		cumulative += w
+		if r < cumulative {
+			return jobs[i]
+		}
+	}
+
+	return jobs[len(jobs)-1] // Fallback
 }
