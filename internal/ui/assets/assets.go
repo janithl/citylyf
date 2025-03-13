@@ -46,8 +46,8 @@ func init() {
 }
 
 // LoadSpritesheet loads a multi-line sprite sheet
-func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
-	img, _, err := ebitenutil.NewImageFromFileSystem(assetsFolder, path)
+func LoadAnimationSpritesheet(prefix, imagePath string, frameWidth, frameHeight, columns, rows int, animations map[string]int) {
+	img, _, err := ebitenutil.NewImageFromFileSystem(assetsFolder, imagePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func LoadAnimationSpritesheet(path string, frameWidth, frameHeight, columns, row
 			)).(*ebiten.Image)
 			frames = append(frames, frame)
 		}
-		Assets.Animations[name] = Animation{Frames: frames}
+		Assets.Animations[prefix+"_"+name] = Animation{Frames: frames}
 	}
 }
 

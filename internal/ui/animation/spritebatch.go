@@ -1,4 +1,4 @@
-package ui
+package animation
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
@@ -23,7 +23,7 @@ func (b *SpriteBatch) AddSprite(animation string, frameIndex int, x, y float64) 
 }
 
 // Draw renders all queued sprites
-func (b *SpriteBatch) Draw(screen *ebiten.Image) {
+func (b *SpriteBatch) Draw(screen *ebiten.Image, getImageOptions func(float64, float64) *ebiten.DrawImageOptions) {
 	for _, sprite := range b.Sprites {
 		anim, exists := assets.Assets.Animations[sprite.AnimationName]
 		if !exists || len(anim.Frames) == 0 {
@@ -31,8 +31,8 @@ func (b *SpriteBatch) Draw(screen *ebiten.Image) {
 		}
 
 		frame := anim.Frames[sprite.FrameIndex%len(anim.Frames)]
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(sprite.X, sprite.Y)
+		op := getImageOptions(sprite.X, sprite.Y)
+		// op.GeoM.Translate(sprite.X, sprite.Y)
 		screen.DrawImage(frame, op)
 	}
 

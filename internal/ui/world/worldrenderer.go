@@ -2,11 +2,13 @@ package world
 
 import (
 	"math"
+	"math/rand/v2"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/ui/animation"
 	"github.com/janithl/citylyf/internal/ui/assets"
 	"github.com/janithl/citylyf/internal/utils"
 )
@@ -21,13 +23,16 @@ const (
 	maxZoom        = 2
 )
 
+var animatedHumans = []string{"teal", "green", "orange", "pink"}
+
 type WorldRenderer struct {
 	playerX, playerY, offsetX, offsetY float64
 	cameraX, cameraY, zoomFactor       float64
-	width, height                      int
+	width, height, frameCounter        int
 	cursorTile, startTile              entities.Point
 	placingRoad                        entities.RoadType
 	placingZone                        entities.Zone
+	animations                         []*animation.Animation
 }
 
 // Converts grid coordinates to isometric coordinates
@@ -176,6 +181,29 @@ func (wr *WorldRenderer) Update(mapRegenMode bool) error {
 		return nil
 	}
 
+	wr.frameCounter++
+	if wr.frameCounter >= 300 { // update every 5 seconds
+		wr.frameCounter = 0
+
+		entities.Sim.Mutex.Lock()
+		for _, region := range entities.Sim.Geography.Regions {
+			for _, trip := range region.Trips {
+				if trip.Start == nil || trip.End == nil {
+					continue
+				}
+
+				wr.animations = append(wr.animations, animation.NewAnimation(animatedHumans[rand.IntN(3)],
+					float64(trip.Start.X), float64(trip.Start.Y),
+					entities.Sim.Geography.FindTurns(entities.Sim.Geography.FindPath(trip.Start, trip.End))))
+			}
+		}
+		entities.Sim.Mutex.Unlock()
+	}
+
+	for i := range wr.animations {
+		wr.animations[i].Update()
+	}
+
 	wr.handleMovement()
 	wr.handleZoom()
 
@@ -316,8 +344,8 @@ func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageO
 	}
 }
 
-func (wr *WorldRenderer) getImageOptions(point entities.Point) *ebiten.DrawImageOptions {
-	isoX, isoY := wr.isoTransform(float64(point.X), float64(point.Y))
+func (wr *WorldRenderer) getImageOptions(x, y float64) *ebiten.DrawImageOptions {
+	isoX, isoY := wr.isoTransform(x, y)
 
 	op := &ebiten.DrawImageOptions{}
 
@@ -336,13 +364,13 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	tiles := entities.Sim.Geography.GetTiles()
 	for x := range tiles {
 		for y := range tiles[x] {
-			op := wr.getImageOptions(entities.Point{X: x, Y: y})
+			op := wr.getImageOptions(float64(x), float64(y))
 			wr.renderBaseTiles(screen, op, tiles, x, y)
 			wr.renderRoads(screen, op, tiles, x, y)
 
 			// draw a cursor around the tile under the mouse.
 			if x == wr.cursorTile.X && y == wr.cursorTile.Y {
-				opCursor := wr.getImageOptions(entities.Point{X: x, Y: y})
+				opCursor := wr.getImageOptions(float64(x), float64(y))
 				opCursor.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
 				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, opCursor)
 			}
@@ -365,6 +393,11 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}
 		}
+	}
+
+	// render animations
+	for i := range wr.animations {
+		wr.animations[i].Draw(screen, wr.getImageOptions)
 	}
 }
 
