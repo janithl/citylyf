@@ -111,6 +111,10 @@ func NewWindowSystem() *WindowSystem {
 	ppWin.AddChild(&control.PopulationPyramid{X: 0, Y: 0, Width: 300, Height: 250})
 	ws.windows = append(ws.windows, ppWin)
 
+	gridWin := *control.NewWindow(990, 290, 240, 160, "Population Map", ws.closeWindows)
+	gridWin.AddChild(control.NewMapGrid(0, 0, 240, 8, entities.Sim.Geography.Regions.GetPopulationStats))
+	ws.windows = append(ws.windows, gridWin)
+
 	ws.listWindows = []control.ListWindow{
 		*control.NewListWindow(10, 290, 500, 360, "Companies", ws.closeWindows, ws.onWindowItemClick,
 			func() []control.Statable {

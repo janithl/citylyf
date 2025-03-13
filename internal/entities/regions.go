@@ -80,6 +80,28 @@ func (r Regions) CalculateRegionalTraffic() {
 	}
 }
 
+func (r Regions) GetPopulationStats() ([][]int, int) {
+	side := int(math.Sqrt(float64(len(r))))
+	populationStats := make([][]int, side)
+	maxPopulation := 0
+	for x := 0; x < side; x++ {
+		populationStats[x] = make([]int, side)
+		for y := 0; y < side; y++ {
+			rIndex := (x * side) + y
+			if len(r) < rIndex {
+				populationStats[x][y] = 0
+				continue
+			}
+			regionPop := r[rIndex].Population
+			populationStats[x][y] = regionPop
+			if regionPop > maxPopulation {
+				maxPopulation = regionPop
+			}
+		}
+	}
+	return populationStats, maxPopulation
+}
+
 func NewRegions(mapSize, regionSize int) []*Region {
 	regions := []*Region{}
 

@@ -11,30 +11,21 @@ import (
 )
 
 type PopulationPyramid struct {
-	X, Y, Width, Height int
+	X, Y, Width, Height, frameCounter, maxPopPerGroup int
+	ageGroups                                         map[int]entities.AgeGroup
 }
 
 const BarGraphPadding = 4
 
 func (pp *PopulationPyramid) Draw(screen *ebiten.Image) {
-	ageGroups := entities.Sim.People.AgeGroups
-	if len(ageGroups) < 1 {
-		return
-	}
+	barHeight := float32(pp.Height) / float32(len(pp.ageGroups)) // Divide height by number of age groups
+	maxWidth := float32(pp.Width) / 2                            // Half width for each side
 
-	maxPopPerGroup := entities.Sim.People.Population()
-	if entities.Sim.People.Population() > 20 { // bigger populations are easier to predict
-		maxPopPerGroup = 3 * entities.Sim.People.Population() / len(ageGroups)
-	}
-
-	barHeight := float32(pp.Height) / float32(len(ageGroups)) // Divide height by number of age groups
-	maxWidth := float32(pp.Width) / 2                         // Half width for each side
-
-	for i, group := range ageGroups {
+	for i, group := range pp.ageGroups {
 		y := float32(pp.Y) + float32(i/entities.AgeGroupSize)*barHeight
-		maleWidth := maxWidth * (float32(group.Male) / float32(maxPopPerGroup))
-		femaleWidth := maxWidth * (float32(group.Female) / float32(maxPopPerGroup))
-		otherWidth := maxWidth * (float32(group.Other) / float32(maxPopPerGroup))
+		maleWidth := maxWidth * (float32(group.Male) / float32(pp.maxPopPerGroup))
+		femaleWidth := maxWidth * (float32(group.Female) / float32(pp.maxPopPerGroup))
+		otherWidth := maxWidth * (float32(group.Other) / float32(pp.maxPopPerGroup))
 
 		// Draw bars
 		vector.DrawFilledRect(screen, float32(pp.X)+maxWidth-maleWidth, y, maleWidth, barHeight-BarGraphPadding, colour.DarkCyan, false)
@@ -46,7 +37,20 @@ func (pp *PopulationPyramid) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (pp *PopulationPyramid) Update() {}
+func (pp *PopulationPyramid) Update() {
+	pp.frameCounter++
+	if pp.frameCounter >= 60 { // update every second
+		pp.frameCounter = 0
+
+		entities.Sim.Mutex.RLock()
+		pp.ageGroups = entities.Sim.People.AgeGroups
+		pp.maxPopPerGroup = entities.Sim.People.Population()
+		if len(pp.ageGroups) > 0 && entities.Sim.People.Population() > 20 { // bigger populations are easier to predict
+			pp.maxPopPerGroup = 3 * entities.Sim.People.Population() / len(pp.ageGroups)
+		}
+		entities.Sim.Mutex.RUnlock()
+	}
+}
 
 func (pp *PopulationPyramid) SetOffset(x, y int) {
 	pp.X = x
