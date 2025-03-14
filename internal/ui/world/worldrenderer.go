@@ -192,9 +192,13 @@ func (wr *WorldRenderer) Update(mapRegenMode bool) error {
 					continue
 				}
 
-				wr.animations = append(wr.animations, animation.NewAnimation(animatedHumans[rand.IntN(3)],
-					float64(trip.Start.X), float64(trip.Start.Y),
-					entities.Sim.Geography.FindTurns(entities.Sim.Geography.FindPath(trip.Start, trip.End))))
+				for _, anim := range wr.animations {
+					if anim.IsFinished() {
+						anim.SetPath(entities.Sim.Geography.FindTurns(entities.Sim.Geography.FindPath(trip.Start, trip.End)))
+						anim.CalculateSpeed()
+						break
+					}
+				}
 			}
 		}
 		entities.Sim.Mutex.Unlock()
@@ -408,6 +412,11 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
 	assets.LoadVariableSpritesheet("ui", "spritesheet-ui.png", "spriteinfo-ui.json")
 
+	animations := make([]*animation.Animation, 128) // support up to 128 animations at a time
+	for i := range animations {
+		animations[i] = animation.NewAnimation(animatedHumans[rand.IntN(3)], 0, 0)
+	}
+
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
 		playerX:    float64(mapSize / 3),
@@ -419,5 +428,6 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 		height:     screenHeight,
 		offsetX:    float64(screenWidth) / 2,
 		offsetY:    float64(screenHeight) / 4,
+		animations: animations,
 	}
 }

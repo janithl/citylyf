@@ -1,6 +1,8 @@
 package animation
 
 import (
+	"math"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/assets"
@@ -12,20 +14,31 @@ type Animation struct {
 	batch                  *SpriteBatch
 	prefix                 string
 	frameIndex, frameCount int
+	finished               bool
 }
 
 func (a *Animation) Update() error {
+	if len(a.path) <= 1 {
+		a.finished = true
+		return nil
+	}
+
 	a.frameCount++
 	if a.frameCount%8 == 0 { // Change frame every 8 ticks
 		a.frameIndex++
 	}
 
-	if len(a.path) > 1 && a.path[1].X-int(a.x) < 3 && a.path[1].Y-int(a.y) < 3 {
+	// Move to the next path point if close enough
+	dx := a.path[1].X - int(a.x)
+	dy := a.path[1].Y - int(a.y)
+	distance := math.Sqrt(float64(dx*dx + dy*dy))
+
+	if distance < 0.1 { // Threshold for reaching the point
 		a.path = a.path[1:]
 		a.CalculateSpeed()
 	}
 
-	// Move sprite
+	// Move sprite along the speed vector
 	a.x += a.speedX
 	a.y += a.speedY
 
@@ -33,7 +46,7 @@ func (a *Animation) Update() error {
 }
 
 func (a *Animation) Draw(screen *ebiten.Image, getImageOptions func(float64, float64) *ebiten.DrawImageOptions) {
-	if len(a.path) <= 1 {
+	if a.finished {
 		return
 	}
 
@@ -69,18 +82,35 @@ func (a *Animation) CalculateSpeed() {
 		return
 	}
 
-	if a.path[1].X-a.path[0].X > 0 && a.path[1].Y-a.path[0].Y > 0 {
-		a.speedX, a.speedY = 0.035, 0.035
-	} else if a.path[1].X-a.path[0].X > 0 {
-		a.speedX = 0.05
-	} else if a.path[1].Y-a.path[0].Y > 0 {
-		a.speedY = 0.05
-	} else {
+	// Get direction vector
+	dx := float64(a.path[1].X - a.path[0].X)
+	dy := float64(a.path[1].Y - a.path[0].Y)
+	distance := math.Sqrt(dx*dx + dy*dy)
+
+	if distance == 0 {
 		a.speedX, a.speedY = 0, 0
+		return
+	}
+
+	// Normalize direction and apply speed
+	speed := 0.05 // Base speed value
+	a.speedX = (dx / distance) * speed
+	a.speedY = (dy / distance) * speed
+}
+
+func (a *Animation) IsFinished() bool {
+	return a.finished
+}
+
+func (a *Animation) SetPath(path []*entities.Point) {
+	if len(path) > 0 {
+		a.path = path
+		a.finished = false
+		a.x, a.y = float64(path[0].X), float64(path[0].Y)
 	}
 }
 
-func NewAnimation(prefix string, x, y float64, path []*entities.Point) *Animation {
+func NewAnimation(prefix string, x, y float64) *Animation {
 	animations := map[string]int{
 		"walk_front_1": 0,
 		"walk_front_2": 1,
@@ -96,12 +126,11 @@ func NewAnimation(prefix string, x, y float64, path []*entities.Point) *Animatio
 	assets.LoadAnimationSpritesheet(prefix, "human-"+prefix+".png", 23, 36, 9, 8, animations)
 
 	anim := &Animation{
-		x:      x,
-		y:      y,
-		path:   path,
-		batch:  &SpriteBatch{},
-		prefix: prefix,
+		x:        x,
+		y:        y,
+		batch:    &SpriteBatch{},
+		prefix:   prefix,
+		finished: true,
 	}
-	anim.CalculateSpeed()
 	return anim
 }
