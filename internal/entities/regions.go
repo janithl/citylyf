@@ -24,14 +24,13 @@ type Region struct {
 
 func (r *Region) GetRegionalRoad() *Point {
 	tiles := Sim.Geography.GetTiles()
-	centreX, centreY := r.Start.X+r.Size/2, r.Start.Y+r.Size/2
-	roadX, roadY := centreX, centreY
-	for roadX < r.Start.X+r.Size && roadY < r.Start.Y+r.Size && Sim.Geography.BoundsCheck(roadX, roadY) {
-		if tiles[roadX][roadY].Road {
-			return &Point{X: roadX, Y: roadY}
+	centre := Point{X: r.Start.X + r.Size/2, Y: r.Start.Y + r.Size/2}
+	for d := range r.Size / 2 {
+		for _, neighbour := range centre.GetNeighbours(d, false) {
+			if Sim.Geography.BoundsCheck(neighbour.X, neighbour.Y) && tiles[neighbour.X][neighbour.Y].Road {
+				return neighbour
+			}
 		}
-		roadX++
-		roadY++
 	}
 	return nil
 }

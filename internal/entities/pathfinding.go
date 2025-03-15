@@ -12,14 +12,6 @@ func (g *Geography) FindPath(source, dest *Point) []*Point {
 		return nil
 	}
 
-	// Directions: up, down, left, right.
-	directions := []Point{
-		{X: 0, Y: 1},
-		{X: 1, Y: 0},
-		{X: 0, Y: -1},
-		{X: -1, Y: 0},
-	}
-
 	// Maps to keep track of visited tiles and how we got there.
 	visited := make(map[Point]bool)
 	cameFrom := make(map[Point]*Point)
@@ -38,8 +30,7 @@ func (g *Geography) FindPath(source, dest *Point) []*Point {
 			break
 		}
 
-		for _, d := range directions {
-			neighbor := &Point{X: current.X + d.X, Y: current.Y + d.Y}
+		for _, neighbor := range current.GetNeighbours(1, true) {
 			if !g.BoundsCheck(neighbor.X, neighbor.Y) {
 				continue
 			}
