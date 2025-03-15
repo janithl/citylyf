@@ -112,6 +112,10 @@ func (a *Animation) IsFinished() bool {
 	return a.finished
 }
 
+func (a *Animation) Coordinates() (int, int) {
+	return int(math.Round(a.x)), int(math.Round(a.y))
+}
+
 func (a *Animation) SetPath(path []*entities.Point) {
 	if len(path) > 0 {
 		a.path = path

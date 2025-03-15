@@ -89,6 +89,13 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 				}
 			}
 
+			// draw tile animations
+			for _, anim := range wr.animations {
+				if animX, animY := anim.Coordinates(); x == animX && y == animY {
+					anim.Draw(screen, wr.getImageOptions)
+				}
+			}
+
 			// draw a highlight around the tile where the road starts
 			if (wr.placingRoad != entities.NoRoad || wr.placingZone != entities.NoZone) &&
 				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
@@ -97,10 +104,6 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	// render animations
-	for i := range wr.animations {
-		wr.animations[i].Draw(screen, wr.getImageOptions)
-	}
 }
 
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
