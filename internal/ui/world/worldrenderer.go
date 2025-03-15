@@ -69,6 +69,12 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			op := wr.getImageOptions(float64(x), float64(y))
 			wr.renderBaseTiles(screen, op, tiles, x, y)
 			wr.renderRoads(screen, op, tiles, x, y)
+		}
+	} // finish rendering tiles first to prevent overlaps with everything else
+
+	for x := range tiles {
+		for y := range tiles[x] {
+			op := wr.getImageOptions(float64(x), float64(y))
 
 			// draw a cursor around the tile under the mouse.
 			if x == wr.cursorTile.X && y == wr.cursorTile.Y {
@@ -115,7 +121,7 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 
 	animations := make([]*animation.Animation, 128) // support up to 128 walking animations at a time
 	for i := range animations {
-		animations[i] = animation.NewAnimation(animatedHumans[rand.IntN(3)], 0, 0)
+		animations[i] = animation.NewAnimation(animatedHumans[rand.IntN(len(animatedHumans))], 0, 0)
 	}
 
 	mapSize := entities.Sim.Geography.Size

@@ -139,6 +139,7 @@ func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageO
 
 func (wr *WorldRenderer) assignAnimations() {
 	for _, region := range entities.Sim.Geography.Regions {
+		delay := 0
 		for _, trip := range region.Trips {
 			if trip.Start == nil || trip.End == nil {
 				continue
@@ -147,7 +148,8 @@ func (wr *WorldRenderer) assignAnimations() {
 			for _, anim := range wr.animations {
 				if anim.IsFinished() {
 					anim.SetPath(entities.Sim.Geography.FindTurns(entities.Sim.Geography.FindPath(trip.Start, trip.End)))
-					anim.CalculateSpeed()
+					anim.CalculateSpeed(delay)
+					delay += 60 // delay next animation by 1 seconds
 					break
 				}
 			}

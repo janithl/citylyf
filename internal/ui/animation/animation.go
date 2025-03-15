@@ -9,12 +9,12 @@ import (
 )
 
 type Animation struct {
-	x, y, speedX, speedY     float64
-	path                     []*entities.Point
-	batch                    *SpriteBatch
-	prefix                   string
-	frameIndex, frameCounter int
-	finished                 bool
+	x, y, speedX, speedY            float64
+	path                            []*entities.Point
+	batch                           *SpriteBatch
+	prefix                          string
+	frameIndex, frameCounter, delay int
+	finished                        bool
 }
 
 func (a *Animation) Update() error {
@@ -31,6 +31,11 @@ func (a *Animation) Update() error {
 		a.frameCounter += int(math.Sqrt(1600 / simSpeed))
 	}
 
+	if a.delay > 0 { // don't render if we are still delayed
+		a.delay--
+		return nil
+	}
+
 	if a.frameCounter > 8 { // Change frame every 8 ticks
 		a.frameIndex++
 		a.frameCounter = 0
@@ -43,7 +48,7 @@ func (a *Animation) Update() error {
 
 	if distance < 0.1 { // Threshold for reaching the point
 		a.path = a.path[1:]
-		a.CalculateSpeed()
+		a.CalculateSpeed(a.delay)
 	}
 
 	// Move sprite along the speed vector based on sim speed
@@ -56,7 +61,7 @@ func (a *Animation) Update() error {
 }
 
 func (a *Animation) Draw(screen *ebiten.Image, getImageOptions func(float64, float64) *ebiten.DrawImageOptions) {
-	if a.finished {
+	if a.finished || a.delay > 0 {
 		return
 	}
 
@@ -86,11 +91,13 @@ func (a *Animation) Draw(screen *ebiten.Image, getImageOptions func(float64, flo
 	a.batch.Draw(screen, getImageOptions)
 }
 
-func (a *Animation) CalculateSpeed() {
+func (a *Animation) CalculateSpeed(delay int) {
 	if len(a.path) <= 1 {
 		a.speedX, a.speedY = 0, 0
 		return
 	}
+
+	a.delay = delay
 
 	// Get direction vector
 	dx := float64(a.path[1].X - a.path[0].X)
