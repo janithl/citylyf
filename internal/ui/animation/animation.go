@@ -65,26 +65,18 @@ func (a *Animation) Draw(screen *ebiten.Image, getImageOptions func(float64, flo
 		return
 	}
 
-	// Queue animated character rendering based on direction of walk
+	// Queue animated character rendering based on the 4 different directions of walking
 	switch {
-	case a.speedX > 0 && a.speedY > 0:
-		a.batch.AddSprite(a.prefix+"_walk_front_2", a.frameIndex, a.x, a.y)
-	case a.speedX < 0 && a.speedY > 0:
-		a.batch.AddSprite(a.prefix+"_walk_front_3", a.frameIndex, a.x, a.y)
 	case a.speedX < 0 && a.speedY == 0:
-		a.batch.AddSprite(a.prefix+"_walk_side_2", a.frameIndex, a.x, a.y)
-	case a.speedX > 0 && a.speedY == 0:
-		a.batch.AddSprite(a.prefix+"_walk_side_1", a.frameIndex, a.x, a.y)
-	case a.speedX > 0 && a.speedY < 0:
-		a.batch.AddSprite(a.prefix+"_walk_back_1", a.frameIndex, a.x, a.y)
-	case a.speedX == 0 && a.speedY < 0:
-		a.batch.AddSprite(a.prefix+"_walk_back_2", a.frameIndex, a.x, a.y)
-	case a.speedX < 0 && a.speedY < 0:
 		a.batch.AddSprite(a.prefix+"_walk_back_3", a.frameIndex, a.x, a.y)
+	case a.speedX > 0 && a.speedY == 0:
+		a.batch.AddSprite(a.prefix+"_walk_front_2", a.frameIndex, a.x, a.y)
+	case a.speedX == 0 && a.speedY < 0:
+		a.batch.AddSprite(a.prefix+"_walk_back_1", a.frameIndex, a.x, a.y)
 	case a.speedX == 0 && a.speedY == 0:
 		a.batch.AddSprite(a.prefix+"_walk_front_1", 0, a.x, a.y)
 	default:
-		a.batch.AddSprite(a.prefix+"_walk_front_1", a.frameIndex, a.x, a.y)
+		a.batch.AddSprite(a.prefix+"_walk_front_3", a.frameIndex, a.x, a.y)
 	}
 
 	// Execute batch render
@@ -110,7 +102,7 @@ func (a *Animation) CalculateSpeed(delay int) {
 	}
 
 	// Normalize direction and apply speed
-	speed := 16.0 // Base speed value
+	speed := 8.0 // Base speed value
 	a.speedX = (dx / distance) * speed
 	a.speedY = (dy / distance) * speed
 }
@@ -144,7 +136,7 @@ func NewAnimation(prefix string, x, y float64) *Animation {
 	}
 
 	// shout out to https://bossnelnel.itch.io/8-direction-top-down-character-sprites for the amazing sprites
-	assets.LoadAnimationSpritesheet(prefix, "human-"+prefix+".png", 64, 64, 9, 8, animations)
+	assets.LoadAnimationSpritesheet(prefix, "human-"+prefix+".png", 32, 32, 9, 8, animations)
 
 	anim := &Animation{
 		x:        x,

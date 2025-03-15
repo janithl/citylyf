@@ -32,7 +32,6 @@ func (b *SpriteBatch) Draw(screen *ebiten.Image, getImageOptions func(float64, f
 
 		frame := anim.Frames[sprite.FrameIndex%len(anim.Frames)]
 		op := getImageOptions(sprite.X, sprite.Y)
-		// op.GeoM.Translate(sprite.X, sprite.Y)
 		screen.DrawImage(frame, op)
 	}
 
