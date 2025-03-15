@@ -112,7 +112,7 @@ func (a *Animation) IsFinished() bool {
 }
 
 func (a *Animation) Coordinates() (int, int) {
-	return int(math.Round(a.x)), int(math.Round(a.y))
+	return int(a.x), int(a.y)
 }
 
 func (a *Animation) SetPath(path []*entities.Point) {
