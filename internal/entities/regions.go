@@ -1,6 +1,8 @@
 package entities
 
-import "math"
+import (
+	"math"
+)
 
 const (
 	PopulationWeight    = 0.7
@@ -22,23 +24,14 @@ type Region struct {
 
 func (r *Region) GetRegionalRoad() *Point {
 	tiles := Sim.Geography.GetTiles()
-	// Top and Bottom borders
-	for x := r.Start.X; x < r.Start.X+r.Size; x++ {
-		if Sim.Geography.BoundsCheck(x, r.Start.Y) && tiles[x][r.Start.Y].Road {
-			return &Point{X: x, Y: r.Start.Y}
+	centreX, centreY := r.Start.X+r.Size/2, r.Start.Y+r.Size/2
+	roadX, roadY := centreX, centreY
+	for roadX < r.Start.X+r.Size && roadY < r.Start.Y+r.Size && Sim.Geography.BoundsCheck(roadX, roadY) {
+		if tiles[roadX][roadY].Road {
+			return &Point{X: roadX, Y: roadY}
 		}
-		if Sim.Geography.BoundsCheck(x, r.Start.Y+r.Size-1) && tiles[x][r.Start.Y+r.Size-1].Road {
-			return &Point{X: x, Y: r.Start.Y + r.Size - 1}
-		}
-	}
-	// Left and Right borders
-	for y := r.Start.Y; y < r.Start.Y+r.Size; y++ {
-		if Sim.Geography.BoundsCheck(r.Start.X, y) && tiles[r.Start.X][y].Road {
-			return &Point{X: r.Start.X, Y: y}
-		}
-		if Sim.Geography.BoundsCheck(r.Start.X+r.Size-1, y) && tiles[r.Start.X+r.Size-1][y].Road {
-			return &Point{X: r.Start.X + r.Size - 1, Y: y}
-		}
+		roadX++
+		roadY++
 	}
 	return nil
 }

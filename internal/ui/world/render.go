@@ -147,7 +147,7 @@ func (wr *WorldRenderer) assignAnimations() {
 
 			for _, anim := range wr.animations {
 				if anim.IsFinished() {
-					anim.SetPath(entities.Sim.Geography.FindTurns(entities.Sim.Geography.FindPath(trip.Start, trip.End)))
+					anim.SetPath(entities.Sim.Geography.FindPath(trip.Start, trip.End))
 					anim.CalculateSpeed(delay)
 					delay += 60 // delay next animation by 1 seconds
 					break

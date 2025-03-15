@@ -144,7 +144,7 @@ func NewAnimation(prefix string, x, y float64) *Animation {
 	}
 
 	// shout out to https://bossnelnel.itch.io/8-direction-top-down-character-sprites for the amazing sprites
-	assets.LoadAnimationSpritesheet(prefix, "human-"+prefix+".png", 23, 36, 9, 8, animations)
+	assets.LoadAnimationSpritesheet(prefix, "human-"+prefix+".png", 64, 64, 9, 8, animations)
 
 	anim := &Animation{
 		x:        x,

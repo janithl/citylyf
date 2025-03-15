@@ -42,9 +42,9 @@ func (wr *WorldRenderer) Update(mapRegenMode bool) error {
 		wr.frameCounter = 0
 
 		// assign animations
-		entities.Sim.Mutex.Lock()
+		entities.Sim.Mutex.RLock()
 		wr.assignAnimations()
-		entities.Sim.Mutex.Unlock()
+		entities.Sim.Mutex.RUnlock()
 	}
 
 	for i := range wr.animations {

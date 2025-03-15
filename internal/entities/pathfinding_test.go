@@ -1,6 +1,8 @@
 package entities
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestFindPath(t *testing.T) {
 	// Create a mock tile grid
@@ -46,6 +48,38 @@ func TestFindPath(t *testing.T) {
 		path := g.FindPath(nonRoadSource, dest)
 		if path != nil {
 			t.Errorf("Expected nil path for non-road start, got %v", path)
+		}
+	})
+}
+
+func TestFindPath_OnlyUsesRoads(t *testing.T) {
+	// Mock 5x5 grid with roads forming a path
+	tiles := [][]Tile{
+		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
+		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
+		{{Road: true}, {Road: true}, {Road: true}, {Road: true}, {Road: true}},
+		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
+		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
+	}
+
+	g := Geography{tiles: tiles, Size: 5}
+	source := &Point{X: 2, Y: 0} // Start on road
+	dest := &Point{X: 2, Y: 4}   // End on road
+
+	path := g.FindPath(source, dest)
+
+	// Path should not be nil and should contain only road tiles
+	t.Run("FindPath: Path should be found", func(t *testing.T) {
+		if len(path) == 0 {
+			t.Errorf("Path should not be empty")
+		}
+	})
+
+	t.Run("FindPath: Path should only contain road tiles", func(t *testing.T) {
+		for _, p := range path {
+			if !g.tiles[p.X][p.Y].Road {
+				t.Errorf("Path should only contain road tiles")
+			}
 		}
 	})
 }
