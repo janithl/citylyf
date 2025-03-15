@@ -9,12 +9,12 @@ import (
 )
 
 type Animation struct {
-	x, y, speedX, speedY   float64
-	path                   []*entities.Point
-	batch                  *SpriteBatch
-	prefix                 string
-	frameIndex, frameCount int
-	finished               bool
+	x, y, speedX, speedY     float64
+	path                     []*entities.Point
+	batch                    *SpriteBatch
+	prefix                   string
+	frameIndex, frameCounter int
+	finished                 bool
 }
 
 func (a *Animation) Update() error {
@@ -23,9 +23,17 @@ func (a *Animation) Update() error {
 		return nil
 	}
 
-	a.frameCount++
-	if a.frameCount%8 == 0 { // Change frame every 8 ticks
+	entities.Sim.Mutex.RLock()
+	simSpeed := float64(entities.Sim.SimulationSpeed)
+	entities.Sim.Mutex.RUnlock()
+
+	if simSpeed > 0 { // Pause walking if sim is paused
+		a.frameCounter += int(math.Sqrt(1600 / simSpeed))
+	}
+
+	if a.frameCounter > 8 { // Change frame every 8 ticks
 		a.frameIndex++
+		a.frameCounter = 0
 	}
 
 	// Move to the next path point if close enough
@@ -38,9 +46,11 @@ func (a *Animation) Update() error {
 		a.CalculateSpeed()
 	}
 
-	// Move sprite along the speed vector
-	a.x += a.speedX
-	a.y += a.speedY
+	// Move sprite along the speed vector based on sim speed
+	if simSpeed > 0 {
+		a.x += a.speedX / simSpeed
+		a.y += a.speedY / simSpeed
+	}
 
 	return nil
 }
@@ -93,7 +103,7 @@ func (a *Animation) CalculateSpeed() {
 	}
 
 	// Normalize direction and apply speed
-	speed := 0.05 // Base speed value
+	speed := 16.0 // Base speed value
 	a.speedX = (dx / distance) * speed
 	a.speedY = (dy / distance) * speed
 }
