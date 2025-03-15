@@ -1,0 +1,62 @@
+package world
+
+import (
+	"math"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/janithl/citylyf/internal/entities"
+)
+
+// Converts grid coordinates to isometric coordinates
+func (wr *WorldRenderer) isoTransform(x, y float64) (float64, float64) {
+	isoX := (x-y)*float64(tileWidth)/2 + float64(wr.width)/2
+	isoY := (x+y)*float64(tileHeight)/4 + float64(wr.height)/4
+	return isoX, isoY
+}
+
+// Converts screen coordinates to grid coordinates.
+func (wr *WorldRenderer) screenToGrid(screenX, screenY float64) entities.Point {
+	// Invert the camera/zoom transformation.
+	isoX := (screenX-wr.offsetX)/wr.zoomFactor + wr.offsetX + wr.cameraX
+	isoY := (screenY-wr.offsetY)/wr.zoomFactor + wr.offsetY + wr.cameraY
+
+	// Invert the isometric transform.
+	A := isoX - wr.offsetX
+	B := isoY - wr.offsetY
+
+	x := math.Floor(A/float64(tileWidth)+2*B/float64(tileHeight)) - 1
+	y := math.Floor(2*B/float64(tileHeight) - A/float64(tileWidth))
+
+	return entities.Point{X: int(x), Y: int(y)}
+}
+
+// converts elevation to screen position changes
+func (wr *WorldRenderer) elevationToZ(elevation int) float64 {
+	switch {
+	case elevation < entities.Sim.Geography.SeaLevel:
+		return 0
+	case elevation == 8:
+		return -24
+	case elevation == 7:
+		return -16
+	default:
+		return -8
+	}
+}
+
+// returns ebiten image options for a given (x,y) coordinate
+func (wr *WorldRenderer) getImageOptions(x, y float64) *ebiten.DrawImageOptions {
+	isoX, isoY := wr.isoTransform(x, y)
+
+	op := &ebiten.DrawImageOptions{}
+
+	// Apply zoom factor
+	op.GeoM.Scale(wr.zoomFactor, wr.zoomFactor)
+
+	// Adjust position using the same offset.
+	scaledX := wr.offsetX + (isoX-wr.cameraX-wr.offsetX)*wr.zoomFactor
+	scaledY := wr.offsetY + (isoY-wr.cameraY-wr.offsetY)*wr.zoomFactor
+	op.GeoM.Translate(scaledX, scaledY)
+
+	return op
+}
