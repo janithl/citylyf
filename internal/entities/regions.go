@@ -103,6 +103,16 @@ func (r Regions) CalculateRegionalTraffic() {
 	}
 }
 
+func (r Regions) GetTotalTrips() int {
+	trips := 0
+	for _, region := range r {
+		for _, trip := range region.Trips {
+			trips += trip.DailyTrips
+		}
+	}
+	return trips
+}
+
 func (r Regions) GetPopulationStats() ([][]int, int) {
 	side := int(math.Sqrt(float64(len(r))))
 	populationStats := make([][]int, side)
