@@ -10,6 +10,22 @@ import (
 
 // Renders the base tile
 func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	switch tiles[x][y].Elevation {
+	case entities.Sim.Geography.SeaLevel:
+		screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+	case 2:
+		screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
+	case 1:
+		screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
+	case 0:
+		screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
+	default:
+		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
+	}
+}
+
+// Renders the mountains
+func (wr *WorldRenderer) renderMountains(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
 	// Check neighbors (prevent out-of-bounds errors)
 	left, right, top, bottom := tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation
 	if x > 0 {
@@ -39,34 +55,8 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 			screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
 		} else if top == 5 && bottom == 7 {
 			screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
-		} else {
-			screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 		}
-	case entities.Sim.Geography.SeaLevel:
-		screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
-	case 2:
-		screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
-	case 1:
-		screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
-	case 0:
-		screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
-	default:
-		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 	}
-
-	// Tree Debug
-	// if tiles[x][y].Elevation > entities.Sim.Geography.SeaLevel && x%3 == 0 {
-	// 	switch y % 4 {
-	// 	case 0:
-	// 		screen.DrawImage(assets.Assets.Sprites["bush-small"].Image, op)
-	// 	case 1:
-	// 		screen.DrawImage(assets.Assets.Sprites["bush-large"].Image, op)
-	// 	case 2:
-	// 		screen.DrawImage(assets.Assets.Sprites["tree-conifer"].Image, op)
-	// 	case 3:
-	// 		screen.DrawImage(assets.Assets.Sprites["tree-slanted"].Image, op)
-	// 	}
-	// }
 }
 
 // Renders houses

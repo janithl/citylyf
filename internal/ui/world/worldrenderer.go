@@ -18,6 +18,7 @@ const (
 	kbZoomSpeed    = 0.035
 	minZoom        = 0.25
 	maxZoom        = 2
+	totalAnims     = 256
 )
 
 var animatedHumans = []string{"teal", "green", "orange", "pink"}
@@ -70,7 +71,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			wr.renderBaseTiles(screen, op, tiles, x, y)
 			wr.renderRoads(screen, op, tiles, x, y)
 		}
-	} // finish rendering tiles first to prevent overlaps with everything else
+	} // finish rendering base tiles first to prevent overlaps with everything else
 
 	for x := range tiles {
 		for y := range tiles[x] {
@@ -83,7 +84,8 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, opCursor)
 			}
 
-			// draw houses and trees last, because they're on the top layer
+			// draw mountains, houses and trees last, because they're on the top layer
+			wr.renderMountains(screen, op, tiles, x, y)
 			wr.renderHouses(screen, op, tiles, x, y)
 			wr.renderRetail(screen, op, tiles, x, y)
 
@@ -119,7 +121,7 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
 	assets.LoadVariableSpritesheet("ui", "spritesheet-ui.png", "spriteinfo-ui.json")
 
-	animations := make([]*animation.Animation, 128) // support up to 128 walking animations at a time
+	animations := make([]*animation.Animation, totalAnims) // support up to n walking animations at a time
 	for i := range animations {
 		animations[i] = animation.NewAnimation(animatedHumans[rand.IntN(len(animatedHumans))], 0, 0)
 	}
