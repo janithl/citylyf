@@ -75,6 +75,7 @@ type Company struct {
 	FoundingDate  time.Time
 	JobOpenings   map[CareerLevel]int // Available job positions at each level
 	Employees     []int               // Employee IDs
+	RetailSales   float64
 	TaxPayable    float64
 	FixedCosts    float64
 	Payroll       float64
@@ -98,12 +99,16 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 	c.LastExpenses = c.FixedCosts + c.Payroll
 	c.Payroll = 0.0 // Reset payroll liabilites
 
-	// **Monthly Revenue Growth**: Adjusts based on market conditions
-	revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
-	if c.LastProfit > 0 {
-		revenueMultiplier += 0.002 // Small bonus growth for profitable companies
+	if c.Industry == Retail { // For retail, revenue == sales TODO: Fix negative
+		c.LastRevenue = c.RetailSales
+	} else {
+		// **Monthly Revenue Growth**: Adjusts based on market conditions for non-retail
+		revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
+		if c.LastProfit > 0 {
+			revenueMultiplier += 0.002 // Small bonus growth for profitable companies
+		}
+		c.LastRevenue *= revenueMultiplier
 	}
-	c.LastRevenue *= revenueMultiplier
 
 	// **Calculate Profit**
 	grossProfit := c.LastRevenue - c.LastExpenses

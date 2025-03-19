@@ -25,10 +25,11 @@ type MarketHistory struct { // tracking last 12 months data
 
 // Market tracks economic cycles and financial conditions
 type Market struct {
-	NextRateRevision       time.Time
-	History                MarketHistory
-	MonthsOfNegativeGrowth int
-	InRecession, InBoom    bool
+	NextRateRevision            time.Time
+	History                     MarketHistory
+	MonthsOfNegativeGrowth      int
+	InRecession, InBoom         bool
+	HousingDemand, RetailDemand float64
 }
 
 func (m *Market) InterestRate() float64 {
@@ -242,4 +243,41 @@ func (m *Market) ReviseInterestRate() {
 		fmt.Printf("[ Rate ] Avg. inflation at %.2f%%, within the target range. Interest rates held steady at", averageInflationRate)
 	}
 	fmt.Printf(" %.2f%%. Next rates revision on %s\n", newInterestRate, m.NextRateRevision.Format("2006-01-02"))
+}
+
+func (m *Market) CalculateHousingAndRetailDemand(totalHouses, vacantHouses int) {
+	housingDemand, retailDemand := 0.5, 0.5 // Neutral starting point
+
+	// **Housing Demand Factors**
+	populationGrowth := Sim.People.PopulationGrowthRate()            // Higher population growth increases housing demand
+	unemploymentRate := Sim.People.UnemploymentRate()                // Higher unemployment reduces ability to afford housing
+	incomeGrowth := Sim.Market.CalculateMarketGrowth() * 0.2         // Higher market growth generally leads to better wages
+	interestRate := Sim.Market.InterestRate()                        // Higher rates make mortgages more expensive
+	vacancyImpact := float64(vacantHouses) / float64(totalHouses+1)  // Housing Availability Impact, +1 prevents div by zero
+	minDemandBoost := 1.0 / (1.0 + float64(Sim.People.Population())) // Creates demand when population is near 0
+
+	housingDemand += (populationGrowth * 2)  // Direct impact of growth
+	housingDemand -= (unemploymentRate / 20) // Unemployment suppresses demand
+	housingDemand += (incomeGrowth / 10)     // More income supports higher demand
+	housingDemand -= (interestRate / 10)     // High interest rates reduce borrowing
+	housingDemand -= vacancyImpact           // More vacant houses reduce demand
+	housingDemand += minDemandBoost          // Ensures some demand at low population
+
+	// **Retail Demand Factors**
+	disposableIncome := Sim.People.AverageMonthlyDisposableIncome()     // Higher disposable income increases retail demand
+	consumerConfidence := utils.GetLastValue(m.History.MarketSentiment) // Market sentiment affects spending habits
+	taxImpact := -Sim.Government.SalesTaxRate / 20                      // Higher sales tax slightly reduces demand
+	unemploymentImpact := -(unemploymentRate / 15)                      // Unemployment reduces disposable income
+	profitImpact := m.calculateProfitImpact()                           // Stronger corporate profits usually reflect strong consumer demand
+
+	retailDemand += float64(disposableIncome / 50000) // Normalize disposable income impact
+	retailDemand += (consumerConfidence / 10)         // Positive market sentiment encourages spending
+	retailDemand += profitImpact                      // Profitable businesses suggest strong demand
+	retailDemand -= taxImpact                         // Higher taxes suppress demand slightly
+	retailDemand -= unemploymentImpact                // Unemployment hurts demand
+
+	// Clamp values between 0 and 1
+	m.HousingDemand = math.Max(0, math.Min(1, housingDemand))
+	m.RetailDemand = math.Max(0, math.Min(1, retailDemand))
+	fmt.Printf("[ Econ ] Housing demand is at %.2f and Retail demand is at %.2f\n", m.HousingDemand, m.RetailDemand)
 }

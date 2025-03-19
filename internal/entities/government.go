@@ -9,10 +9,10 @@ import (
 )
 
 type Government struct {
-	Reserves            int
-	LastCalculationYear int
-	CorporateTaxRate    float64      // Flat corporate tax rate
-	IncomeTaxBrackets   []TaxBracket // Progressive income tax brackets
+	Reserves                       int
+	LastCalculationYear            int
+	CorporateTaxRate, SalesTaxRate float64      // Flat corporate tax rate and sales tax
+	IncomeTaxBrackets              []TaxBracket // Progressive income tax brackets
 
 	// Historical values
 	ReserveValues, CollectedTaxValues []int
@@ -87,6 +87,7 @@ func NewGovernment(reserves int, startDate time.Time) *Government {
 		Reserves:            reserves,
 		LastCalculationYear: startDate.Year(),
 		CorporateTaxRate:    9.5,
+		SalesTaxRate:        12.5,
 		IncomeTaxBrackets: []TaxBracket{
 			{Threshold: 200000, Rate: 35}, // 35% for income above $200K
 			{Threshold: 100000, Rate: 25}, // 25% for income above $100K

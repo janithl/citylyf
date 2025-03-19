@@ -3,6 +3,7 @@ package entities
 import (
 	"fmt"
 	"maps"
+	"math"
 	"math/rand"
 	"slices"
 
@@ -153,4 +154,21 @@ func (p *People) CalculateAgeGroups() {
 		}
 	}
 	p.AgeGroups = groups
+}
+
+func (p *People) AverageMonthlyDisposableIncome() int {
+	if len(p.Households) == 0 {
+		return 0 // Avoid division by zero
+	}
+
+	totalDisposableIncome := 0.0
+	for _, household := range p.Households {
+		disposable := household.AnnualIncome(false)/12 - household.LastMonthExpenses
+		if disposable < 0 {
+			disposable = 0
+		}
+		totalDisposableIncome += float64(disposable)
+	}
+
+	return int(math.Round(totalDisposableIncome / float64(len(p.Households))))
 }

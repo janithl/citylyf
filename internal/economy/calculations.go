@@ -40,6 +40,7 @@ func (cs *CalculationService) CalculateEconomy() {
 
 	entities.Sim.Market.CalculateInflation(populationGrowth)
 	marketGrowth := entities.Sim.Market.CalculateMarketGrowth()
+	entities.Sim.Market.CalculateHousingAndRetailDemand(len(entities.Sim.Houses), entities.Sim.Houses.GetFreeHouses())
 	entities.Sim.Market.UpdateMarketValue(marketGrowth)
 
 	fmt.Printf("[ Econ ] %s | Next calculation on %s\n", entities.Sim.GetStats(), cs.nextCalculation.Format("2006-01-02"))
@@ -68,8 +69,9 @@ func (cs *CalculationService) CalculateEconomy() {
 		household.Savings += int(float64(household.Savings) * monthlyInterestRate)
 	}
 
-	// collect taxes, revise rents and calculate regional stats
+	// collect taxes, revise rents and calculate regional stats and sales
 	entities.Sim.Government.CollectTaxes()
 	entities.Sim.Houses.ReviseRents()
 	entities.Sim.Geography.Regions.CalculateRegionalStats()
+	entities.Sim.Geography.Regions.CalculateRegionalSales()
 }

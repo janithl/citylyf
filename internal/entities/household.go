@@ -8,11 +8,12 @@ import (
 )
 
 type Household struct {
-	ID, HouseID int       // Family ID and the ID of the house they live at
-	MemberIDs   []int     // Family member IDs
-	Savings     int       // Family savings
-	LastPayDay  time.Time // Last time payments were calculated
-	MoveInDate  time.Time // Day they moved in
+	ID, HouseID       int       // Family ID and the ID of the house they live at
+	MemberIDs         []int     // Family member IDs
+	Savings           int       // Family savings
+	LastMonthExpenses int       // total expenses last month
+	LastPayDay        time.Time // Last time payments were calculated
+	MoveInDate        time.Time // Day they moved in
 }
 
 func (h *Household) Size() int {
@@ -84,7 +85,9 @@ func (h *Household) CalculateMonthlyBudget(addPayToPayroll func(companyID int, p
 	}
 	house, exists := Sim.Houses[h.HouseID]
 	if exists {
-		h.Savings += int(pay) - house.MonthlyRent
+		expenses := house.MonthlyRent // TODO: Expand this
+		h.Savings += int(pay) - expenses
+		h.LastMonthExpenses = expenses
 		h.LastPayDay = Sim.Date
 	}
 }

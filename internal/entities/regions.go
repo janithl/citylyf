@@ -2,6 +2,8 @@ package entities
 
 import (
 	"math"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 const (
@@ -34,6 +36,26 @@ func (r *Region) GetRegionalRoad() *Point {
 	}
 	return nil
 }
+func (r *Region) GetRegionalShops() []*Company {
+	shops := []*Company{}
+	tiles := Sim.Geography.GetTiles()
+	for x := r.Start.X; x < r.Start.X+r.Size; x++ {
+		for y := r.Start.Y; y < r.Start.Y+r.Size; y++ {
+			if !Sim.Geography.BoundsCheck(x, y) {
+				continue
+			}
+
+			switch {
+			case tiles[x][y].Shop:
+				company := Sim.Companies.GetLocationCompany(x, y)
+				if company != nil {
+					shops = append(shops, company)
+				}
+			}
+		}
+	}
+	return shops
+}
 
 type Regions []*Region
 
@@ -51,7 +73,7 @@ func (r Regions) CalculateRegionalStats() {
 
 				switch {
 				case tiles[x][y].Shop:
-					region.Shops += 1
+					region.Shops += 1 // TODO: Check if shop is active
 					company := Sim.Companies.GetLocationCompany(x, y)
 					if company != nil {
 						region.Jobs += company.GetNumberOfEmployees()
@@ -99,6 +121,35 @@ func (r Regions) CalculateRegionalTraffic() {
 			if trips > 0 {
 				r1.Trips = append(r1.Trips, &Trip{DestinationID: r2.ID, DailyTrips: trips, Start: r1road, End: r2road})
 			}
+		}
+	}
+}
+
+func (r Regions) CalculateRegionalSales() {
+	for _, r1 := range r {
+		if r1.Shops == 0 { // check if there are shops
+			continue
+		}
+
+		population := float64(r1.Population)
+		avgIncome := Sim.People.AverageMonthlyDisposableIncome()
+		unemploymentRate := Sim.People.UnemploymentRate()
+		consumerConfidence := utils.GetLastValue(Sim.Market.History.MarketSentiment)
+		taxImpact := -Sim.Government.SalesTaxRate / 20
+		inflationImpact := -math.Pow((Sim.Market.InflationRate()-5)/3, 2)
+
+		// Base spending power calculation
+		effectiveSpendingPower := float64(avgIncome) * (1 - unemploymentRate/1000) * (1 + consumerConfidence/10)
+		effectiveSpendingPower = math.Max(0, effectiveSpendingPower) // Prevent negative values
+
+		// Total demand within region
+		regionRetailDemand := Sim.Market.RetailDemand * population * effectiveSpendingPower
+		regionRetailDemand *= (1 + taxImpact + inflationImpact) // Adjust for macroeconomic factors
+		avgSalesPerShop := regionRetailDemand / float64(r1.Shops)
+
+		// Distribute sales among shops
+		for _, shop := range r1.GetRegionalShops() {
+			shop.RetailSales = avgSalesPerShop
 		}
 	}
 }
