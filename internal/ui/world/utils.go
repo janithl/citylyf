@@ -35,9 +35,9 @@ func (wr *WorldRenderer) elevationToZ(elevation int) float64 {
 	switch {
 	case elevation < entities.Sim.Geography.SeaLevel:
 		return 0
-	case elevation == 8:
+	case elevation == entities.Sim.Geography.HillLevel+1:
 		return -24
-	case elevation == 7:
+	case elevation == entities.Sim.Geography.HillLevel:
 		return -16
 	default:
 		return -8

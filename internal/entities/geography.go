@@ -12,7 +12,7 @@ type Tile struct {
 }
 
 type Geography struct {
-	Size, SeaLevel, MaxElevation                        int
+	Size, SeaLevel, HillLevel, MaxElevation             int
 	biasX, biasY                                        int // bias x and y create a vector along which mountain ranges form
 	peakProbability, rangeProbability, cliffProbability float64
 	tiles                                               [][]Tile
@@ -236,7 +236,7 @@ func (g *Geography) ToggleRoundabout(x, y int) {
 }
 
 // NewGeography returns a new terrain map
-func NewGeography(mapSize, regionSize, maxElevation, SeaLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
+func NewGeography(mapSize, regionSize, maxElevation, SeaLevel, HillLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
 	tiles := make([][]Tile, mapSize)
 	for i := 0; i < mapSize; i++ {
 		tiles[i] = make([]Tile, mapSize)
@@ -246,6 +246,7 @@ func NewGeography(mapSize, regionSize, maxElevation, SeaLevel int, peakProbabili
 		Size:             mapSize,
 		MaxElevation:     maxElevation,
 		SeaLevel:         SeaLevel,
+		HillLevel:        HillLevel,
 		biasX:            rand.Intn(6) - 3,
 		biasY:            rand.Intn(6) - 3,
 		peakProbability:  peakProbability,

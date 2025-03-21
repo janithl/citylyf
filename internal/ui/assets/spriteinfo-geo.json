@@ -2,18 +2,37 @@
   "sand": { "x": 64, "y": 0, "width": 64, "height": 64 },
   "grass": { "x": 128, "y": 0, "width": 64, "height": 64 },
   "hill": { "x": 192, "y": 0, "width": 64, "height": 64 },
+
   "shore-y": { "x": 0, "y": 64, "width": 64, "height": 64 },
   "shore-x": { "x": 64, "y": 64, "width": 64, "height": 64 },
   "shore-y-rev": { "x": 128, "y": 64, "width": 64, "height": 64 },
   "shore-x-rev": { "x": 192, "y": 64, "width": 64, "height": 64 },
-  "deepwater": { "x": 0, "y": 128, "width": 64, "height": 64 },
-  "midwater": { "x": 64, "y": 128, "width": 64, "height": 64 },
-  "shallowwater": { "x": 128, "y": 128, "width": 64, "height": 64 },
-  "mountain": { "x": 192, "y": 128, "width": 64, "height": 64 },
-  "bridge-y": { "x": 0, "y": 192, "width": 64, "height": 64 },
-  "bridge-x": { "x": 64, "y": 192, "width": 64, "height": 64 },
-  "slope-y": { "x": 0, "y": 256, "width": 64, "height": 64 },
-  "slope-x": { "x": 64, "y": 256, "width": 64, "height": 64 },
-  "slope-y-rev": { "x": 128, "y": 256, "width": 64, "height": 64 },
-  "slope-x-rev": { "x": 192, "y": 256, "width": 64, "height": 64 }
+
+  "shore-x-rev-y-rev": { "x": 0, "y": 128, "width": 64, "height": 64 },
+  "shore-x-rev-y": { "x": 64, "y": 128, "width": 64, "height": 64 },
+  "shore-x-y-rev": { "x": 128, "y": 128, "width": 64, "height": 64 },
+  "shore-x-y": { "x": 192, "y": 128, "width": 64, "height": 64 },
+
+  "shallow-x-rev-y-rev": { "x": 0, "y": 192, "width": 64, "height": 64 },
+  "shallow-x-rev-y": { "x": 64, "y": 192, "width": 64, "height": 64 },
+  "shallow-x-y-rev": { "x": 128, "y": 192, "width": 64, "height": 64 },
+  "shallow-x-y": { "x": 192, "y": 192, "width": 64, "height": 64 },
+
+  "deepwater": { "x": 0, "y": 256, "width": 64, "height": 64 },
+  "midwater": { "x": 64, "y": 256, "width": 64, "height": 64 },
+  "shallowwater": { "x": 128, "y": 256, "width": 64, "height": 64 },
+  "mountain": { "x": 192, "y": 256, "width": 64, "height": 64 },
+
+  "bridge-y": { "x": 0, "y": 320, "width": 64, "height": 64 },
+  "bridge-x": { "x": 64, "y": 320, "width": 64, "height": 64 },
+
+  "slope-y": { "x": 0, "y": 384, "width": 64, "height": 64 },
+  "slope-x": { "x": 64, "y": 384, "width": 64, "height": 64 },
+  "slope-y-rev": { "x": 128, "y": 384, "width": 64, "height": 64 },
+  "slope-x-rev": { "x": 192, "y": 384, "width": 64, "height": 64 },
+
+  "slope-x-rev-y-rev": { "x": 0, "y": 448, "width": 64, "height": 64 },
+  "slope-x-rev-y": { "x": 64, "y": 448, "width": 64, "height": 64 },
+  "slope-x-y-rev": { "x": 128, "y": 448, "width": 64, "height": 64 },
+  "slope-x-y": { "x": 192, "y": 448, "width": 64, "height": 64 }
 }
