@@ -163,11 +163,11 @@ func (p *People) AverageMonthlyDisposableIncome() int {
 
 	totalDisposableIncome := 0.0
 	for _, household := range p.Households {
-		disposable := household.AnnualIncome(false)/12 - household.LastMonthExpenses
+		disposable := float64(household.AnnualIncome(false))/12.0 - float64(household.LastMonthExpenses)
 		if disposable < 0 {
 			disposable = 0
 		}
-		totalDisposableIncome += float64(disposable)
+		totalDisposableIncome += disposable
 	}
 
 	return int(math.Round(totalDisposableIncome / float64(len(p.Households))))

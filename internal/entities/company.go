@@ -147,6 +147,22 @@ func (c *Company) GetNumberOfEmployees() int {
 	return len(c.Employees)
 }
 
+// GetProductivity returns a productivity factor between 0 and 1 based on employee levels.
+func (c *Company) GetProductivity() float64 {
+	totalJobs := c.GetNumberOfJobOpenings()
+	totalEmployees := len(c.Employees)
+	if totalJobs == 0 { // Avoid division by zero
+		return 1.0
+	}
+
+	// Productivity is based on the ratio of employees to total job positions.
+	// If fully staffed, productivity is 1. If understaffed, productivity scales down.
+	productivity := 0.5 + (float64(totalEmployees) / float64(totalJobs))
+
+	// Cap between 0 and 1
+	return math.Max(0, math.Min(1, productivity))
+}
+
 // GetEmployees returns a list of employees
 func (c *Company) GetEmployees() []*Person {
 	employees := []*Person{}

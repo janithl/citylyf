@@ -145,11 +145,32 @@ func (r Regions) CalculateRegionalSales() {
 		// Total demand within region
 		regionRetailDemand := Sim.Market.RetailDemand * population * effectiveSpendingPower
 		regionRetailDemand *= (1 + taxImpact + inflationImpact) // Adjust for macroeconomic factors
-		avgSalesPerShop := regionRetailDemand / float64(r1.Shops)
 
-		// Distribute sales among shops
+		// Add demand from outside the region
+		externalRetailDemand := 0.0
+		for _, r2 := range r {
+			if r2.ID == r1.ID {
+				continue
+			}
+			for _, trip := range r2.Trips {
+				if trip.DestinationID != r1.ID {
+					continue
+				}
+
+				tripSpendingPower := float64(avgIncome) * (1 - unemploymentRate/1000)
+				// Assume a fraction of trips result in retail spending
+				spendingTrips := float64(trip.DailyTrips) * 0.3 // 30% of trips include shopping
+				externalRetailDemand += spendingTrips * tripSpendingPower
+			}
+		}
+
+		// Get Total regional demand and distribute sales among shops
+		totalRetailDemand := regionRetailDemand + externalRetailDemand
+		avgSalesPerShop := totalRetailDemand / float64(r1.Shops)
+
+		// Distribute sales among shops based on shop productivity
 		for _, shop := range r1.GetRegionalShops() {
-			shop.RetailSales = avgSalesPerShop
+			shop.RetailSales = shop.GetProductivity() * avgSalesPerShop
 		}
 	}
 }
