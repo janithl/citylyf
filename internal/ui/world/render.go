@@ -27,19 +27,19 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 
 	switch tiles[x][y].Elevation {
 	case entities.Sim.Geography.SeaLevel:
-		if left == entities.Sim.Geography.SeaLevel+1 && right == entities.Sim.Geography.SeaLevel-1 {
+		screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+	case entities.Sim.Geography.SeaLevel - 1:
+		if left == entities.Sim.Geography.SeaLevel && right < entities.Sim.Geography.SeaLevel {
 			screen.DrawImage(assets.Assets.Sprites["shore-x"].Image, op)
-		} else if left == entities.Sim.Geography.SeaLevel-1 && right == entities.Sim.Geography.SeaLevel+1 {
+		} else if right == entities.Sim.Geography.SeaLevel && left < entities.Sim.Geography.SeaLevel {
 			screen.DrawImage(assets.Assets.Sprites["shore-x-rev"].Image, op)
-		} else if top == entities.Sim.Geography.SeaLevel+1 && bottom == entities.Sim.Geography.SeaLevel-1 {
+		} else if top == entities.Sim.Geography.SeaLevel && bottom < entities.Sim.Geography.SeaLevel {
 			screen.DrawImage(assets.Assets.Sprites["shore-y"].Image, op)
-		} else if top == entities.Sim.Geography.SeaLevel-1 && bottom == entities.Sim.Geography.SeaLevel+1 {
+		} else if bottom == entities.Sim.Geography.SeaLevel && top < entities.Sim.Geography.SeaLevel {
 			screen.DrawImage(assets.Assets.Sprites["shore-y-rev"].Image, op)
 		} else {
-			screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
+			screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
 		}
-	case 2:
-		screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
 	case 1:
 		screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
 	case 0:
@@ -72,13 +72,13 @@ func (wr *WorldRenderer) renderMountains(screen *ebiten.Image, op *ebiten.DrawIm
 	case 7:
 		screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
 	case 6:
-		if left == 7 && right == 5 {
+		if left == 7 && right < 6 {
 			screen.DrawImage(assets.Assets.Sprites["slope-x"].Image, op)
-		} else if left == 5 && right == 7 {
+		} else if left < 6 && right == 7 {
 			screen.DrawImage(assets.Assets.Sprites["slope-x-rev"].Image, op)
-		} else if top == 7 && bottom == 5 {
+		} else if top == 7 && bottom < 6 {
 			screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
-		} else if top == 5 && bottom == 7 {
+		} else if top < 6 && bottom == 7 {
 			screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
 		}
 	}
