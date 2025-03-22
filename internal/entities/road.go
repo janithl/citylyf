@@ -1,6 +1,10 @@
 package entities
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/janithl/citylyf/internal/utils"
+)
 
 type IntersectionType string
 
@@ -66,22 +70,33 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 	}
 
 	segments := []Segment{}
-	if start.X != end.X {
-		minX, maxX := min(start.X, end.X), max(start.X, end.X)
+	turningPointX, turningPointY := utils.GetTurningPoint(start.X, start.Y, end.X, end.Y)
+
+	if start.X == turningPointX && start.Y != turningPointY {
 		segments = append(segments, Segment{
-			Start:     Point{minX, start.Y},
-			End:       Point{maxX, start.Y},
+			Start:     Point{start.X, min(start.Y, turningPointY)},
+			End:       Point{start.X, max(start.Y, turningPointY)},
+			Direction: DirY,
+		})
+	} else if start.X != turningPointX && start.Y == turningPointY {
+		segments = append(segments, Segment{
+			Start:     Point{min(start.X, turningPointX), start.Y},
+			End:       Point{max(start.X, turningPointX), start.Y},
 			Direction: DirX,
 		})
-		start.X = end.X
 	}
 
-	if start.Y != end.Y {
-		minY, maxY := min(start.Y, end.Y), max(start.Y, end.Y)
+	if end.X == turningPointX && end.Y != turningPointY {
 		segments = append(segments, Segment{
-			Start:     Point{start.X, minY},
-			End:       Point{start.X, maxY},
+			Start:     Point{end.X, min(end.Y, turningPointY)},
+			End:       Point{end.X, max(end.Y, turningPointY)},
 			Direction: DirY,
+		})
+	} else if end.X != turningPointX && end.Y == turningPointY {
+		segments = append(segments, Segment{
+			Start:     Point{min(end.X, turningPointX), end.Y},
+			End:       Point{max(end.X, turningPointX), end.Y},
+			Direction: DirX,
 		})
 	}
 

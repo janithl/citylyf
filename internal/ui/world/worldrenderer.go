@@ -73,6 +73,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 		}
 	} // finish rendering base tiles first to prevent overlaps with everything else
 
+	turningPointX, turningPointY := utils.GetTurningPoint(wr.startTile.X, wr.startTile.Y, wr.cursorTile.X, wr.cursorTile.Y)
 	for x := range tiles {
 		for y := range tiles[x] {
 			op := wr.getImageOptions(float64(x), float64(y))
@@ -105,8 +106,13 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// draw a highlight around the tile where the road starts
-			if (wr.placingRoad != entities.NoRoad || wr.placingUse != entities.NoUse) &&
-				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
+			landUseHighlight := wr.placingUse != entities.NoUse &&
+				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y)
+			roadHighlight := wr.placingRoad != entities.NoRoad &&
+				((utils.IsWithinRange(wr.startTile.X, turningPointX, x) && utils.IsWithinRange(wr.startTile.Y, turningPointY, y)) ||
+					(utils.IsWithinRange(wr.cursorTile.X, turningPointX, x) && utils.IsWithinRange(wr.cursorTile.Y, turningPointY, y)))
+
+			if landUseHighlight || roadHighlight {
 				if tiles[x][y].IsBuildable() {
 					screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 				} else {
