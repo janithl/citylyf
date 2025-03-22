@@ -93,7 +93,8 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 
 	if c.Industry == Retail { // For retail, revenue == sales
 		taxedAmount := math.Ceil(c.RetailSales * (Sim.Government.SalesTaxRate / 100)) // calculate sales tax
-		c.LastRevenue = c.RetailSales - taxedAmount
+		c.LastRevenue = c.RetailSales
+		c.LastExpenses += taxedAmount
 		c.SalesTaxPayable += taxedAmount
 	} else {
 		// **Monthly Revenue Growth**: Adjusts based on market conditions for non-retail
@@ -107,10 +108,9 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 	// **Calculate Profit**
 	grossProfit := c.LastRevenue - c.LastExpenses
 
-	// **Apply Corporate Tax (Adjusted for Monthly Periods)**
+	// **Apply Corporate Tax**
 	if grossProfit > 0 {
-		monthlyTaxRate := Sim.Government.CorporateTaxRate * monthLength / DaysPerYear // Convert annual tax rate to monthly profit cycle
-		taxedAmount := math.Ceil(grossProfit * (monthlyTaxRate / 100.0))              // round to nearest dollar
+		taxedAmount := math.Ceil(grossProfit * (Sim.Government.CorporateTaxRate / 100.0)) // round to nearest dollar
 		c.LastProfit = grossProfit - taxedAmount
 
 		// Store unpaid tax in liability account

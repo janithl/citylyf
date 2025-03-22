@@ -1,7 +1,7 @@
 package economy
 
 import (
-	"math/rand"
+	"math/rand/v2"
 
 	"github.com/janithl/citylyf/internal/entities"
 )
