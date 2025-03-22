@@ -107,7 +107,11 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			// draw a highlight around the tile where the road starts
 			if (wr.placingRoad != entities.NoRoad || wr.placingUse != entities.NoUse) &&
 				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
-				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
+				if tiles[x][y].IsBuildable() {
+					screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
+				} else {
+					screen.DrawImage(assets.Assets.Sprites["ui-highlight-danger"].Image, op)
+				}
 			}
 		}
 	}

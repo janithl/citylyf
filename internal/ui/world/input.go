@@ -71,12 +71,11 @@ func (wr *WorldRenderer) getUserInput() {
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
-	// start placing asphalt road
-	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyJ) { // start placing asphalt road
 		wr.placingUse = entities.NoUse
 		wr.placingRoad = entities.Asphalt
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) { // start placing unsealed road
 		wr.placingUse = entities.NoUse
 		wr.placingRoad = entities.Unsealed
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}

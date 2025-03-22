@@ -195,7 +195,7 @@ func (g *Geography) placeRoadSegments(segments []Segment) {
 			g.setIntersectionType(segment.End.X, segment.Start.Y)
 		} else if segment.Direction == DirY {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
-				if g.BoundsCheck(segment.Start.X, i) && g.tiles[i][segment.Start.Y].IsBuildable() && !g.tiles[segment.Start.X][i].IsBuilt() {
+				if g.BoundsCheck(segment.Start.X, i) && g.tiles[segment.Start.X][i].IsBuildable() && !g.tiles[segment.Start.X][i].IsBuilt() {
 					g.tiles[segment.Start.X][i].LandUse = TransportUse
 					g.tiles[segment.Start.X][i].LandStatus = DevelopedStatus
 				}
