@@ -41,16 +41,19 @@ func (g *Government) CollectTaxes() {
 	}
 	fmt.Printf("[  Tax ] Collected $%d in personal income taxes\n", personalTaxesCollected)
 
-	// Collect corporate tax and reset tax payable account
+	// Collect sales and corporate tax and reset tax payable account
+	salesTaxesCollected := 0
 	corporateTaxesCollected := 0
 	for id := range Sim.Companies {
-		corporateTaxesCollected += int(Sim.Companies[id].TaxPayable)
-		Sim.Companies[id].TaxPayable = 0.0
+		corporateTaxesCollected += int(Sim.Companies[id].CorpTaxPayable)
+		salesTaxesCollected += int(Sim.Companies[id].SalesTaxPayable)
+		Sim.Companies[id].CorpTaxPayable = 0.0
+		Sim.Companies[id].SalesTaxPayable = 0.0
 	}
-	fmt.Printf("[  Tax ] Collected $%d in corporate taxes\n", corporateTaxesCollected)
+	fmt.Printf("[  Tax ] Collected $%d in sales taxes, and $%d corporate taxes\n", salesTaxesCollected, corporateTaxesCollected)
 
 	// add collected taxes to government reserves
-	totalTaxesCollected := personalTaxesCollected + corporateTaxesCollected
+	totalTaxesCollected := personalTaxesCollected + corporateTaxesCollected + salesTaxesCollected
 	g.Reserves += totalTaxesCollected
 	fmt.Printf("[  Tax ] Collected $%d in total taxes for %d. Government reserves: $%d\n",
 		totalTaxesCollected, g.LastCalculationYear, g.Reserves)

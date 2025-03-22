@@ -57,19 +57,20 @@ func (c Companies) GetLocationCompany(x, y int) *Company {
 
 // Company represents a business entity with jobs
 type Company struct {
-	ID            int
-	Name          string
-	Industry      Industry
-	CompanySize   CompanySize
-	Location      *Point
-	RoadDirection Direction
-	FoundingDate  time.Time
-	JobOpenings   map[CareerLevel]int // Available job positions at each level
-	Employees     []int               // Employee IDs
-	RetailSales   float64
-	TaxPayable    float64
-	FixedCosts    float64
-	Payroll       float64
+	ID              int
+	Name            string
+	Industry        Industry
+	CompanySize     CompanySize
+	Location        *Point
+	RoadDirection   Direction
+	FoundingDate    time.Time
+	JobOpenings     map[CareerLevel]int // Available job positions at each level
+	Employees       []int               // Employee IDs
+	RetailSales     float64
+	CorpTaxPayable  float64
+	SalesTaxPayable float64
+	FixedCosts      float64
+	Payroll         float64
 
 	// Historical
 	LastRevenue, LastExpenses, LastProfit float64
@@ -90,8 +91,10 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 	c.LastExpenses = c.FixedCosts + c.Payroll
 	c.Payroll = 0.0 // Reset payroll liabilites
 
-	if c.Industry == Retail { // For retail, revenue == sales TODO: Fix negative
-		c.LastRevenue = c.RetailSales
+	if c.Industry == Retail { // For retail, revenue == sales
+		taxedAmount := math.Ceil(c.RetailSales * (Sim.Government.SalesTaxRate / 100)) // calculate sales tax
+		c.LastRevenue = c.RetailSales - taxedAmount
+		c.SalesTaxPayable += taxedAmount
 	} else {
 		// **Monthly Revenue Growth**: Adjusts based on market conditions for non-retail
 		revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
@@ -111,7 +114,7 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 		c.LastProfit = grossProfit - taxedAmount
 
 		// Store unpaid tax in liability account
-		c.TaxPayable += taxedAmount
+		c.CorpTaxPayable += taxedAmount
 	} else {
 		c.LastProfit = grossProfit
 	}
