@@ -48,7 +48,7 @@ func (c Companies) PlaceRetail(newCompany *Company) {
 
 func (c Companies) GetLocationCompany(x, y int) *Company {
 	for company := range maps.Values(c) {
-		if company.Location.X == x && company.Location.Y == y {
+		if company.Location != nil && company.Location.X == x && company.Location.Y == y {
 			return company
 		}
 	}

@@ -75,7 +75,7 @@ func (h Housing) ReviseRents() {
 
 func (h Housing) GetLocationHouse(x, y int) *House {
 	for house := range maps.Values(h) {
-		if house.Location.X == x && house.Location.Y == y {
+		if house.Location != nil && house.Location.X == x && house.Location.Y == y {
 			return house
 		}
 	}
