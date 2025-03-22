@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"fmt"
 	"math/rand/v2"
 )
 
@@ -115,9 +114,6 @@ func (g *Geography) PlaceLandUse(start Point, end Point, use LandUse) {
 			if roadDir != "" && g.tiles[x][y].LandUse == NoUse && g.tiles[x][y].IsBuildable() { // zone placeable!
 				g.tiles[x][y].LandUse = use
 				g.tiles[x][y].LandStatus = UndevelopedStatus
-				fmt.Println("placeed on (", x, ",", y, ")! ", g.tiles[x][y].LandUse, g.tiles[x][y].LandStatus)
-			} else {
-				fmt.Println("Cannot place on (", x, ",", y, ") because ", roadDir, g.tiles[x][y].LandUse)
 			}
 		}
 	}
