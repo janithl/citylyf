@@ -1,15 +1,9 @@
 package entities
 
 import (
-	"math/rand"
+	"fmt"
+	"math/rand/v2"
 )
-
-type Tile struct {
-	Elevation         int
-	Road, House, Shop bool
-	Intersection      IntersectionType
-	Zone              Zone
-}
 
 type Geography struct {
 	Size, SeaLevel, HillLevel, MaxElevation             int
@@ -93,7 +87,7 @@ func (g *Geography) CheckRoad(x, y int) bool {
 		return false
 	}
 
-	return g.tiles[x][y].Road
+	return g.tiles[x][y].LandUse == TransportUse
 }
 
 // CheckRoadStartEnd returns the first road that starts or ends at x, y
@@ -113,12 +107,17 @@ func (g *Geography) GetRoadByStartEnd(roadType RoadType, x, y int) (*Road, int) 
 	return nil, 0
 }
 
-// place residential zone
-func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
+// zone for land use
+func (g *Geography) PlaceLandUse(start Point, end Point, use LandUse) {
 	for x := min(start.X, end.X); x <= max(start.X, end.X); x++ {
 		for y := min(start.Y, end.Y); y <= max(start.Y, end.Y); y++ {
-			if roadDir := Sim.Geography.getAccessRoad(x, y); roadDir != "" { // zone placeable!
-				g.tiles[x][y].Zone = zone
+			roadDir := Sim.Geography.getAccessRoad(x, y)
+			if roadDir != "" && g.tiles[x][y].LandUse == NoUse && g.tiles[x][y].IsBuildable() { // zone placeable!
+				g.tiles[x][y].LandUse = use
+				g.tiles[x][y].LandStatus = UndevelopedStatus
+				fmt.Println("placeed on (", x, ",", y, ")! ", g.tiles[x][y].LandUse, g.tiles[x][y].LandStatus)
+			} else {
+				fmt.Println("Cannot place on (", x, ",", y, ") because ", roadDir, g.tiles[x][y].LandUse)
 			}
 		}
 	}
@@ -126,7 +125,7 @@ func (g *Geography) PlaceZone(start Point, end Point, zone Zone) {
 
 // get access road
 func (g *Geography) getAccessRoad(x, y int) Direction {
-	if !g.BoundsCheck(x, y) || g.tiles[x][y].Elevation < g.SeaLevel || g.tiles[x][y].Road || g.tiles[x][y].House || g.tiles[x][y].Shop {
+	if !g.BoundsCheck(x, y) || !g.tiles[x][y].IsBuildable() {
 		return ""
 	}
 
@@ -187,18 +186,18 @@ func (g *Geography) placeRoadSegments(segments []Segment) {
 	for _, segment := range segments {
 		if segment.Direction == DirX {
 			for i := segment.Start.X; i <= segment.End.X; i++ {
-				if g.BoundsCheck(i, segment.Start.Y) && !g.tiles[i][segment.Start.Y].House {
-					g.tiles[i][segment.Start.Y].Road = true
-					g.tiles[i][segment.Start.Y].Zone = NoZone
+				if g.BoundsCheck(i, segment.Start.Y) && g.tiles[i][segment.Start.Y].IsBuildable() && !g.tiles[i][segment.Start.Y].IsBuilt() {
+					g.tiles[i][segment.Start.Y].LandUse = TransportUse
+					g.tiles[i][segment.Start.Y].LandStatus = DevelopedStatus
 				}
 				g.setIntersectionType(i-1, segment.Start.Y)
 			}
 			g.setIntersectionType(segment.End.X, segment.Start.Y)
 		} else if segment.Direction == DirY {
 			for i := segment.Start.Y; i <= segment.End.Y; i++ {
-				if g.BoundsCheck(segment.Start.X, i) && !g.tiles[segment.Start.X][i].House {
-					g.tiles[segment.Start.X][i].Road = true
-					g.tiles[segment.Start.X][i].Zone = NoZone
+				if g.BoundsCheck(segment.Start.X, i) && g.tiles[i][segment.Start.Y].IsBuildable() && !g.tiles[segment.Start.X][i].IsBuilt() {
+					g.tiles[segment.Start.X][i].LandUse = TransportUse
+					g.tiles[segment.Start.X][i].LandStatus = DevelopedStatus
 				}
 				g.setIntersectionType(segment.Start.X, i-1)
 			}
@@ -235,6 +234,28 @@ func (g *Geography) ToggleRoundabout(x, y int) {
 	}
 }
 
+// get potential site to place a building
+func (g *Geography) GetPotentialSite(use LandUse) *Point {
+	potentialSites := []*Point{}
+	for x := 0; x < g.Size; x++ {
+		for y := 0; y < g.Size; y++ {
+			if g.tiles[x][y].LandUse == use && Sim.Geography.tiles[x][y].LandStatus == UndevelopedStatus {
+				roadDir := g.getAccessRoad(x, y)
+				if roadDir == "" {
+					continue
+				}
+				potentialSites = append(potentialSites, &Point{X: x, Y: y})
+			}
+		}
+	}
+
+	if len(potentialSites) < 1 {
+		return nil
+	}
+
+	return potentialSites[rand.IntN(len(potentialSites))]
+}
+
 // NewGeography returns a new terrain map
 func NewGeography(mapSize, regionSize, maxElevation, SeaLevel, HillLevel int, peakProbability, rangeProbability, cliffProbability float64) *Geography {
 	tiles := make([][]Tile, mapSize)
@@ -247,8 +268,8 @@ func NewGeography(mapSize, regionSize, maxElevation, SeaLevel, HillLevel int, pe
 		MaxElevation:     maxElevation,
 		SeaLevel:         SeaLevel,
 		HillLevel:        HillLevel,
-		biasX:            rand.Intn(6) - 3,
-		biasY:            rand.Intn(6) - 3,
+		biasX:            rand.IntN(6) - 3,
+		biasY:            rand.IntN(6) - 3,
 		peakProbability:  peakProbability,
 		rangeProbability: rangeProbability,
 		cliffProbability: cliffProbability,

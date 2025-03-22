@@ -116,7 +116,7 @@ func (wr *WorldRenderer) renderMountains(screen *ebiten.Image, op *ebiten.DrawIm
 
 // Renders houses
 func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	if !tiles[x][y].House { // not a house
+	if tiles[x][y].LandUse != entities.ResidentialUse || tiles[x][y].LandStatus != entities.DevelopedStatus { // not a built house
 		return
 	}
 
@@ -140,7 +140,7 @@ func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImage
 
 // Renders retail
 func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	if !tiles[x][y].Shop { // not a house
+	if tiles[x][y].LandUse != entities.RetailUse || tiles[x][y].LandStatus != entities.DevelopedStatus { // not a built shop
 		return
 	}
 
@@ -155,7 +155,7 @@ func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImage
 
 // Renders roads
 func (wr *WorldRenderer) renderRoads(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	if !tiles[x][y].Road { // not a road
+	if tiles[x][y].LandUse != entities.TransportUse { // not a road
 		return
 	}
 

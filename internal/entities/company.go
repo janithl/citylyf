@@ -34,25 +34,16 @@ func (c Companies) GetIDs() []int {
 }
 
 func (c Companies) PlaceRetail(newCompany *Company) {
-	for x := 0; x < Sim.Geography.Size; x++ {
-		for y := 0; y < Sim.Geography.Size; y++ {
-			if !Sim.Geography.tiles[x][y].Shop && Sim.Geography.tiles[x][y].Zone == RetailZone {
-				Sim.Geography.tiles[x][y].Zone = NoZone
-
-				roadDir := Sim.Geography.getAccessRoad(x, y)
-				if roadDir == "" {
-					return
-				}
-
-				Sim.Geography.tiles[x][y].Shop = true
-				newCompany.Location = Point{X: x, Y: y}
-				newCompany.RoadDirection = roadDir
-				c.Add(newCompany)
-
-				return
-			}
-		}
+	site := Sim.Geography.GetPotentialSite(RetailUse)
+	if site == nil { // no suitable sites
+		return
 	}
+
+	Sim.Geography.tiles[site.X][site.Y].LandStatus = DevelopedStatus
+
+	newCompany.Location = site
+	newCompany.RoadDirection = Sim.Geography.getAccessRoad(site.X, site.Y)
+	c.Add(newCompany)
 }
 
 func (c Companies) GetLocationCompany(x, y int) *Company {
@@ -70,7 +61,7 @@ type Company struct {
 	Name          string
 	Industry      Industry
 	CompanySize   CompanySize
-	Location      Point
+	Location      *Point
 	RoadDirection Direction
 	FoundingDate  time.Time
 	JobOpenings   map[CareerLevel]int // Available job positions at each level

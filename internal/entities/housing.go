@@ -17,7 +17,7 @@ const (
 type House struct {
 	ID, HouseholdID, Bedrooms, MonthlyRent int
 	HouseType                              HouseType
-	Location                               Point
+	Location                               *Point
 	RoadDirection                          Direction
 	LastRentRevision                       time.Time
 }
@@ -83,40 +83,32 @@ func (h Housing) GetLocationHouse(x, y int) *House {
 }
 
 func (h Housing) PlaceHousing() {
-	if h.GetFreeHouses() > 5 { // enough free houses, no need to place more
+	if Sim.Market.HousingDemand < 0.05 && h.GetFreeHouses() > 3 { // low demand and enough free houses, no need to place more
 		return
 	}
 
 	bedrooms := 2 + rand.IntN(3)
-	for x := 0; x < Sim.Geography.Size; x++ {
-		for y := 0; y < Sim.Geography.Size; y++ {
-			if !Sim.Geography.tiles[x][y].House && Sim.Geography.tiles[x][y].Zone == ResidentialZone {
-				Sim.Geography.tiles[x][y].Zone = NoZone
+	site := Sim.Geography.GetPotentialSite(ResidentialUse)
+	if site == nil { // no suitable sites
+		return
+	}
 
-				roadDir := Sim.Geography.getAccessRoad(x, y)
-				if roadDir == "" {
-					return
-				}
+	Sim.Geography.tiles[site.X][site.Y].LandStatus = DevelopedStatus
 
-				Sim.Geography.tiles[x][y].House = true
-				houseID := Sim.GetNextID()
-				houseType := HouseSmall
-				if bedrooms > 3 {
-					houseType = HouseLarge
-				}
+	houseID := Sim.GetNextID()
+	houseType := HouseSmall
+	if bedrooms > 3 {
+		houseType = HouseLarge
+	}
 
-				h[houseID] = &House{
-					ID:               houseID,
-					HouseholdID:      0,
-					Bedrooms:         bedrooms,
-					MonthlyRent:      1200 + 200*(bedrooms-1),
-					HouseType:        houseType,
-					Location:         Point{x, y},
-					RoadDirection:    roadDir,
-					LastRentRevision: Sim.Date,
-				}
-				return
-			}
-		}
+	h[houseID] = &House{
+		ID:               houseID,
+		HouseholdID:      0,
+		Bedrooms:         bedrooms,
+		MonthlyRent:      1200 + 200*(bedrooms-1),
+		HouseType:        houseType,
+		Location:         site,
+		RoadDirection:    Sim.Geography.getAccessRoad(site.X, site.Y),
+		LastRentRevision: Sim.Date,
 	}
 }

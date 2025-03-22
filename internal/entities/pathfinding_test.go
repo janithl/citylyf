@@ -14,7 +14,7 @@ func TestFindPath(t *testing.T) {
 
 	// Define a road layout (simple straight road from (0,0) to (4,0))
 	for x := 0; x < size; x++ {
-		tiles[x][0].Road = true
+		tiles[x][0].LandUse = TransportUse
 	}
 
 	g := &Geography{
@@ -55,11 +55,11 @@ func TestFindPath(t *testing.T) {
 func TestFindPath_OnlyUsesRoads(t *testing.T) {
 	// Mock 5x5 grid with roads forming a path
 	tiles := [][]Tile{
-		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
-		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
-		{{Road: true}, {Road: true}, {Road: true}, {Road: true}, {Road: true}},
-		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
-		{{Road: false}, {Road: false}, {Road: true}, {Road: false}, {Road: false}},
+		{{LandUse: NoUse}, {LandUse: NoUse}, {LandUse: TransportUse}, {LandUse: NoUse}, {LandUse: NoUse}},
+		{{LandUse: NoUse}, {LandUse: NoUse}, {LandUse: TransportUse}, {LandUse: NoUse}, {LandUse: NoUse}},
+		{{LandUse: TransportUse}, {LandUse: TransportUse}, {LandUse: TransportUse}, {LandUse: TransportUse}, {LandUse: TransportUse}},
+		{{LandUse: NoUse}, {LandUse: NoUse}, {LandUse: TransportUse}, {LandUse: NoUse}, {LandUse: NoUse}},
+		{{LandUse: NoUse}, {LandUse: NoUse}, {LandUse: TransportUse}, {LandUse: NoUse}, {LandUse: NoUse}},
 	}
 
 	g := Geography{tiles: tiles, Size: 5}
@@ -77,7 +77,7 @@ func TestFindPath_OnlyUsesRoads(t *testing.T) {
 
 	t.Run("FindPath: Path should only contain road tiles", func(t *testing.T) {
 		for _, p := range path {
-			if !g.tiles[p.X][p.Y].Road {
+			if g.tiles[p.X][p.Y].LandUse != TransportUse {
 				t.Errorf("Path should only contain road tiles")
 			}
 		}

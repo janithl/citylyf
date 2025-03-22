@@ -29,7 +29,7 @@ type WorldRenderer struct {
 	width, height, frameCounter        int
 	cursorTile, startTile              entities.Point
 	placingRoad                        entities.RoadType
-	placingZone                        entities.Zone
+	placingUse                         entities.LandUse
 	animations                         []*animation.Animation
 }
 
@@ -91,8 +91,8 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 
 			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
 			// draw zones
-			if tiles[x][y].Zone != entities.NoZone {
-				if zone, exists := assets.Assets.Sprites["ui-"+string(tiles[x][y].Zone)]; exists {
+			if tiles[x][y].LandUse != entities.NoUse && tiles[x][y].LandStatus != entities.DevelopedStatus {
+				if zone, exists := assets.Assets.Sprites["ui-zone-"+string(tiles[x][y].LandUse)]; exists {
 					screen.DrawImage(zone.Image, op)
 				}
 			}
@@ -105,7 +105,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 
 			// draw a highlight around the tile where the road starts
-			if (wr.placingRoad != entities.NoRoad || wr.placingZone != entities.NoZone) &&
+			if (wr.placingRoad != entities.NoRoad || wr.placingUse != entities.NoUse) &&
 				utils.IsWithinRange(wr.startTile.X, wr.cursorTile.X, x) && utils.IsWithinRange(wr.startTile.Y, wr.cursorTile.Y, y) {
 				screen.DrawImage(assets.Assets.Sprites["ui-highlight"].Image, op)
 			}

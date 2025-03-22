@@ -60,24 +60,24 @@ func (wr *WorldRenderer) handleZoom() {
 }
 
 func (wr *WorldRenderer) getUserInput() {
-	// start placing residential zone
+	// start placing zone
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		wr.placingRoad = entities.NoRoad
-		wr.placingZone = entities.ResidentialZone
+		wr.placingUse = entities.ResidentialUse
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyY) {
 		wr.placingRoad = entities.NoRoad
-		wr.placingZone = entities.RetailZone
+		wr.placingUse = entities.RetailUse
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
 
 	// start placing asphalt road
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
-		wr.placingZone = entities.NoZone
+		wr.placingUse = entities.NoUse
 		wr.placingRoad = entities.Asphalt
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyL) {
-		wr.placingZone = entities.NoZone
+		wr.placingUse = entities.NoUse
 		wr.placingRoad = entities.Unsealed
 		wr.startTile = entities.Point{X: wr.cursorTile.X, Y: wr.cursorTile.Y}
 	}
@@ -89,18 +89,18 @@ func (wr *WorldRenderer) getUserInput() {
 			entities.PlaceRoad(wr.startTile, wr.cursorTile, wr.placingRoad)
 			entities.Sim.Mutex.Unlock()
 			wr.placingRoad = entities.NoRoad
-		} else if wr.placingZone != entities.NoZone {
+		} else if wr.placingUse != entities.NoUse {
 			entities.Sim.Mutex.Lock()
-			entities.Sim.Geography.PlaceZone(wr.startTile, wr.cursorTile, wr.placingZone)
+			entities.Sim.Geography.PlaceLandUse(wr.startTile, wr.cursorTile, wr.placingUse)
 			entities.Sim.Mutex.Unlock()
-			wr.placingZone = entities.NoZone
+			wr.placingUse = entities.NoUse
 		}
 	}
 
 	// cancel road/zone placing
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		wr.placingRoad = entities.NoRoad
-		wr.placingZone = entities.NoZone
+		wr.placingUse = entities.NoUse
 	}
 
 	// toggle roundabout

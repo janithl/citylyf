@@ -8,7 +8,7 @@ func (g *Geography) FindPath(source, dest *Point) []*Point {
 	}
 
 	// Ensure source and destination are road tiles.
-	if !g.tiles[source.X][source.Y].Road || !g.tiles[dest.X][dest.Y].Road {
+	if g.tiles[source.X][source.Y].LandUse != TransportUse || g.tiles[dest.X][dest.Y].LandUse != TransportUse {
 		return nil
 	}
 
@@ -38,7 +38,7 @@ func (g *Geography) FindPath(source, dest *Point) []*Point {
 				continue
 			}
 			// Only consider road tiles.
-			if !g.tiles[neighbor.X][neighbor.Y].Road {
+			if g.tiles[neighbor.X][neighbor.Y].LandUse != TransportUse {
 				continue
 			}
 			visited[*neighbor] = true

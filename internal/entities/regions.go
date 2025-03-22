@@ -29,13 +29,14 @@ func (r *Region) GetRegionalRoad() *Point {
 	centre := Point{X: r.Start.X + r.Size/2, Y: r.Start.Y + r.Size/2}
 	for d := range r.Size / 2 {
 		for _, neighbour := range centre.GetNeighbours(d, false) {
-			if Sim.Geography.BoundsCheck(neighbour.X, neighbour.Y) && tiles[neighbour.X][neighbour.Y].Road {
+			if Sim.Geography.BoundsCheck(neighbour.X, neighbour.Y) && tiles[neighbour.X][neighbour.Y].LandUse == TransportUse {
 				return neighbour
 			}
 		}
 	}
 	return nil
 }
+
 func (r *Region) GetRegionalShops() []*Company {
 	shops := []*Company{}
 	tiles := Sim.Geography.GetTiles()
@@ -46,7 +47,7 @@ func (r *Region) GetRegionalShops() []*Company {
 			}
 
 			switch {
-			case tiles[x][y].Shop:
+			case tiles[x][y].LandUse == RetailUse:
 				company := Sim.Companies.GetLocationCompany(x, y)
 				if company != nil {
 					shops = append(shops, company)
@@ -72,13 +73,13 @@ func (r Regions) CalculateRegionalStats() {
 				}
 
 				switch {
-				case tiles[x][y].Shop:
+				case tiles[x][y].LandUse == RetailUse:
 					region.Shops += 1 // TODO: Check if shop is active
 					company := Sim.Companies.GetLocationCompany(x, y)
 					if company != nil {
 						region.Jobs += company.GetNumberOfEmployees()
 					}
-				case tiles[x][y].House:
+				case tiles[x][y].LandUse == ResidentialUse:
 					house := Sim.Houses.GetLocationHouse(x, y)
 					if house != nil && house.HouseholdID != 0 {
 						household, exists := Sim.People.Households[house.HouseholdID]
