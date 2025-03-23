@@ -45,7 +45,11 @@ func (cs *CalculationService) CalculateEconomy() {
 
 	fmt.Printf("[ Econ ] %s | Next calculation on %s\n", entities.Sim.GetStats(), cs.nextCalculation.Format("2006-01-02"))
 
-	if entities.Sim.Market.RetailDemand > 0.01 && rand.IntN(100) < 25 { // 25% chance of a shop being opened when retail demand over 1%
+	if marketGrowth > 0 && rand.IntN(100) < 5 { // 5% chance of a farm being opened during good times
+		newFarm := cs.companyService.GenerateRandomCompany(entities.SME, entities.Agriculture)
+		entities.Sim.Companies.PlaceAgriculture(newFarm)
+		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newFarm.Name, newFarm.Industry)
+	} else if entities.Sim.Market.RetailDemand > 0.01 && rand.IntN(100) < 25 { // 25% chance of a shop being opened when retail demand over 1%
 		newRetailCompany := cs.companyService.GenerateRandomCompany(entities.Micro, entities.Retail)
 		entities.Sim.Companies.PlaceRetail(newRetailCompany)
 		fmt.Printf("[ Econ ] Growth! %s (%s) founded!\n", newRetailCompany.Name, newRetailCompany.Industry)

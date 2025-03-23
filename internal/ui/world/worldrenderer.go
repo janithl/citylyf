@@ -88,7 +88,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			// draw mountains, houses and trees last, because they're on the top layer
 			wr.renderMountains(screen, op, tiles, x, y)
 			wr.renderHouses(screen, op, tiles, x, y)
-			wr.renderRetail(screen, op, tiles, x, y)
+			wr.renderIndusty(screen, op, tiles, x, y)
 
 			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
 			// draw zones
@@ -127,7 +127,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
 	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")
-	assets.LoadVariableSpritesheet("retail", "spritesheet-retail.png", "spriteinfo-retail.json")
+	assets.LoadVariableSpritesheet("industry", "spritesheet-industry.png", "spriteinfo-industry.json")
 	assets.LoadVariableSpritesheet("road", "spritesheet-road.png", "spriteinfo-road.json")
 	assets.LoadVariableSpritesheet("ui", "spritesheet-ui.png", "spriteinfo-ui.json")
 

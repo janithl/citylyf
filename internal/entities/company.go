@@ -46,6 +46,19 @@ func (c Companies) PlaceRetail(newCompany *Company) {
 	c.Add(newCompany)
 }
 
+func (c Companies) PlaceAgriculture(newCompany *Company) {
+	site := Sim.Geography.GetPotentialSite(AgricultureUse)
+	if site == nil { // no suitable sites
+		return
+	}
+
+	Sim.Geography.tiles[site.X][site.Y].LandStatus = DevelopedStatus
+
+	newCompany.Location = site
+	newCompany.RoadDirection = Sim.Geography.getAccessRoad(site.X, site.Y)
+	c.Add(newCompany)
+}
+
 func (c Companies) GetLocationCompany(x, y int) *Company {
 	for company := range maps.Values(c) {
 		if company.Location != nil && company.Location.X == x && company.Location.Y == y {

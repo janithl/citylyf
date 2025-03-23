@@ -138,9 +138,9 @@ func (wr *WorldRenderer) renderHouses(screen *ebiten.Image, op *ebiten.DrawImage
 	}
 }
 
-// Renders retail
-func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	if tiles[x][y].LandUse != entities.RetailUse || tiles[x][y].LandStatus != entities.DevelopedStatus { // not a built shop
+// Renders industries/shops
+func (wr *WorldRenderer) renderIndusty(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
+	if !(tiles[x][y].LandUse == entities.RetailUse || tiles[x][y].LandUse == entities.AgricultureUse) || tiles[x][y].LandStatus != entities.DevelopedStatus { // not a built shop or farm
 		return
 	}
 
@@ -152,7 +152,7 @@ func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImage
 		return
 	}
 
-	if retailSprite, exists := assets.Assets.Sprites[strings.ToLower(string(company.Industry))+"-small-"+string(company.RoadDirection)]; exists {
+	if retailSprite, exists := assets.Assets.Sprites["industry-"+strings.ToLower(string(company.Industry))+"-"+string(company.RoadDirection)]; exists {
 		screen.DrawImage(retailSprite.Image, op)
 	}
 }

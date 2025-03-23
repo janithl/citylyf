@@ -1,0 +1,10 @@
+{
+  "retail-y": { "x": 0, "y": 0, "width": 64, "height": 64 },
+  "retail-y-back": { "x": 64, "y": 0, "width": 64, "height": 64 },
+  "retail-x": { "x": 128, "y": 0, "width": 64, "height": 64 },
+  "retail-x-back": { "x": 192, "y": 0, "width": 64, "height": 64 },
+  "agriculture-y": { "x": 0, "y": 64, "width": 64, "height": 64 },
+  "agriculture-y-back": { "x": 64, "y": 64, "width": 64, "height": 64 },
+  "agriculture-x": { "x": 128, "y": 64, "width": 64, "height": 64 },
+  "agriculture-x-back": { "x": 192, "y": 64, "width": 64, "height": 64 }
+}

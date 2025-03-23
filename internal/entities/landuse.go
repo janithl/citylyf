@@ -8,6 +8,7 @@ const (
 	RetailUse      LandUse = "retail"
 	ReserveUse     LandUse = "reserve"
 	TransportUse   LandUse = "transport"
+	AgricultureUse LandUse = "agriculture"
 	NoUse          LandUse = ""
 )
 

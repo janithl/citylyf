@@ -3,5 +3,6 @@
   "highlight": { "x": 64, "y": 0, "width": 64, "height": 64 },
   "highlight-danger": { "x": 128, "y": 0, "width": 64, "height": 64 },
   "zone-residential": { "x": 0, "y": 64, "width": 64, "height": 64 },
-  "zone-retail": { "x": 64, "y": 64, "width": 64, "height": 64 }
+  "zone-retail": { "x": 64, "y": 64, "width": 64, "height": 64 },
+  "zone-agriculture": { "x": 128, "y": 64, "width": 64, "height": 64 }
 }
