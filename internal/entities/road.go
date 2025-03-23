@@ -42,8 +42,6 @@ type Road struct {
 	Segments []Segment
 }
 
-const AsphaltCost = 15000
-
 // GetLength returns the road length in number of tiles
 func (r *Road) GetLength() int {
 	length := 0
@@ -132,5 +130,5 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 	}
 
 	// track road cost
-	Sim.Government.AddCapEx(roadLength * AsphaltCost)
+	Sim.Government.AddCapEx(AsphaltRoadConstruction, roadLength)
 }

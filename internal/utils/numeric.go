@@ -14,7 +14,7 @@ func ConvertToF64(s []int) []float64 {
 }
 
 // Get the last value of a float64 slice
-func GetLastValue(s []float64) float64 {
+func GetLastValue[T int | float64](s []T) T {
 	lastIndex := len(s) - 1
 	if lastIndex >= 0 {
 		return s[lastIndex]

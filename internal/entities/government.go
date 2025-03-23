@@ -11,8 +11,9 @@ import (
 type Government struct {
 	Reserves, CapEx                int
 	LastCalculationYear            int
-	CorporateTaxRate, SalesTaxRate float64      // Flat corporate tax rate and sales tax
-	IncomeTaxBrackets              []TaxBracket // Progressive income tax brackets
+	CorporateTaxRate, SalesTaxRate float64              // Flat corporate tax rate and sales tax
+	IncomeTaxBrackets              []TaxBracket         // Progressive income tax brackets
+	Expenses                       map[CostType]float64 // Holds goverment expenses
 
 	// Historical values
 	ReserveValues, IncomeValues, CapExValues, OpExValues []int
@@ -56,8 +57,8 @@ func (g *Government) CollectTaxes() {
 	totalTaxesCollected := personalTaxesCollected + corporateTaxesCollected + salesTaxesCollected
 	g.IncomeValues = utils.AddFifo(g.IncomeValues, totalTaxesCollected, 10)
 
-	// TODO: calculate OpEx
-	opEx := 0
+	// get opex
+	opEx := g.CalculateOpEx()
 	g.OpExValues = utils.AddFifo(g.OpExValues, opEx, 10)
 
 	// calculate final reserves
@@ -65,6 +66,9 @@ func (g *Government) CollectTaxes() {
 	g.ReserveValues = utils.AddFifo(g.ReserveValues, g.Reserves, 10)
 	fmt.Printf("[  Tax ] %d: Income: $%d, CapEx: $%d, OpEx: $%d, Total Government Reserves: $%d\n",
 		g.LastCalculationYear, totalTaxesCollected, g.CapEx, opEx, g.Reserves)
+
+	// revise government expenses
+	g.ReviseExpenses()
 
 	// reset capex spend
 	g.LastCalculationYear = Sim.Date.Year()
@@ -87,17 +91,8 @@ func (g *Government) CalculateIncomeTax(income int) int {
 	return int(totalTax)
 }
 
-// TODO: Replace with actual spending calculation
-func (g *Government) GetGovernmentSpending() float64 {
-	return 5.0
-}
-
 func (g *Government) GetReservesAtHand() float64 {
 	return float64(g.Reserves - g.CapEx)
-}
-
-func (g *Government) AddCapEx(expense int) {
-	g.CapEx += expense
 }
 
 // NewGovernment initializes the government system with reserves and progressive tax brackets
@@ -114,6 +109,7 @@ func NewGovernment(reserves int, startDate time.Time) *Government {
 			{Threshold: 50000, Rate: 15},  // 15% for income above $50K
 			{Threshold: 20000, Rate: 5},   // 5% for income above $20K
 		},
+		Expenses:      NewExpenses(),
 		ReserveValues: []int{reserves},
 		IncomeValues:  []int{0},
 		CapExValues:   []int{0},
