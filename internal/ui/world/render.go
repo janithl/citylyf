@@ -148,6 +148,10 @@ func (wr *WorldRenderer) renderRetail(screen *ebiten.Image, op *ebiten.DrawImage
 	company := entities.Sim.Companies.GetLocationCompany(x, y)
 	entities.Sim.Mutex.RUnlock()
 
+	if company == nil {
+		return
+	}
+
 	if retailSprite, exists := assets.Assets.Sprites[strings.ToLower(string(company.Industry))+"-small-"+string(company.RoadDirection)]; exists {
 		screen.DrawImage(retailSprite.Image, op)
 	}

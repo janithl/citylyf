@@ -59,7 +59,7 @@ func (s *Simulation) ChangeSimulationSpeed() {
 func (s *Simulation) GetStats() string {
 	return fmt.Sprintf("%s | Reserves: %s | Population: %d (%+06.2f%%) | Houses: %d (%d Free) | "+
 		"Unemployment: %05.2f%% | Companies: %d | Market Value: %.2f (%+06.2f%%) | Inflation: %05.2f%% | IntRate: %05.2f%%",
-		s.Date.Format("2006-01-02"), utils.FormatCurrency(float64(s.Government.Reserves), "$"), s.People.Population(),
+		s.Date.Format("2006-01-02"), utils.FormatCurrency(s.Government.GetReservesAtHand(), "$"), s.People.Population(),
 		s.People.PopulationGrowthRate(), len(s.Houses), s.Houses.GetFreeHouses(), s.People.UnemploymentRate(),
 		len(s.Companies), s.Market.MarketValue(), utils.GetLastValue(s.Market.History.MarketGrowthRate),
 		s.Market.InflationRate(), s.Market.InterestRate())

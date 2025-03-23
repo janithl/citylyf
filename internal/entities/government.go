@@ -9,13 +9,13 @@ import (
 )
 
 type Government struct {
-	Reserves                       int
+	Reserves, CapEx                int
 	LastCalculationYear            int
 	CorporateTaxRate, SalesTaxRate float64      // Flat corporate tax rate and sales tax
 	IncomeTaxBrackets              []TaxBracket // Progressive income tax brackets
 
 	// Historical values
-	ReserveValues, CollectedTaxValues []int
+	ReserveValues, IncomeValues, CapExValues, OpExValues []int
 }
 
 // TaxBracket defines an income range and corresponding tax rate
@@ -52,16 +52,24 @@ func (g *Government) CollectTaxes() {
 	}
 	fmt.Printf("[  Tax ] Collected $%d in sales taxes, and $%d corporate taxes\n", salesTaxesCollected, corporateTaxesCollected)
 
-	// add collected taxes to government reserves
+	// add collected taxes to government income
 	totalTaxesCollected := personalTaxesCollected + corporateTaxesCollected + salesTaxesCollected
-	g.Reserves += totalTaxesCollected
-	fmt.Printf("[  Tax ] Collected $%d in total taxes for %d. Government reserves: $%d\n",
-		totalTaxesCollected, g.LastCalculationYear, g.Reserves)
-	g.LastCalculationYear = Sim.Date.Year()
+	g.IncomeValues = utils.AddFifo(g.IncomeValues, totalTaxesCollected, 10)
 
-	// Append current values to history
+	// TODO: calculate OpEx
+	opEx := 0
+	g.OpExValues = utils.AddFifo(g.OpExValues, opEx, 10)
+
+	// calculate final reserves
+	g.Reserves = g.Reserves + totalTaxesCollected - g.CapEx - opEx
 	g.ReserveValues = utils.AddFifo(g.ReserveValues, g.Reserves, 10)
-	g.CollectedTaxValues = utils.AddFifo(g.CollectedTaxValues, totalTaxesCollected, 10)
+	fmt.Printf("[  Tax ] %d: Income: $%d, CapEx: $%d, OpEx: $%d, Total Government Reserves: $%d\n",
+		g.LastCalculationYear, totalTaxesCollected, g.CapEx, opEx, g.Reserves)
+
+	// reset capex spend
+	g.LastCalculationYear = Sim.Date.Year()
+	g.CapExValues = utils.AddFifo(g.CapExValues, g.CapEx, 10)
+	g.CapEx = 0
 }
 
 // CalculateIncomeTax applies progressive tax rates to household income
@@ -84,10 +92,19 @@ func (g *Government) GetGovernmentSpending() float64 {
 	return 5.0
 }
 
+func (g *Government) GetReservesAtHand() float64 {
+	return float64(g.Reserves - g.CapEx)
+}
+
+func (g *Government) AddCapEx(expense int) {
+	g.CapEx += expense
+}
+
 // NewGovernment initializes the government system with reserves and progressive tax brackets
 func NewGovernment(reserves int, startDate time.Time) *Government {
 	return &Government{
 		Reserves:            reserves,
+		CapEx:               0,
 		LastCalculationYear: startDate.Year(),
 		CorporateTaxRate:    9.5,
 		SalesTaxRate:        12.5,
@@ -97,8 +114,9 @@ func NewGovernment(reserves int, startDate time.Time) *Government {
 			{Threshold: 50000, Rate: 15},  // 15% for income above $50K
 			{Threshold: 20000, Rate: 5},   // 5% for income above $20K
 		},
-
-		ReserveValues:      []int{reserves},
-		CollectedTaxValues: []int{0},
+		ReserveValues: []int{reserves},
+		IncomeValues:  []int{0},
+		CapExValues:   []int{0},
+		OpExValues:    []int{0},
 	}
 }

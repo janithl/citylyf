@@ -42,6 +42,17 @@ type Road struct {
 	Segments []Segment
 }
 
+const AsphaltCost = 15000
+
+// GetLength returns the road length in number of tiles
+func (r *Road) GetLength() int {
+	length := 0
+	for _, s := range r.Segments {
+		length += s.Start.GetDistance(&s.End)
+	}
+	return length
+}
+
 func (r *Road) IsTraversable(x, y int) bool {
 	return Sim.Geography.tiles[x][y].Elevation < Sim.Geography.SeaLevel+3
 }
@@ -100,8 +111,12 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 		})
 	}
 
+	roadLength := 0
 	if road != nil {
+		oldLength := road.GetLength()
 		road.AddSegments(segments, roadStart)
+		roadLength = road.GetLength() - oldLength
+
 		Sim.Geography.placeRoadSegments(segments)
 		fmt.Printf("[ Road ] %s extended!\n", road.Name)
 	} else {
@@ -110,7 +125,12 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 			Type:     roadType,
 			Segments: segments,
 		}
+
 		Sim.Geography.addRoad(road)
+		roadLength = road.GetLength()
 		fmt.Printf("[ Road ] %s opened!\n", road.Name)
 	}
+
+	// track road cost
+	Sim.Government.AddCapEx(roadLength * AsphaltCost)
 }
