@@ -2,11 +2,12 @@ package entities
 
 import (
 	"math/rand/v2"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 type Geography struct {
 	Size, SeaLevel, HillLevel, MaxElevation             int
-	biasX, biasY                                        int // bias x and y create a vector along which mountain ranges form
 	peakProbability, rangeProbability, cliffProbability float64
 	tiles                                               [][]Tile
 	roads                                               []*Road
@@ -16,54 +17,14 @@ type Geography struct {
 // Generate generates the terrain map
 // From: https://janithl.github.io/2019/09/go-terrain-gen-part-4/
 func (g *Geography) Generate() {
-	// iterate down from max elevation, assigning vals
-	for e := g.MaxElevation; e > 0; e-- {
-		for y := 0; y < g.Size; y++ {
-			for x := 0; x < g.Size; x++ {
-				// if the element is next to a element with elevation x, it
-				// should get elevation x - 1
-				// alternately, if the random value meets our criteria, it's a peak
-				if g.adjacentElevation(x, y, e) || rand.Float64() < g.peakProbability {
-					g.setElevation(x, y, e)
-					if rand.Float64() > g.rangeProbability { // randomly add follow-up peaks
-						g.setElevation(x+g.biasX, y+g.biasY, e)
-					}
-					if rand.Float64() > g.rangeProbability {
-						g.setElevation(x-g.biasX, y-g.biasY, e)
-					}
-				}
-			}
+	elevationMap := utils.GenerateElevationMap(g.SeaLevel, g.MaxElevation, g.Size,
+		g.peakProbability, g.rangeProbability, g.cliffProbability)
+
+	for x := range elevationMap {
+		for y := range elevationMap[x] {
+			g.tiles[x][y].Elevation = elevationMap[x][y]
 		}
 	}
-}
-
-// adjacentElevation checks if an adjacent element
-// to the given element (h, w) is at a given elevation
-func (g *Geography) adjacentElevation(w, h, elevation int) bool {
-	tile := &Point{X: w, Y: h}
-	for _, tile := range tile.GetNeighbours(1, false) {
-		if g.BoundsCheck(tile.X, tile.Y) && g.tiles[tile.X][tile.Y].Elevation == elevation+1 {
-			// if this element is *not* randomly a cliff, return true
-			return rand.Float64() > g.cliffProbability
-		}
-	}
-
-	return false
-}
-
-// setElevation checks if a tile exists and updates the elevation
-// to the given element (h, w) is at a given elevation
-func (g *Geography) setElevation(x, y, elevation int) {
-	if !g.BoundsCheck(x, y) {
-		return
-	}
-
-	// if the element has already been assigned, skip it
-	if g.tiles[x][y].Elevation > 0 {
-		return
-	}
-
-	g.tiles[x][y].Elevation = elevation
 }
 
 // accessor for tiles
@@ -264,8 +225,6 @@ func NewGeography(mapSize, regionSize, maxElevation, SeaLevel, HillLevel int, pe
 		MaxElevation:     maxElevation,
 		SeaLevel:         SeaLevel,
 		HillLevel:        HillLevel,
-		biasX:            rand.IntN(6) - 3,
-		biasY:            rand.IntN(6) - 3,
 		peakProbability:  peakProbability,
 		rangeProbability: rangeProbability,
 		cliffProbability: cliffProbability,

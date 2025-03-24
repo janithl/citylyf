@@ -91,6 +91,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			wr.renderIndusty(screen, op, tiles, x, y)
 
 			op.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
+
 			// draw zones
 			if tiles[x][y].LandUse != entities.NoUse && tiles[x][y].LandStatus != entities.DevelopedStatus {
 				if zone, exists := assets.Assets.Sprites["ui-zone-"+string(tiles[x][y].LandUse)]; exists {

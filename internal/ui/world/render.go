@@ -64,6 +64,13 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 	default:
 		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
 	}
+
+	// draw tile borders
+	borderOp := *op
+	borderOp.ColorScale.Scale(1, 1, 1, 0.4)
+	if tiles[x][y].Elevation < entities.Sim.Geography.SeaLevel {
+		screen.DrawImage(assets.Assets.Sprites["ui-tile-border"].Image, &borderOp)
+	}
 }
 
 // Renders the mountains
