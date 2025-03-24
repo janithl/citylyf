@@ -1,5 +1,24 @@
 package entities
 
+// LandSlope defines the slope of the land
+type LandSlope string
+
+const (
+	Flat            LandSlope = "flat"
+	Top             LandSlope = "top"
+	Bottom          LandSlope = "bottom"
+	Left            LandSlope = "left"
+	Right           LandSlope = "right"
+	TopLeft         LandSlope = "top-left"
+	BottomLeft      LandSlope = "bottom-left"
+	TopRight        LandSlope = "top-right"
+	BottomRight     LandSlope = "bottom-right"
+	TopLeftRight    LandSlope = "top-left-right"
+	BottomLeftRight LandSlope = "bottom-left-right"
+	TopBottomRight  LandSlope = "top-bottom-right"
+	TopBottomLeft   LandSlope = "top-bottom-left"
+)
+
 // LandUse defines what a tile is zoned for
 type LandUse string
 

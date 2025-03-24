@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"fmt"
+	"math"
 	"math/rand/v2"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -17,12 +19,48 @@ type Geography struct {
 // Generate generates the terrain map
 // From: https://janithl.github.io/2019/09/go-terrain-gen-part-4/
 func (g *Geography) Generate() {
-	elevationMap := utils.GenerateElevationMap(g.SeaLevel, g.MaxElevation, g.Size,
+	elevationMap := utils.GenerateElevationMap(g.SeaLevel, g.MaxElevation, g.Size+1,
 		g.peakProbability, g.rangeProbability, g.cliffProbability)
 
-	for x := range elevationMap {
-		for y := range elevationMap[x] {
-			g.tiles[x][y].Elevation = elevationMap[x][y]
+	for x := range len(elevationMap) - 1 {
+		for y := range len(elevationMap[x]) - 1 {
+			topLeft := elevationMap[x][y]
+			topRight := elevationMap[x+1][y]
+			bottomLeft := elevationMap[x][y+1]
+			bottomRight := elevationMap[x+1][y+1]
+
+			upperElevation := int(math.Ceil(float64(topLeft+topRight+bottomLeft+bottomRight) / 4.0))
+			g.tiles[x][y].Elevation = upperElevation
+			switch {
+			case topLeft == bottomLeft && topRight == bottomRight && topLeft == topRight:
+				g.tiles[x][y].LandSlope = Flat
+			case topLeft == upperElevation && topLeft == topRight && topRight == bottomRight:
+				g.tiles[x][y].LandSlope = TopLeftRight
+			case topLeft == upperElevation && topLeft == topRight && topRight == bottomLeft:
+				g.tiles[x][y].LandSlope = TopBottomLeft
+			case topRight == upperElevation && topRight == bottomRight && bottomRight == bottomLeft:
+				g.tiles[x][y].LandSlope = TopBottomRight
+			case bottomLeft == upperElevation && bottomLeft == bottomRight && topLeft == bottomLeft:
+				g.tiles[x][y].LandSlope = BottomLeftRight
+			case topLeft == upperElevation && topLeft == topRight && bottomLeft == bottomRight && topLeft > bottomLeft:
+				g.tiles[x][y].LandSlope = Top
+			case topLeft == upperElevation && topRight == bottomRight && topLeft > topRight:
+				g.tiles[x][y].LandSlope = TopLeft
+			case topRight == upperElevation && topLeft == bottomLeft && topRight > topLeft:
+				g.tiles[x][y].LandSlope = TopRight
+			case bottomRight == upperElevation && bottomLeft == bottomRight && bottomLeft > topRight:
+				g.tiles[x][y].LandSlope = Bottom
+			case bottomLeft == upperElevation && bottomRight == topRight && bottomLeft > bottomRight:
+				g.tiles[x][y].LandSlope = BottomLeft
+			case bottomRight == upperElevation && bottomLeft == topLeft && bottomRight > bottomLeft:
+				g.tiles[x][y].LandSlope = BottomRight
+			case topRight == upperElevation && topRight == bottomRight && topRight > topLeft:
+				g.tiles[x][y].LandSlope = Right
+			case topLeft == upperElevation && topLeft == bottomLeft && topLeft > topRight:
+				g.tiles[x][y].LandSlope = Left
+			default:
+				fmt.Println(topLeft, topRight, bottomLeft, bottomRight)
+			}
 		}
 	}
 }

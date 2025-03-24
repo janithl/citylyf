@@ -10,59 +10,19 @@ import (
 
 // Renders the base tile
 func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	// Check neighbors (prevent out-of-bounds errors)
-	left, right, top, bottom := tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation
-	if x > 0 {
-		left = tiles[x-1][y].Elevation
-	}
-	if x < len(tiles)-1 {
-		right = tiles[x+1][y].Elevation
-	}
-	if y > 0 {
-		top = tiles[x][y-1].Elevation
-	}
-	if y < len(tiles[x])-1 {
-		bottom = tiles[x][y+1].Elevation
-	}
-
-	sealevel := entities.Sim.Geography.SeaLevel
 	switch tiles[x][y].Elevation {
-	case sealevel:
-		screen.DrawImage(assets.Assets.Sprites["sand"].Image, op)
-	case sealevel - 1:
-		if left == sealevel {
-			if top == sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x-y"].Image, op)
-			} else if bottom == sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x-y-rev"].Image, op)
-			} else if right < sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x"].Image, op)
-			} else {
-				screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
-			}
-		} else if right == sealevel {
-			if top == sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x-rev-y"].Image, op)
-			} else if bottom == sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x-rev-y-rev"].Image, op)
-			} else if left < sealevel {
-				screen.DrawImage(assets.Assets.Sprites["shore-x-rev"].Image, op)
-			} else {
-				screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
-			}
-		} else if top == sealevel && bottom < sealevel {
-			screen.DrawImage(assets.Assets.Sprites["shore-y"].Image, op)
-		} else if bottom == sealevel && top < sealevel {
-			screen.DrawImage(assets.Assets.Sprites["shore-y-rev"].Image, op)
-		} else {
-			screen.DrawImage(assets.Assets.Sprites["shallowwater"].Image, op)
+	case entities.Sim.Geography.SeaLevel:
+		if sprite, exists := assets.Assets.Sprites[string(tiles[x][y].LandSlope)+"-sand"]; exists {
+			screen.DrawImage(sprite.Image, op)
 		}
+	case entities.Sim.Geography.SeaLevel - 1:
+		screen.DrawImage(assets.Assets.Sprites["shallow-water"].Image, op)
 	case 1:
-		screen.DrawImage(assets.Assets.Sprites["midwater"].Image, op)
+		screen.DrawImage(assets.Assets.Sprites["mid-water"].Image, op)
 	case 0:
-		screen.DrawImage(assets.Assets.Sprites["deepwater"].Image, op)
+		screen.DrawImage(assets.Assets.Sprites["deep-water"].Image, op)
 	default:
-		screen.DrawImage(assets.Assets.Sprites["grass"].Image, op)
+		screen.DrawImage(assets.Assets.Sprites["flat-grass"].Image, op)
 	}
 
 	// draw tile borders
@@ -75,49 +35,35 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 
 // Renders the mountains
 func (wr *WorldRenderer) renderMountains(screen *ebiten.Image, op *ebiten.DrawImageOptions, tiles [][]entities.Tile, x, y int) {
-	// Check neighbors (prevent out-of-bounds errors)
-	left, right, top, bottom := tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation, tiles[x][y].Elevation
-	if x > 0 {
-		left = tiles[x-1][y].Elevation
-	}
-	if x < len(tiles)-1 {
-		right = tiles[x+1][y].Elevation
-	}
-	if y > 0 {
-		top = tiles[x][y-1].Elevation
-	}
-	if y < len(tiles[x])-1 {
-		bottom = tiles[x][y+1].Elevation
-	}
-
 	hillLevel := entities.Sim.Geography.HillLevel
 	switch tiles[x][y].Elevation {
 	case hillLevel + 1:
-		screen.DrawImage(assets.Assets.Sprites["mountain"].Image, op)
+		screen.DrawImage(assets.Assets.Sprites["flat-mountain"].Image, op)
 	case hillLevel:
-		screen.DrawImage(assets.Assets.Sprites["hill"].Image, op)
-	case hillLevel - 1:
-		if left == hillLevel {
-			if top == hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x-y"].Image, op)
-			} else if bottom == hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x-y-rev"].Image, op)
-			} else if right < hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x"].Image, op)
-			}
-		} else if right == hillLevel {
-			if top == hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y"].Image, op)
-			} else if bottom == hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y-rev"].Image, op)
-			} else if left < hillLevel {
-				screen.DrawImage(assets.Assets.Sprites["slope-x-rev"].Image, op)
-			}
-		} else if top == hillLevel && bottom < hillLevel {
-			screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
-		} else if top < hillLevel && bottom == hillLevel {
-			screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
+		if sprite, exists := assets.Assets.Sprites[string(tiles[x][y].LandSlope)+"-hill"]; exists {
+			screen.DrawImage(sprite.Image, op)
 		}
+		// if left == hillLevel {
+		// 	if top == hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-y"].Image, op)
+		// 	} else if bottom == hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-y-rev"].Image, op)
+		// 	} else if right < hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x"].Image, op)
+		// 	}
+		// } else if right == hillLevel {
+		// 	if top == hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y"].Image, op)
+		// 	} else if bottom == hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y-rev"].Image, op)
+		// 	} else if left < hillLevel {
+		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev"].Image, op)
+		// 	}
+		// } else if top == hillLevel && bottom < hillLevel {
+		// 	screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
+		// } else if top < hillLevel && bottom == hillLevel {
+		// 	screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
+		// }
 	}
 }
 
