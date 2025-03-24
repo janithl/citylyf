@@ -14,6 +14,8 @@ func (wr *WorldRenderer) renderBaseTiles(screen *ebiten.Image, op *ebiten.DrawIm
 	case entities.Sim.Geography.SeaLevel:
 		if sprite, exists := assets.Assets.Sprites[string(tiles[x][y].LandSlope)+"-sand"]; exists {
 			screen.DrawImage(sprite.Image, op)
+		} else {
+			screen.DrawImage(assets.Assets.Sprites["flat-sand"].Image, op)
 		}
 	case entities.Sim.Geography.SeaLevel - 1:
 		screen.DrawImage(assets.Assets.Sprites["shallow-water"].Image, op)
