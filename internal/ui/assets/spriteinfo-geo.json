@@ -18,10 +18,15 @@
   "top-right-sand": { "x": 128, "y": 192, "width": 64, "height": 64 },
   "bottom-right-sand": { "x": 192, "y": 192, "width": 64, "height": 64 },
 
-  "top-left-bottom-right-sand": { "x": 0, "y": 192, "width": 64, "height": 64 },
+  "top-left-bottom-right-sand": {
+    "x": 0,
+    "y": 256,
+    "width": 64,
+    "height": 64
+  },
   "top-right-bottom-left-sand": {
     "x": 64,
-    "y": 192,
+    "y": 256,
     "width": 64,
     "height": 64
   },
@@ -29,7 +34,7 @@
   "deep-water": { "x": 0, "y": 320, "width": 64, "height": 64 },
   "mid-water": { "x": 64, "y": 320, "width": 64, "height": 64 },
   "shallow-water": { "x": 128, "y": 320, "width": 64, "height": 64 },
-  "flat-mountain": { "x": 192, "y": 320, "width": 64, "height": 64 },
+  "mountain-peak": { "x": 192, "y": 320, "width": 64, "height": 64 },
 
   "bridge-y": { "x": 0, "y": 384, "width": 64, "height": 64 },
   "bridge-x": { "x": 64, "y": 384, "width": 64, "height": 64 },
@@ -42,5 +47,23 @@
   "bottom-left-right-hill": { "x": 0, "y": 512, "width": 64, "height": 64 },
   "top-bottom-right-hill": { "x": 64, "y": 512, "width": 64, "height": 64 },
   "top-bottom-left-hill": { "x": 128, "y": 512, "width": 64, "height": 64 },
-  "top-left-right-hill": { "x": 192, "y": 512, "width": 64, "height": 64 }
+  "top-left-right-hill": { "x": 192, "y": 512, "width": 64, "height": 64 },
+
+  "top-left-hill": { "x": 0, "y": 576, "width": 64, "height": 64 },
+  "bottom-left-hill": { "x": 64, "y": 576, "width": 64, "height": 64 },
+  "top-right-hill": { "x": 128, "y": 576, "width": 64, "height": 64 },
+  "bottom-right-hill": { "x": 192, "y": 576, "width": 64, "height": 64 },
+
+  "top-left-bottom-right-hill": {
+    "x": 0,
+    "y": 640,
+    "width": 64,
+    "height": 64
+  },
+  "top-right-bottom-left-hill": {
+    "x": 64,
+    "y": 640,
+    "width": 64,
+    "height": 64
+  }
 }

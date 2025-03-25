@@ -40,32 +40,15 @@ func (wr *WorldRenderer) renderMountains(screen *ebiten.Image, op *ebiten.DrawIm
 	hillLevel := entities.Sim.Geography.HillLevel
 	switch tiles[x][y].Elevation {
 	case hillLevel + 1:
-		screen.DrawImage(assets.Assets.Sprites["flat-mountain"].Image, op)
+		mountainOp := *op
+		mountainOp.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor)
+		screen.DrawImage(assets.Assets.Sprites["mountain-peak"].Image, &mountainOp)
 	case hillLevel:
 		if sprite, exists := assets.Assets.Sprites[string(tiles[x][y].LandSlope)+"-hill"]; exists {
 			screen.DrawImage(sprite.Image, op)
+		} else {
+			screen.DrawImage(assets.Assets.Sprites["flat-hill"].Image, op)
 		}
-		// if left == hillLevel {
-		// 	if top == hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-y"].Image, op)
-		// 	} else if bottom == hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-y-rev"].Image, op)
-		// 	} else if right < hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x"].Image, op)
-		// 	}
-		// } else if right == hillLevel {
-		// 	if top == hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y"].Image, op)
-		// 	} else if bottom == hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev-y-rev"].Image, op)
-		// 	} else if left < hillLevel {
-		// 		screen.DrawImage(assets.Assets.Sprites["slope-x-rev"].Image, op)
-		// 	}
-		// } else if top == hillLevel && bottom < hillLevel {
-		// 	screen.DrawImage(assets.Assets.Sprites["slope-y"].Image, op)
-		// } else if top < hillLevel && bottom == hillLevel {
-		// 	screen.DrawImage(assets.Assets.Sprites["slope-y-rev"].Image, op)
-		// }
 	}
 }
 

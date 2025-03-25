@@ -78,15 +78,17 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 		for y := range tiles[x] {
 			op := wr.getImageOptions(float64(x), float64(y))
 
+			// draw mountains
+			wr.renderMountains(screen, op, tiles, x, y)
+
 			// draw a cursor around the tile under the mouse.
 			if x == wr.cursorTile.X && y == wr.cursorTile.Y {
-				opCursor := wr.getImageOptions(float64(x), float64(y))
+				opCursor := *op
 				opCursor.GeoM.Translate(0, wr.elevationToZ(tiles[x][y].Elevation)*wr.zoomFactor) // translate depending on elevation
-				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, opCursor)
+				screen.DrawImage(assets.Assets.Sprites["ui-cursor"].Image, &opCursor)
 			}
 
-			// draw mountains, houses and trees last, because they're on the top layer
-			wr.renderMountains(screen, op, tiles, x, y)
+			// draw houses and trees last, because they're on the top layer
 			wr.renderHouses(screen, op, tiles, x, y)
 			wr.renderIndusty(screen, op, tiles, x, y)
 
