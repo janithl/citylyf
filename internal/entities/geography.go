@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"math"
 	"math/rand/v2"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -17,12 +18,59 @@ type Geography struct {
 // Generate generates the terrain map
 // From: https://janithl.github.io/2019/09/go-terrain-gen-part-4/
 func (g *Geography) Generate() {
-	elevationMap := utils.GenerateElevationMap(g.SeaLevel, g.MaxElevation, g.Size,
+	elevationMap := utils.GenerateElevationMap(g.SeaLevel, g.MaxElevation, g.Size+1,
 		g.peakProbability, g.rangeProbability, g.cliffProbability)
 
-	for x := range elevationMap {
-		for y := range elevationMap[x] {
-			g.tiles[x][y].Elevation = elevationMap[x][y]
+	for x := range len(elevationMap) - 1 {
+		for y := range len(elevationMap[x]) - 1 {
+			topLeftElevation := float64(elevationMap[x][y])
+			topRightElevation := float64(elevationMap[x+1][y])
+			bottomLeftElevation := float64(elevationMap[x][y+1])
+			bottomRightElevation := float64(elevationMap[x+1][y+1])
+
+			averageElevation := (topLeftElevation + topRightElevation + bottomLeftElevation + bottomRightElevation) / 4.0
+			g.tiles[x][y].Elevation = int(math.Ceil(averageElevation))
+
+			topLeft := topLeftElevation > averageElevation
+			topRight := topRightElevation > averageElevation
+			bottomLeft := bottomLeftElevation > averageElevation
+			bottomRight := bottomRightElevation > averageElevation
+
+			switch {
+			case !topLeft && !topRight && !bottomLeft && bottomRight: // 0001 - 01
+				g.tiles[x][y].LandSlope = BottomRight
+			case !topLeft && !topRight && bottomLeft && !bottomRight: // 0010 - 02
+				g.tiles[x][y].LandSlope = BottomLeft
+			case !topLeft && topRight && !bottomLeft && !bottomRight: // 0100 - 04
+				g.tiles[x][y].LandSlope = TopRight
+			case topLeft && !topRight && !bottomLeft && !bottomRight: // 1000 - 08
+				g.tiles[x][y].LandSlope = TopLeft
+
+			case !topLeft && !topRight && bottomLeft && bottomRight: // 0011 - 03
+				g.tiles[x][y].LandSlope = Bottom
+			case !topLeft && topRight && bottomLeft && !bottomRight: // 0110 - 06
+				g.tiles[x][y].LandSlope = TopRightBottomLeft
+			case topLeft && topRight && !bottomLeft && !bottomRight: // 1100 - 12
+				g.tiles[x][y].LandSlope = Top
+			case topLeft && !topRight && !bottomLeft && bottomRight: // 1001 - 09
+				g.tiles[x][y].LandSlope = TopLeftBottomRight
+			case !topLeft && topRight && !bottomLeft && bottomRight: // 0101 - 05
+				g.tiles[x][y].LandSlope = Right
+			case topLeft && !topRight && bottomLeft && !bottomRight: // 1010 - 10
+				g.tiles[x][y].LandSlope = Left
+
+			case !topLeft && topRight && bottomLeft && bottomRight: // 0111 - 07
+				g.tiles[x][y].LandSlope = BottomLeftRight
+			case topLeft && !topRight && bottomLeft && bottomRight: // 1011 - 11
+				g.tiles[x][y].LandSlope = TopBottomLeft
+			case topLeft && topRight && !bottomLeft && bottomRight: // 1101 - 13
+				g.tiles[x][y].LandSlope = TopBottomRight
+			case topLeft && topRight && bottomLeft && !bottomRight: // 1110 - 14
+				g.tiles[x][y].LandSlope = TopLeftRight
+
+			default: // 1111, 0000 - 15, 00
+				g.tiles[x][y].LandSlope = Flat
+			}
 		}
 	}
 }
