@@ -38,6 +38,7 @@ func BenchmarkSim(b *testing.B) {
 			people.Immigrate()
 			employment.AssignJobs()
 			people.Emigrate()
+			people.SimulateLifecycle()
 			entities.Sim.Market.ReviseInterestRate()
 			calculationService.CalculateEconomy()
 		})

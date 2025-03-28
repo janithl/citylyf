@@ -52,6 +52,7 @@ func main() {
 						people.Immigrate()
 						employment.AssignJobs()
 						people.Emigrate()
+						people.SimulateLifecycle()
 						entities.Sim.Market.ReviseInterestRate()
 						calculationService.CalculateEconomy()
 					})
