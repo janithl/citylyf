@@ -21,12 +21,41 @@ func Marry(person1 *entities.Person, person2 *entities.Person) {
 	fmt.Printf("[ Weds ] Wedding bells as %s %s (%d) marries %s %s (%d)!\n", person1.FirstName,
 		person1.FamilyName, person1.Age(), person2.FirstName, person2.FamilyName, person2.Age())
 
-	// TODO: Make sure no kids are left behind in these households, if the person is the only adult add their partner to the same household?
-	if p1household := entities.Sim.People.GetHouseholdByPersonID(person1.ID); p1household != nil {
-		p1household.RemoveMember(person1)
+	p1household := entities.Sim.People.GetHouseholdByPersonID(person1.ID)
+	p2household := entities.Sim.People.GetHouseholdByPersonID(person2.ID)
+
+	if p1household != nil {
+		if p1household.GetAdultCount() == 1 {
+			// Person1 is the only adult in the household, so add Person2 to the same household
+			p1household.AddMember(person2.ID, person2.Savings)
+			fmt.Printf("[ Weds ] %s moves in with the %s family\n", person2.FirstName, p1household.FamilyName())
+		} else {
+			p1household.RemoveMember(person1)
+		}
 	}
-	if p2household := entities.Sim.People.GetHouseholdByPersonID(person2.ID); p2household != nil {
-		p2household.RemoveMember(person2)
+
+	if p2household != nil {
+		if p2household.GetAdultCount() == 1 {
+			// Person2 is the only adult in the household, so add Person1 to the same household or combine households
+			if p1household.IsMember(person2.ID) {
+				for _, id := range p2household.MemberIDs {
+					p1household.AddMember(id, 0)
+				}
+				fmt.Printf("[ Weds ] %s and %s families combine\n", p1household.FamilyName(), p2household.FamilyName())
+				delete(entities.Sim.People.Households, p2household.ID)
+			} else {
+				p2household.AddMember(person1.ID, person1.Savings)
+				fmt.Printf("[ Weds ] %s moves in with the %s family\n", person1.FirstName, p2household.FamilyName())
+			}
+		} else {
+			p2household.RemoveMember(person2)
+		}
+	}
+
+	// if we already have a household, we can stop
+	// else we have to create a new household for the couple
+	if p1household.IsMember(person2.ID) || p2household.IsMember(person1.ID) {
+		return
 	}
 
 	household := &entities.Household{

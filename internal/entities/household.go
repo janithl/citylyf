@@ -42,6 +42,11 @@ func (h *Household) GetMembers() []*Person {
 	return members
 }
 
+func (h *Household) AddMember(personID int, savings int) {
+	h.MemberIDs = append(h.MemberIDs, personID)
+	h.Savings += savings
+}
+
 // if potential = true, this returns the ideal annual income if all employeable people are employed
 func (h *Household) AnnualIncome(potential bool) int {
 	income := 0
@@ -113,6 +118,7 @@ func (h *Household) GetMemberStats() string {
 	return stats
 }
 
+// GetEmployedCount returns the number of employed members of the household
 func (h *Household) GetEmployedCount() int {
 	employed := 0
 	for _, memberID := range h.MemberIDs {
@@ -122,6 +128,18 @@ func (h *Household) GetEmployedCount() int {
 		}
 	}
 	return employed
+}
+
+// GetAdultCount returns the number of adult members of the household
+func (h *Household) GetAdultCount() int {
+	adults := 0
+	for _, memberID := range h.MemberIDs {
+		p := Sim.People.GetPerson(memberID)
+		if p != nil && p.Age() >= AgeOfAdulthood {
+			adults++
+		}
+	}
+	return adults
 }
 
 // IsMember returns true if a given person id is a member of the household
