@@ -179,6 +179,11 @@ func (c *Company) GetEmployees() []*Person {
 	return employees
 }
 
+// AddEmployeeToCompany adds your ID to the company list of employees
+func (c *Company) AddEmployee(employeeID int) {
+	c.Employees = append(c.Employees, employeeID)
+}
+
 // RemoveEmployee removes an employee from the company
 func (c *Company) RemoveEmployee(employeeID int) {
 	c.Employees = slices.DeleteFunc(c.Employees, func(id int) bool {

@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -121,4 +122,38 @@ func (h *Household) GetEmployedCount() int {
 		}
 	}
 	return employed
+}
+
+// IsMember returns true if a given person id is a member of the household
+func (h *Household) IsMember(personID int) bool {
+	for _, memberID := range h.MemberIDs {
+		if memberID == personID {
+			return true
+		}
+	}
+	return false
+}
+
+// RemoveMember returns removes the given person from the household
+func (h *Household) RemoveMember(person *Person) {
+	if !h.IsMember(person.ID) {
+		return
+	}
+
+	h.MemberIDs = slices.DeleteFunc(h.MemberIDs, func(id int) bool {
+		return id == person.ID
+	})
+	h.Savings -= person.Savings
+}
+
+// FindHousing assigns a house to a househld
+func (h *Household) FindHousing() int {
+	monthlyRentBudget := float64(h.AnnualIncome(true)) / (4 * 12)          // 25% of (potential) yearly income towards rent / 12
+	houseID := Sim.Houses.MoveIn(h.ID, int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
+	if houseID > 0 {
+		h.HouseID = houseID
+		fmt.Printf("[ Move ] %s family has moved into house #%d, %d houses remain\n", h.FamilyName(), houseID, Sim.Houses.GetFreeHouses())
+	}
+
+	return houseID
 }

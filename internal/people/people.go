@@ -13,9 +13,7 @@ const maleMeanAge = 37.0
 const femaleMeanAge = 39.0
 const ageStdDev = 15.0
 
-type PeopleService struct{}
-
-func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Person {
+func CreateRandomPerson(minAge int, maxAge int) *entities.Person {
 	gender := entities.GetRandomGender()
 	name, familyName := entities.Sim.NameService.GetPersonName(gender)
 
@@ -50,7 +48,7 @@ func (ps *PeopleService) CreateRandomPerson(minAge int, maxAge int) *entities.Pe
 	}
 }
 
-func (ps *PeopleService) CreateHousehold() *entities.Household {
+func CreateHousehold() *entities.Household {
 	var p, q *entities.Person
 	householdID := entities.Sim.GetNextID()
 
@@ -61,14 +59,14 @@ func (ps *PeopleService) CreateHousehold() *entities.Household {
 		LastPayDay: entities.Sim.Date,
 	}
 
-	p = ps.CreateRandomPerson(16, 100)
+	p = CreateRandomPerson(16, 100)
 	p.ID = entities.Sim.GetNextID()
 	entities.Sim.People.AddPerson(p)
 	household.MemberIDs = append(household.MemberIDs, p.ID)
 	household.Savings = p.Savings
 
 	if p.Relationship == entities.Married {
-		q = ps.CreateRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
+		q = CreateRandomPerson(int(math.Max(entities.AgeOfAdulthood, float64(p.Age()-15))), p.Age()+15)
 		q.ID = entities.Sim.GetNextID()
 		entities.Sim.People.AddPerson(q)
 		q.Relationship = entities.Married
@@ -81,7 +79,7 @@ func (ps *PeopleService) CreateHousehold() *entities.Household {
 	}
 
 	if rand.Intn(100) < 58 {
-		kids := ps.createKids(p, q)
+		kids := createKids(p, q)
 		for _, kid := range kids {
 			kid.ID = entities.Sim.GetNextID()
 			entities.Sim.People.AddPerson(kid)
@@ -92,7 +90,21 @@ func (ps *PeopleService) CreateHousehold() *entities.Household {
 	return household
 }
 
-func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []*entities.Person {
+// RemoveHousehold removes a household and its members from the Sim, and removes them from their jobs
+func RemoveHousehold(household *entities.Household) {
+	for _, memberID := range household.MemberIDs {
+		member := entities.Sim.People.GetPerson(memberID)
+		if member != nil {
+			if company, ok := entities.Sim.Companies[member.EmployerID]; ok {
+				company.RemoveEmployee(memberID)
+			}
+			entities.Sim.People.RemovePerson(memberID)
+		}
+	}
+	delete(entities.Sim.People.Households, household.ID)
+}
+
+func createKids(p *entities.Person, q *entities.Person) []*entities.Person {
 	var kids []*entities.Person
 	numberOfKids := 0
 
@@ -121,18 +133,18 @@ func (ps *PeopleService) createKids(p *entities.Person, q *entities.Person) []*e
 
 		if p.Relationship == entities.Married {
 			if q.Age() == 0 {
-				kid = ps.CreateRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
+				kid = CreateRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
 			} else {
 				parentMaxAge := p.Age()
 				if q.Age() > p.Age() {
 					parentMaxAge = q.Age()
 				}
-				kid = ps.CreateRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
+				kid = CreateRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
 			}
 		}
 
 		if p.Relationship == entities.Divorced || p.Relationship == entities.Widowed {
-			kid = ps.CreateRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
+			kid = CreateRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
 		}
 
 		if kid != nil {

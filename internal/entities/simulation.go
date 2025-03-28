@@ -35,11 +35,12 @@ type Simulation struct {
 	NameService     *NameService
 }
 
-func (s *Simulation) Tick() {
+func (s *Simulation) Tick(dailyActivity func()) {
 	s.tickNumber = (s.tickNumber + 100) % 1600
 	if s.tickNumber%int(s.SimulationSpeed) == 0 {
 		nextDate := s.Date.AddDate(0, 0, 1)
 		s.Date = nextDate
+		dailyActivity()
 	}
 }
 

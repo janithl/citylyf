@@ -13,7 +13,6 @@ import (
 func BenchmarkSim(b *testing.B) {
 	entities.Sim = entities.NewSimulation(2020, 1000000)
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
-	peopleService := people.PeopleService{}
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 	entities.Sim.SimulationSpeed = entities.Slow
 
@@ -34,13 +33,14 @@ func BenchmarkSim(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		entities.Sim.Tick()
-		entities.Sim.Houses.PlaceHousing()
-		entities.Sim.People.MoveIn(peopleService.CreateHousehold)
-		employment.AssignJobs()
-		entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
-		entities.Sim.Market.ReviseInterestRate()
-		calculationService.CalculateEconomy()
+		entities.Sim.Tick(func() {
+			entities.Sim.Houses.PlaceHousing()
+			people.Immigrate()
+			employment.AssignJobs()
+			people.Emigrate()
+			entities.Sim.Market.ReviseInterestRate()
+			calculationService.CalculateEconomy()
+		})
 		entities.Sim.SendStats()
 	}
 

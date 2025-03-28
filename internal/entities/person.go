@@ -7,10 +7,13 @@ import (
 )
 
 const (
-	AgeOfAdulthood  = 18
-	AgeOfRetirement = 70
-	HoursPerDay     = 24
-	DaysPerYear     = 365.25
+	AgeOfAdulthood           = 18
+	AgeOfRetirement          = 70
+	MaxMarriageAgeDifference = 15
+	ProbabilityOfMarriage    = 0.009 // Annual marriage rate is about 9 marriages per 1000 people
+
+	HoursPerDay = 24
+	DaysPerYear = 365.25
 )
 
 const HoursPerYear = HoursPerDay * DaysPerYear

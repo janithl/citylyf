@@ -1,10 +1,8 @@
 package entities
 
 import (
-	"fmt"
 	"maps"
 	"math"
-	"math/rand"
 	"slices"
 
 	"github.com/janithl/citylyf/internal/utils"
@@ -47,21 +45,6 @@ func (p *People) PopulationGrowthRate() float64 {
 	return 100.0 * float64(p.Population()-lastPopulationValue) / float64(lastPopulationValue)
 }
 
-func (p *People) MoveIn(createHousehold func() *Household) {
-	if Sim.Houses.GetFreeHouses() == 0 || rand.Float64() < 0.95 { // 5% change of moving in if there are free houses
-		return
-	}
-
-	h := createHousehold()
-	monthlyRentBudget := float64(h.AnnualIncome(true)) / (4 * 12)          // 25% of (potential) yearly income towards rent / 12
-	houseID := Sim.Houses.MoveIn(h.ID, int(monthlyRentBudget), h.Size()/2) // everyone gets to share a bedroom
-	if houseID > 0 {
-		h.HouseID = houseID
-		fmt.Printf("[ Move ] %s family has moved into house #%d, %d houses remain\n", h.FamilyName(), houseID, Sim.Houses.GetFreeHouses())
-		p.Households[h.ID] = h
-	}
-}
-
 // GetPerson gets an existing person
 func (p *People) GetPerson(personID int) *Person {
 	person, exists := p.People[personID]
@@ -91,24 +74,14 @@ func (p *People) GetHouseholdIDs() []int {
 	return IDs
 }
 
-func (p *People) MoveOut(removeEmployeeFromCompany func(companyID int, employeeID int)) {
-	for household := range maps.Values(p.Households) {
-		if household.Size() > 0 && household.IsEligibleForMoveOut() {
-			movedName := household.FamilyName()
-			houseID := household.HouseID
-			// remove members from people, their jobs, and deduct from population
-			for _, memberID := range household.MemberIDs {
-				member := p.GetPerson(memberID)
-				if member != nil {
-					removeEmployeeFromCompany(member.EmployerID, memberID)
-					p.RemovePerson(memberID)
-				}
-			}
-			delete(p.Households, household.ID)
-			Sim.Houses.MoveOut(houseID)
-			fmt.Printf("[ Move ] %s family has moved out of house #%d and the city, %d houses remain\n", movedName, houseID, Sim.Houses.GetFreeHouses())
+// GetHouseholdByPersonID returns the household a person belongs to
+func (p *People) GetHouseholdByPersonID(personID int) *Household {
+	for _, household := range p.Households {
+		if household.IsMember(personID) {
+			return household
 		}
 	}
+	return nil
 }
 
 // calculate the unemployed and the total labour force

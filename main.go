@@ -23,7 +23,6 @@ func main() {
 	}
 
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
-	peopleService := people.PeopleService{}
 	calculationService := economy.NewCalculationService(employment.CompanyService)
 
 	if len(entities.Sim.Companies) == 0 {
@@ -48,13 +47,14 @@ func main() {
 			case <-ticker.C:
 				entities.Sim.Mutex.Lock()
 				if entities.Sim.SimulationSpeed != entities.Pause {
-					entities.Sim.Tick()
-					entities.Sim.Houses.PlaceHousing()
-					entities.Sim.People.MoveIn(peopleService.CreateHousehold)
-					employment.AssignJobs()
-					entities.Sim.People.MoveOut(employment.CompanyService.RemoveEmployeeFromCompany)
-					entities.Sim.Market.ReviseInterestRate()
-					calculationService.CalculateEconomy()
+					entities.Sim.Tick(func() {
+						entities.Sim.Houses.PlaceHousing()
+						people.Immigrate()
+						employment.AssignJobs()
+						people.Emigrate()
+						entities.Sim.Market.ReviseInterestRate()
+						calculationService.CalculateEconomy()
+					})
 					entities.Sim.SendStats()
 				}
 				entities.Sim.Mutex.Unlock()
