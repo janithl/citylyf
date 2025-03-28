@@ -7,8 +7,11 @@ import (
 )
 
 const (
-	AgeOfAdulthood           = 18
-	AgeOfRetirement          = 70
+	AgeOfAdulthood  = 18
+	AgeOfRetirement = 70
+
+	MeanMarriageAge          = 30.0 // Average age for marriage
+	StdDevMarriageAge        = 7.0  // Standard deviation of marriage age
 	MaxMarriageAgeDifference = 15
 	ProbabilityOfMarriage    = 0.009 // Annual marriage rate is about 9 marriages per 1000 people
 

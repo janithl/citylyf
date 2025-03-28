@@ -54,7 +54,7 @@ func Marry(person1 *entities.Person, person2 *entities.Person) {
 
 	// if we already have a household, we can stop
 	// else we have to create a new household for the couple
-	if p1household.IsMember(person2.ID) || p2household.IsMember(person1.ID) {
+	if (p1household != nil && p1household.IsMember(person2.ID)) || (p2household != nil && p2household.IsMember(person1.ID)) {
 		return
 	}
 
@@ -92,4 +92,21 @@ func findMarriageCandidate(person *entities.Person) *entities.Person {
 	}
 
 	return nil
+}
+
+// marriageProbabilityByAge calculates marriage probability based on age using a normal distribution
+func marriageProbabilityByAge(currentAge, maxProb float64) float64 {
+	// We'll use the probability density function (PDF) of the normal distribution
+	exponent := -0.5 * math.Pow((currentAge-entities.MeanMarriageAge)/entities.StdDevMarriageAge, 2)
+	coefficient := 1 / (entities.StdDevMarriageAge * math.Sqrt(2*math.Pi))
+	pdf := coefficient * math.Exp(exponent)
+
+	// Scale the PDF to get a probability, peaking at maxProb around the mean
+	// We can normalize it by the PDF at the mean age to ensure the peak is at maxProb
+	pdfAtMean := 1 / (entities.StdDevMarriageAge * math.Sqrt(2*math.Pi))
+	if pdfAtMean > 0 {
+		probability := (pdf / pdfAtMean) * maxProb
+		return math.Max(0, math.Min(1, probability)) // Ensure probability is between 0 and 1
+	}
+	return 0
 }
