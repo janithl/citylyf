@@ -2,13 +2,14 @@ package entities
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
 const (
-	AgeOfAdulthood  = 18
-	AgeOfRetirement = 70
+	AgeOfAdulthood = 18
+
+	MeanRetirementAge   = 72.0 // Average age for retirement
+	StdDevRetirementAge = 2.5  // Standard deviation of retirement age
 
 	MeanMarriageAge          = 30.0 // Average age for marriage
 	StdDevMarriageAge        = 7.0  // Standard deviation of marriage age
@@ -52,19 +53,6 @@ func (p *Person) CurrentIncome() int {
 		return p.AnnualIncome
 	}
 	return 0
-}
-
-func (p *Person) ConsiderRetirement(removeEmployeeFromCompany func(companyID int, employeeID int)) bool {
-	if p.CareerLevel != Retired &&
-		p.Age() >= AgeOfRetirement &&
-		rand.Intn(100) < 1+p.Age()-AgeOfRetirement { // chance of retirement if over retirement age, starts at 1% and goes up
-
-		removeEmployeeFromCompany(p.EmployerID, p.ID)
-		p.EmployerID = 0
-		p.CareerLevel = Retired
-		return true
-	}
-	return false
 }
 
 func (p *Person) String() string {

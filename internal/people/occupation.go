@@ -37,7 +37,7 @@ func getEducationLevel(age int) entities.EducationLevel {
 func getCareerLevel(age int, education entities.EducationLevel) entities.CareerLevel {
 	if age < entities.AgeOfAdulthood {
 		return entities.Unemployed
-	} else if age > entities.AgeOfRetirement {
+	} else if age > entities.MeanRetirementAge {
 		return entities.Retired
 	}
 
