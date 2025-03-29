@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 // Converts grid coordinates to isometric coordinates
@@ -69,11 +70,28 @@ func (wr *WorldRenderer) getCursorTileData() string {
 	if wr.cursorTile.X >= 0 && wr.cursorTile.X < len(tiles) && wr.cursorTile.Y >= 0 && wr.cursorTile.Y < len(tiles) {
 		tile := tiles[wr.cursorTile.X][wr.cursorTile.Y]
 		built := ""
-		if tile.IsBuildable() {
-			built = "Buildable"
-		}
 		if tile.IsBuilt() {
+			output := ""
+			entities.Sim.Mutex.RLock()
+			if tile.LandUse == entities.ResidentialUse {
+				if house := entities.Sim.Houses.GetLocationHouse(wr.cursorTile.X, wr.cursorTile.Y); house != nil {
+					output = fmt.Sprintf("#%d: %d Bedroom House\nRent: $%d/month", house.ID, house.Bedrooms, house.MonthlyRent)
+				}
+			} else if tile.LandUse == entities.RetailUse || tile.LandUse == entities.AgricultureUse {
+				if company := entities.Sim.Companies.GetLocationCompany(wr.cursorTile.X, wr.cursorTile.Y); company != nil {
+					output = fmt.Sprintf("#%d: %s\n%d Employees / %d Openings\nProfit/Loss: %s\nRevenue: %s", company.ID, company.Name,
+						company.GetNumberOfEmployees(), company.GetNumberOfJobOpenings(),
+						utils.FormatCurrency(company.LastProfit, "$"),
+						utils.FormatCurrency(company.LastRevenue, "$"))
+				}
+			}
+			entities.Sim.Mutex.RUnlock()
+			if output != "" {
+				return output
+			}
 			built = "Built"
+		} else if tile.IsBuildable() {
+			built = "Buildable"
 		}
 		return fmt.Sprintf("Elev: %02d | %s\n%s %s", tile.Elevation, tile.LandSlope, built, tile.LandUse)
 	}

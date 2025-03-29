@@ -162,9 +162,9 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 		animations:   animations,
 		frameCounter: 300,
 		tooltip: &control.Tooltip{
-			Height:  40,
+			Height:  72,
 			Width:   210,
-			Padding: 5,
+			Padding: 4,
 			Margin:  20,
 			Text:    "Tooltip",
 		},
