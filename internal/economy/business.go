@@ -42,15 +42,6 @@ func (c *CompanyService) AddEmployeeToCompany(companyID int, employeeID int) {
 	}
 }
 
-// RemoveEmployeeFromCompany removes your ID from the company list of employees
-func (c *CompanyService) RemoveEmployeeFromCompany(companyID int, employeeID int) {
-	company, ok := entities.Sim.Companies[companyID]
-	if ok {
-		company.RemoveEmployee(employeeID)
-		entities.Sim.Companies[companyID] = company
-	}
-}
-
 // AddPayToPayroll adds your payroll payment as a liability to the company
 func (c *CompanyService) AddPayToPayroll(companyID int, payAmount float64) {
 	company, ok := entities.Sim.Companies[companyID]

@@ -95,9 +95,7 @@ func RemoveHousehold(household *entities.Household) {
 	for _, memberID := range household.MemberIDs {
 		member := entities.Sim.People.GetPerson(memberID)
 		if member != nil {
-			if company, ok := entities.Sim.Companies[member.EmployerID]; ok {
-				company.RemoveEmployee(memberID)
-			}
+			entities.Sim.Companies.RemoveEmployeeFromTheirCompany(member)
 			entities.Sim.People.RemovePerson(memberID)
 		}
 	}

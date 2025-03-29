@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	AgeOfAdulthood = 18
+	AgeOfAdulthood         = 18
+	ProbabilityOfMovingOut = 0.0462 // Annual rate of moving out is about 4.62% for the 18 - 34 demographic
 
 	MeanRetirementAge   = 72.0 // Average age for retirement
 	StdDevRetirementAge = 2.5  // Standard deviation of retirement age

@@ -68,6 +68,14 @@ func (c Companies) GetLocationCompany(x, y int) *Company {
 	return nil
 }
 
+// RemoveEmployeeFromTheirCompany removes a person from their company list of employees
+func (c Companies) RemoveEmployeeFromTheirCompany(person *Person) {
+	if company, ok := Sim.Companies[person.EmployerID]; ok {
+		company.RemoveEmployee(person.ID)
+		person.EmployerID = 0
+	}
+}
+
 // Company represents a business entity with jobs
 type Company struct {
 	ID              int
