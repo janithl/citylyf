@@ -84,6 +84,25 @@ func (p *People) GetHouseholdByPersonID(personID int) *Household {
 	return nil
 }
 
+// GetSpouse returns the person's spouse
+func (p *People) GetSpouse(personID int) *Person {
+	household := p.GetHouseholdByPersonID(personID)
+	if household == nil {
+		return nil
+	}
+
+	for _, memberID := range household.MemberIDs {
+		if memberID != personID {
+			person := p.GetPerson(memberID)
+			if person.Relationship == Married {
+				return person
+			}
+		}
+	}
+
+	return nil
+}
+
 // calculate the unemployed and the total labour force
 func (p *People) CalculateUnemployment() {
 	labourforce, unemployed := 0, 0

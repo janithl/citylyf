@@ -2,26 +2,23 @@ package people
 
 import (
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"strings"
 
 	"github.com/janithl/citylyf/internal/economy"
 	"github.com/janithl/citylyf/internal/entities"
 )
 
-const maleMeanAge = 37.0
-const femaleMeanAge = 39.0
-const ageStdDev = 15.0
-
 func CreateRandomPerson(minAge int, maxAge int) *entities.Person {
 	gender := entities.GetRandomGender()
 	name, familyName := entities.Sim.NameService.GetPersonName(gender)
 
-	meanAge := maleMeanAge
+	meanAge := entities.MeanAgeMale
 	if gender == entities.Female {
-		meanAge = femaleMeanAge
+		meanAge = entities.MeanAgeFemale
 	}
-	ageY, ageM := getAge(meanAge, ageStdDev, minAge, maxAge)
+
+	ageY, ageM := getAge(meanAge, entities.AgeStdDev, minAge, maxAge)
 	education := getEducationLevel(ageY)
 	careerLevel := getCareerLevel(ageY, education)
 
@@ -31,7 +28,7 @@ func CreateRandomPerson(minAge int, maxAge int) *entities.Person {
 		job, salary = economy.GetIndustryJob(education, careerLevel)
 	}
 
-	savings := salary * (float64(rand.Intn(50)) / 100) * math.Max(float64(ageY-25), 1)
+	savings := salary * rand.Float64() * 0.5 * math.Max(float64(ageY-25), 1)
 
 	return &entities.Person{
 		FirstName:      name,
@@ -71,15 +68,15 @@ func CreateHousehold() *entities.Household {
 		entities.Sim.People.AddPerson(q)
 		q.Relationship = entities.Married
 		household.Savings += q.Savings
-		if rand.Intn(100) < 80 {
+		if rand.IntN(100) < 80 {
 			q.FamilyName = p.FamilyName
 		}
 
 		household.MemberIDs = append(household.MemberIDs, q.ID)
 	}
 
-	if rand.Intn(100) < 58 {
-		kids := createKids(p, q)
+	if rand.IntN(100) < 58 {
+		kids := createKids(p, q, getNumberOfKids())
 		for _, kid := range kids {
 			kid.ID = entities.Sim.GetNextID()
 			entities.Sim.People.AddPerson(kid)
@@ -102,50 +99,46 @@ func RemoveHousehold(household *entities.Household) {
 	delete(entities.Sim.People.Households, household.ID)
 }
 
-func createKids(p *entities.Person, q *entities.Person) []*entities.Person {
-	var kids []*entities.Person
-	numberOfKids := 0
-
-	randomKids := rand.Intn(100)
+func getNumberOfKids() int {
+	randomKids := rand.IntN(100)
 	switch {
 	case randomKids < 34:
-		numberOfKids = 0
+		return 0
 	case randomKids < 47:
-		numberOfKids = 1
+		return 1
 	case randomKids < 72:
-		numberOfKids = 2
+		return 2
 	case randomKids < 86:
-		numberOfKids = 3
+		return 3
 	case randomKids < 92:
-		numberOfKids = 4
+		return 4
 	default:
-		numberOfKids = 5
+		return 5
+	}
+}
+
+func createKids(p *entities.Person, q *entities.Person, numberOfKids int) []*entities.Person {
+	var kids []*entities.Person
+
+	if numberOfKids == 0 {
+		return kids
 	}
 
 	familyName := p.FamilyName
 	if q != nil && !strings.Contains(familyName, "-") && rand.Float32() < 0.1 { // 10% of surnames are double‑barrelled
 		familyName += "-" + q.FamilyName
 	}
-	for i := 0; i < numberOfKids; i++ {
-		var kid *entities.Person
 
-		if p.Relationship == entities.Married {
-			if q.Age() == 0 {
-				kid = CreateRandomPerson(0, p.Age()-entities.AgeOfAdulthood)
-			} else {
-				parentMaxAge := p.Age()
-				if q.Age() > p.Age() {
-					parentMaxAge = q.Age()
-				}
-				kid = CreateRandomPerson(0, parentMaxAge-entities.AgeOfAdulthood)
-			}
+	for len(kids) < numberOfKids {
+		parentMaxAge := p.Age()
+		kidMinAge := 0
+		if p.Relationship == entities.Married && q != nil && q.Age() > parentMaxAge {
+			parentMaxAge = q.Age()
+		} else if p.Relationship == entities.Widowed || p.Relationship == entities.Divorced {
+			kidMinAge = 1
 		}
 
-		if p.Relationship == entities.Divorced || p.Relationship == entities.Widowed {
-			kid = CreateRandomPerson(5, p.Age()-entities.AgeOfAdulthood)
-		}
-
-		if kid != nil {
+		if kid := CreateRandomPerson(kidMinAge, parentMaxAge-entities.AgeOfAdulthood); kid != nil {
 			kid.Relationship = entities.Single
 			kid.FamilyName = familyName
 			kids = append(kids, kid)

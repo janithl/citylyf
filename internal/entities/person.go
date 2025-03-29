@@ -7,6 +7,10 @@ import (
 
 const (
 	AgeOfAdulthood         = 18
+	AgeOfMenopause         = 52
+	MeanAgeMale            = 37.0
+	MeanAgeFemale          = 39.0
+	AgeStdDev              = 15.0
 	ProbabilityOfMovingOut = 0.0462 // Annual rate of moving out is about 4.62% for the 18 - 34 demographic
 
 	MeanRetirementAge   = 72.0 // Average age for retirement
@@ -16,6 +20,10 @@ const (
 	StdDevMarriageAge        = 7.0  // Standard deviation of marriage age
 	MaxMarriageAgeDifference = 15
 	ProbabilityOfMarriage    = 0.009 // Annual marriage rate is about 9 marriages per 1000 people
+
+	MeanChildbirthAge       = 31.5   // Average age for childbirth
+	StdDevChildbirthAge     = 5.7    // Standard deviation of childbirth age
+	ProbabilityOfChildbirth = 0.0125 // Annual birth rate is about 12.5 per 1000 people
 
 	HoursPerDay = 24
 	DaysPerYear = 365.25

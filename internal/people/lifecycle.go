@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 func SimulateLifecycle() {
@@ -22,11 +23,41 @@ func SimulateLifecycle() {
 		// --- Marriage ---
 		if person.Relationship != entities.Married && person.Age() >= entities.AgeOfAdulthood {
 			// Calculate the probability of marriage for the current person's age
-			marriageProbability := marriageProbabilityByAge(float64(person.Age()), entities.ProbabilityOfMarriage/entities.DaysPerYear)
+			marriageProbability := utils.CalculateProbabilityByAge(entities.MeanMarriageAge, entities.StdDevMarriageAge,
+				float64(person.Age()), entities.ProbabilityOfMarriage/entities.DaysPerYear)
+
 			if rand.Float64() < marriageProbability {
 				if candidate := findMarriageCandidate(person); candidate != nil {
 					Marry(person, candidate)
 				}
+			}
+		}
+
+		// --- Childbirth Probability ---
+		if person.Gender == entities.Female && person.Age() > entities.AgeOfAdulthood && person.Age() < entities.AgeOfMenopause {
+			// Calculate the probability of childbirth for the current person's age
+			childbirthProbability := utils.CalculateProbabilityByAge(entities.MeanChildbirthAge, entities.StdDevChildbirthAge,
+				float64(person.Age()), entities.ProbabilityOfChildbirth/entities.DaysPerYear)
+
+			if rand.Float64() < childbirthProbability {
+				var partner, baby *entities.Person
+				if person.Relationship == entities.Married {
+					partner = entities.Sim.People.GetSpouse(person.ID)
+				}
+
+				kids := createKids(person, partner, 1)
+				if len(kids) < 1 {
+					continue
+				}
+
+				baby = kids[0]
+				baby.ID = entities.Sim.GetNextID()
+				baby.Birthdate = entities.Sim.Date
+				entities.Sim.People.AddPerson(baby)
+				if household := entities.Sim.People.GetHouseholdByPersonID(person.ID); household != nil {
+					household.MemberIDs = append(household.MemberIDs, baby.ID)
+				}
+				fmt.Printf("[ Baby ] %s %s has been born!\n", baby.FirstName, baby.FamilyName)
 			}
 		}
 

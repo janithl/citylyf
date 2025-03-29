@@ -22,11 +22,11 @@ func BenchmarkSim(b *testing.B) {
 	}
 
 	simSize := entities.Sim.Geography.Size
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 16; i++ {
 		x, y := rand.IntN(simSize), rand.IntN(simSize)
 		entities.PlaceRoad(entities.Point{X: x - 1, Y: y}, entities.Point{X: x + 1, Y: y}, entities.Asphalt)
 		use := entities.ResidentialUse
-		if i > 3 {
+		if i >= 12 {
 			use = entities.RetailUse
 		}
 		entities.Sim.Geography.PlaceLandUse(entities.Point{X: x - 2, Y: y - 1}, entities.Point{X: x + 2, Y: y + 1}, use)
