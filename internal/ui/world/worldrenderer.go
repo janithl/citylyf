@@ -7,6 +7,7 @@ import (
 	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/animation"
 	"github.com/janithl/citylyf/internal/ui/assets"
+	"github.com/janithl/citylyf/internal/ui/control"
 	"github.com/janithl/citylyf/internal/utils"
 )
 
@@ -31,6 +32,7 @@ type WorldRenderer struct {
 	placingRoad                        entities.RoadType
 	placingUse                         entities.LandUse
 	animations                         []*animation.Animation
+	tooltip                            *control.Tooltip
 }
 
 func (wr *WorldRenderer) Update(mapRegenMode bool) error {
@@ -59,6 +61,13 @@ func (wr *WorldRenderer) Update(mapRegenMode bool) error {
 	cursorX, cursorY := ebiten.CursorPosition()
 	wr.cursorTile = wr.screenToGrid(float64(cursorX), float64(cursorY))
 	wr.getUserInput()
+
+	// Update the tooltip
+	tooltipVisible := ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
+	wr.tooltip.Update(tooltipVisible)
+	if tooltipVisible {
+		wr.tooltip.Text = wr.getCursorTileData()
+	}
 
 	return nil
 }
@@ -124,7 +133,7 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
-
+	wr.tooltip.Draw(screen)
 }
 
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
@@ -152,5 +161,12 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 		offsetY:      float64(screenHeight) / 4,
 		animations:   animations,
 		frameCounter: 300,
+		tooltip: &control.Tooltip{
+			Height:  40,
+			Width:   210,
+			Padding: 5,
+			Margin:  20,
+			Text:    "Tooltip",
+		},
 	}
 }

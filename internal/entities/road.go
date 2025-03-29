@@ -114,6 +114,7 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 		oldLength := road.GetLength()
 		road.AddSegments(segments, roadStart)
 		roadLength = road.GetLength() - oldLength
+		roadType = road.Type
 
 		Sim.Geography.placeRoadSegments(segments)
 		fmt.Printf("[ Road ] %s extended!\n", road.Name)
@@ -130,5 +131,9 @@ func PlaceRoad(start, end Point, roadType RoadType) {
 	}
 
 	// track road cost
-	Sim.Government.AddCapEx(AsphaltRoadConstruction, roadLength)
+	roadCostType := UnsealedRoadConstruction
+	if roadType == Asphalt {
+		roadCostType = AsphaltRoadConstruction
+	}
+	Sim.Government.AddCapEx(roadCostType, roadLength)
 }

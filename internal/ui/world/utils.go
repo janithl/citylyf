@@ -1,6 +1,7 @@
 package world
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -57,4 +58,25 @@ func (wr *WorldRenderer) getImageOptions(x, y float64) *ebiten.DrawImageOptions 
 	op.GeoM.Translate(scaledX, scaledY)
 
 	return op
+}
+
+// getCursorTileData returns current cursor tile data
+func (wr *WorldRenderer) getCursorTileData() string {
+	entities.Sim.Mutex.RLock()
+	tiles := entities.Sim.Geography.GetTiles()
+	entities.Sim.Mutex.RUnlock()
+
+	if wr.cursorTile.X >= 0 && wr.cursorTile.X < len(tiles) && wr.cursorTile.Y >= 0 && wr.cursorTile.Y < len(tiles) {
+		tile := tiles[wr.cursorTile.X][wr.cursorTile.Y]
+		built := ""
+		if tile.IsBuildable() {
+			built = "Buildable"
+		}
+		if tile.IsBuilt() {
+			built = "Built"
+		}
+		return fmt.Sprintf("Elev: %02d | %s\n%s %s", tile.Elevation, tile.LandSlope, built, tile.LandUse)
+	}
+
+	return ""
 }

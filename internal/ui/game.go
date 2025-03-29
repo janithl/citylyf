@@ -53,7 +53,12 @@ func (g *Game) EndRegenMode() {
 
 func RunGame() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("citylyf")
+
+	gameTitle := "citylyf"
+	if entities.Sim.SavePath != "" {
+		gameTitle = entities.Sim.SavePath + " — " + gameTitle
+	}
+	ebiten.SetWindowTitle(gameTitle)
 
 	game := &Game{
 		worldRenderer: world.NewWorldRenderer(screenWidth, screenHeight),
