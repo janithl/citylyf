@@ -1,5 +1,7 @@
 package entities
 
+const TileSize = 15.0 // Tile size in metres
+
 type Tile struct {
 	Elevation    int
 	LandSlope    LandSlope

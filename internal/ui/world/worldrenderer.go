@@ -4,6 +4,7 @@ import (
 	"math/rand/v2"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/janithl/citylyf/internal/entities"
 	"github.com/janithl/citylyf/internal/ui/animation"
 	"github.com/janithl/citylyf/internal/ui/assets"
@@ -63,9 +64,9 @@ func (wr *WorldRenderer) Update(mapRegenMode bool) error {
 	wr.getUserInput()
 
 	// Update the tooltip
-	tooltipVisible := ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
-	wr.tooltip.Update(tooltipVisible)
-	if tooltipVisible {
+	wr.tooltip.Update(ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight))
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+		wr.tooltip.X, wr.tooltip.Y = cursorX, cursorY
 		wr.tooltip.Text = wr.getCursorTileData()
 	}
 

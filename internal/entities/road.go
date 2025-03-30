@@ -51,8 +51,15 @@ func (r *Road) GetLength() int {
 	return length
 }
 
-func (r *Road) IsTraversable(x, y int) bool {
-	return Sim.Geography.tiles[x][y].Elevation < Sim.Geography.SeaLevel+3
+// PassesThroughLocation returns true if a road passes through the given x, y coordinate
+func (r *Road) PassesThroughLocation(x, y int) bool {
+	for _, segment := range r.Segments {
+		if utils.IsWithinRange(segment.Start.X, segment.End.X, x) &&
+			utils.IsWithinRange(segment.Start.Y, segment.End.Y, y) {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *Road) AddSegments(segments []Segment, start bool) {

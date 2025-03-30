@@ -75,7 +75,11 @@ func (wr *WorldRenderer) getCursorTileData() string {
 			entities.Sim.Mutex.RLock()
 			if tile.LandUse == entities.ResidentialUse {
 				if house := entities.Sim.Houses.GetLocationHouse(wr.cursorTile.X, wr.cursorTile.Y); house != nil {
-					output = fmt.Sprintf("#%d: %d Bedroom House\nRent: $%d/month", house.ID, house.Bedrooms, house.MonthlyRent)
+					output = fmt.Sprintf("#%d: %d Bedroom House\nRent: $%d/month\n", house.ID, house.Bedrooms, house.MonthlyRent)
+					if household, ok := entities.Sim.People.Households[house.HouseholdID]; ok {
+						output += fmt.Sprintf("%s family (#%d)\n%d members, moved in %s", household.FamilyName(), household.ID,
+							household.Size(), household.MoveInDate.Format("2006-01-02"))
+					}
 				}
 			} else if tile.LandUse == entities.RetailUse || tile.LandUse == entities.AgricultureUse {
 				if company := entities.Sim.Companies.GetLocationCompany(wr.cursorTile.X, wr.cursorTile.Y); company != nil {
@@ -83,6 +87,10 @@ func (wr *WorldRenderer) getCursorTileData() string {
 						company.GetNumberOfEmployees(), company.GetNumberOfJobOpenings(),
 						utils.FormatCurrency(company.LastProfit, "$"),
 						utils.FormatCurrency(company.LastRevenue, "$"))
+				}
+			} else if tile.LandUse == entities.TransportUse {
+				for _, road := range entities.Sim.Geography.GetLocationRoads(wr.cursorTile.X, wr.cursorTile.Y) {
+					output += fmt.Sprintf("%s (%s)\n", road.Name, utils.FormatDistance(float64(road.GetLength())*entities.TileSize))
 				}
 			}
 			entities.Sim.Mutex.RUnlock()

@@ -226,6 +226,16 @@ func (g *Geography) IsWithinRoad(x, y int) (Direction, RoadType) {
 	return "", ""
 }
 
+func (g *Geography) GetLocationRoads(x, y int) []*Road {
+	roads := []*Road{}
+	for _, road := range g.roads {
+		if road.PassesThroughLocation(x, y) {
+			roads = append(roads, road)
+		}
+	}
+	return roads
+}
+
 // toggle roundabout
 func (g *Geography) ToggleRoundabout(x, y int) {
 	if !g.BoundsCheck(x, y) {

@@ -65,7 +65,7 @@ func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBa
 		toggleWindows:  toggleWindows,
 		screenHeight:   screenHeight,
 		screenWidth:    screenWidth,
-		bottomText:     "<<< Close \"Map Control\" to begin the simulation >>>",
+		bottomText:     "",
 	}
 	bar.bottomButtons = []*Button{
 		{
