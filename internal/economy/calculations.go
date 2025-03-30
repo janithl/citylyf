@@ -75,6 +75,7 @@ func (cs *CalculationService) CalculateEconomy() {
 
 	// collect taxes, revise rents and calculate regional stats and sales
 	entities.Sim.Government.CollectTaxes()
+	entities.Sim.People.UpdateAverageWageValues()
 	entities.Sim.Houses.ReviseRents()
 	entities.Sim.Geography.Regions.CalculateRegionalStats()
 	entities.Sim.Geography.Regions.CalculateRegionalSales()

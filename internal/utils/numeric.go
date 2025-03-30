@@ -52,3 +52,14 @@ func CalculateProbabilityByAge(mean, stdDev, currentAge, maxProb float64) float6
 	}
 	return 0
 }
+
+// Clamp makes sure the value does not go outside of the min/max bracket
+func Clamp(value, min, max float64) float64 {
+	if value < min {
+		return min
+	}
+	if value > max {
+		return max
+	}
+	return value
+}

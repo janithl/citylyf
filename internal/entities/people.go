@@ -17,10 +17,11 @@ type AgeGroup struct {
 }
 
 type People struct {
-	PopulationValues       []int // Historical values
-	LabourForce            int   // Employable people
+	LabourForce            int // Employable people
 	Unemployed             int
-	UnemploymentRateValues []float64
+	PopulationValues       []int     // Historical population values
+	UnemploymentRateValues []float64 // Historical unemployment rates
+	AverageWageValues      []float64 // Historical average monthly income values
 	People                 map[int]*Person
 	Households             map[int]*Household
 	AgeGroups              map[int]AgeGroup // Population breakdown by age group
@@ -38,6 +39,10 @@ func (p *People) UnemploymentRate() float64 {
 }
 
 func (p *People) PopulationGrowthRate() float64 {
+	if len(p.PopulationValues) == 0 {
+		return 0.0
+	}
+
 	lastPopulationValue := p.PopulationValues[len(p.PopulationValues)-1]
 	if lastPopulationValue == 0 {
 		return 0.0
@@ -148,6 +153,7 @@ func (p *People) CalculateAgeGroups() {
 	p.AgeGroups = groups
 }
 
+// AverageMonthlyDisposableIncome returns the monthly disposable income very household has
 func (p *People) AverageMonthlyDisposableIncome() int {
 	if len(p.Households) == 0 {
 		return 0 // Avoid division by zero
@@ -163,4 +169,37 @@ func (p *People) AverageMonthlyDisposableIncome() int {
 	}
 
 	return int(math.Round(totalDisposableIncome / float64(len(p.Households))))
+}
+
+// AverageWage returns the average annual wage per (employed) person
+func (p *People) AverageWage() float64 {
+	if len(p.People) == 0 {
+		return 0 // Avoid division by zero
+	}
+
+	totalWages := 0.0
+	for _, person := range p.People {
+		totalWages += float64(person.CurrentIncome())
+	}
+
+	return totalWages / float64(p.LabourForce)
+}
+
+// Append current AverageWage value to history
+func (p *People) UpdateAverageWageValues() {
+	p.AverageWageValues = utils.AddFifo(p.AverageWageValues, p.AverageWage(), 20)
+}
+
+// AverageWageGrowthRate returns the percentage growth rate of the AverageWage
+func (p *People) AverageWageGrowthRate() float64 {
+	if len(p.AverageWageValues) == 0 {
+		return 0.0
+	}
+
+	lastAverageWageValue := p.AverageWageValues[len(p.AverageWageValues)-1]
+	if lastAverageWageValue == 0 {
+		return 0.0
+	}
+
+	return 100.0*p.AverageWage() - lastAverageWageValue/lastAverageWageValue
 }

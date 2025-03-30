@@ -5,6 +5,8 @@ import (
 	"math/rand/v2"
 	"slices"
 	"time"
+
+	"github.com/janithl/citylyf/internal/utils"
 )
 
 type HouseType string
@@ -35,13 +37,13 @@ func (h Housing) GetIDs() []int {
 }
 
 func (h Housing) MoveIn(householdID, budget, bedrooms int) int {
-	for _, id := range h.GetIDs() {
-		if h[id].HouseholdID == 0 &&
-			h[id].Bedrooms >= bedrooms &&
-			h[id].MonthlyRent <= budget {
-			h[id].HouseholdID = householdID
-			h[id].LastRentRevision = Sim.Date // Lock in rents for 1 year
-			return h[id].ID
+	for _, house := range h {
+		if house.HouseholdID == 0 &&
+			house.Bedrooms >= bedrooms &&
+			house.MonthlyRent <= budget {
+			house.HouseholdID = householdID
+			house.LastRentRevision = Sim.Date // Lock in rents for 1 year
+			return house.ID
 		}
 	}
 	return 0
@@ -56,25 +58,64 @@ func (h Housing) MoveOut(houseID int) {
 
 func (h Housing) GetFreeHouses() int {
 	freeCount := 0
-	for _, id := range h.GetIDs() {
-		if h[id].HouseholdID == 0 {
+	for _, house := range h {
+		if house.HouseholdID == 0 {
 			freeCount++
 		}
 	}
 	return freeCount
 }
 
+func (h Housing) GetAverageMonthlyRent() float64 {
+	if len(h) == 0 {
+		return 0.0
+	}
+
+	rent := 0.0
+	for _, house := range h {
+		rent += float64(house.MonthlyRent)
+	}
+	return rent / float64(len(h))
+}
+
+func (h Housing) VacancyRate() float64 {
+	return float64(h.GetFreeHouses()) / float64(len(h))
+}
+
 func (h Housing) ReviseRents() {
-	for _, id := range h.GetIDs() {
-		if Sim.Date.Sub(h[id].LastRentRevision).Hours() > HoursPerYear { // Revise rents every year
-			h[id].MonthlyRent += int(float64(h[id].MonthlyRent) * Sim.Market.InterestRate() / 100)
-			h[id].LastRentRevision = Sim.Date
+	// Base adjustment using interest rate
+	adjustmentFactor := Sim.Market.InterestRate() / 100
+
+	// Adjust based on vacancy rate (high vacancy → reduce rent, low vacancy → normal increase)
+	if h.VacancyRate() > 0.15 { // 15% vacancy threshold
+		adjustmentFactor *= 0.5 // Reduce increase by 50%
+	} else if h.VacancyRate() < 0.05 { // Low vacancy → demand is high
+		adjustmentFactor *= 1.2 // Slightly boost increase
+	}
+
+	// Income & Inflation considerations: If income isn't rising, slow rent increases
+	incomeFactor := Sim.People.AverageWageGrowthRate() - Sim.Market.InflationRate()
+	if incomeFactor < 0 {
+		adjustmentFactor *= 0.8 // Reduce rent increase if incomes are stagnating
+	}
+
+	// Apply the adjusted rent increase
+	for _, house := range h {
+		if Sim.Date.Sub(house.LastRentRevision).Hours() > HoursPerYear { // Revise rents every year
+			currentRent := float64(house.MonthlyRent)
+			rentChange := currentRent * adjustmentFactor
+			rentChange = utils.Clamp(rentChange, -0.05*currentRent, 0.10*currentRent) // Clamp change between -5% and +10%
+
+			house.MonthlyRent += int(rentChange)
+			house.LastRentRevision = Sim.Date
 		}
 	}
+
+	Sim.Market.History.AverageRent = utils.AddFifo(Sim.Market.History.AverageRent, h.GetAverageMonthlyRent(), 20)
 }
 
 func (h Housing) GetLocationHouse(x, y int) *House {
-	for house := range maps.Values(h) {
+	for _, house := range h {
 		if house.Location != nil && house.Location.X == x && house.Location.Y == y {
 			return house
 		}

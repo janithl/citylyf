@@ -20,7 +20,7 @@ const ( // Constants for economic behavior
 )
 
 type MarketHistory struct { // tracking last 12 months data
-	MarketValue, InflationRate, InterestRate, MarketGrowthRate, MarketSentiment, CompanyProfits []float64
+	MarketValue, InflationRate, InterestRate, MarketGrowthRate, MarketSentiment, CompanyProfits, AverageRent []float64
 }
 
 // Market tracks economic cycles and financial conditions
@@ -54,12 +54,7 @@ func (m *Market) MarketSentiment() float64 {
 		baseSentiment += (rand.Float64() * 2) // Positive bias (+0% to +2% extra)
 	}
 
-	if baseSentiment < -3 { // Clamp sentiment to a reasonable range**
-		baseSentiment = -3
-	} else if baseSentiment > 3 {
-		baseSentiment = 3
-	}
-
+	baseSentiment = utils.Clamp(baseSentiment, -3, 3) // Clamp sentiment to a reasonable range**
 	m.History.MarketSentiment = utils.AddFifo(m.History.MarketSentiment, baseSentiment, 10)
 	return baseSentiment
 }
@@ -77,12 +72,7 @@ func (m *Market) MoneySupplyGrowth() float64 {
 	confidenceImpact := m.MarketSentiment() * 0.3                  // Market sentiment effect
 	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
 
-	if totalGrowth < 0 {
-		totalGrowth = 0 // Cap contraction at 0%
-	} else if totalGrowth > 10 {
-		totalGrowth = 10 // Cap expansion at 15%
-	}
-	return totalGrowth
+	return utils.Clamp(totalGrowth, 0, 15) // Cap contraction at 0% and  expansion at 15%
 }
 
 // CalculateInflation calculates inflation considering money supply, interest rates, and supply shocks
@@ -93,13 +83,8 @@ func (m *Market) CalculateInflation(populationGrowth float64) {
 	supplyImpact := m.SupplyShock() * 1.2                  // Supply disruptions worsen inflation
 	totalInflation := BaseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact
 
-	if totalInflation < -1 {
-		totalInflation = -1 // Cap deflation at -1%
-	} else if totalInflation > 15 {
-		totalInflation = 15 // Cap hyperinflation at 15%
-	}
-
-	m.History.InflationRate = utils.AddFifo(m.History.InflationRate, totalInflation, 10)
+	totalInflation = utils.Clamp(totalInflation, -1, 15) // Cap deflation at -1% and hyperinflation at 15%
+	m.History.InflationRate = utils.AddFifo(m.History.InflationRate, totalInflation, 20)
 }
 
 // CalculateMarketGrowth calculates stock index growth with boom/bust cycle logic
@@ -176,7 +161,7 @@ func (m *Market) calculateProfitImpact() float64 {
 func (m *Market) UpdateMarketValue(marketGrowth float64) float64 {
 	lastMarketValue := m.MarketValue()
 	newMarketValue := lastMarketValue + (lastMarketValue * marketGrowth / 100)
-	m.History.MarketValue = utils.AddFifo(m.History.MarketValue, newMarketValue, 10)
+	m.History.MarketValue = utils.AddFifo(m.History.MarketValue, newMarketValue, 20)
 	return newMarketValue
 }
 
@@ -217,14 +202,9 @@ func (m *Market) ReviseInterestRate() {
 			interestRateChange = 0.0
 		}
 	}
-	interestRateChange = math.Round(interestRateChange*4) / 4 // always change rates in multiples of 0.25%
 
-	// Cap the change to avoid overshooting (max +/- 0.5% per revision).
-	if interestRateChange > 0.5 {
-		interestRateChange = 0.5
-	} else if interestRateChange < -0.5 {
-		interestRateChange = -0.5
-	}
+	interestRateChange = math.Round(interestRateChange*4) / 4       // always change rates in multiples of 0.25%
+	interestRateChange = utils.Clamp(interestRateChange, -0.5, 0.5) // Cap the change to avoid overshooting (max +/- 0.5% per revision).
 
 	// Calculate the new interest rate.
 	newInterestRate := m.InterestRate() + interestRateChange
@@ -277,7 +257,7 @@ func (m *Market) CalculateHousingAndRetailDemand(totalHouses, vacantHouses int) 
 	retailDemand -= unemploymentImpact                // Unemployment hurts demand
 
 	// Clamp values between 0 and 1
-	m.HousingDemand = math.Max(0, math.Min(1, housingDemand))
-	m.RetailDemand = math.Max(0, math.Min(1, retailDemand))
+	m.HousingDemand = utils.Clamp(housingDemand, 0, 1)
+	m.RetailDemand = utils.Clamp(retailDemand, 0, 1)
 	fmt.Printf("[ Econ ] Housing demand is at %.2f and Retail demand is at %.2f\n", m.HousingDemand, m.RetailDemand)
 }

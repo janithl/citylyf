@@ -174,8 +174,7 @@ func (c *Company) GetProductivity() float64 {
 	// If fully staffed, productivity is 1. If understaffed, productivity scales down.
 	productivity := 0.5 + (float64(totalEmployees) / float64(totalJobs))
 
-	// Cap between 0 and 1
-	return math.Max(0, math.Min(1, productivity))
+	return utils.Clamp(productivity, 0, 1) // Clamp productivity between 0 and 1
 }
 
 // GetEmployees returns a list of employees
