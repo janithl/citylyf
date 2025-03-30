@@ -12,7 +12,7 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [x] Turn people, households and companies into a map
 - [ ] Household Budgeting - think about childcare expenses, groceries, shopping, vacation, utilities etc
 - [x] Housing market - rent, no. of bedrooms etc., grow rent yearly by inflation rate
-- [ ] People should marry, have babies, get promoted, move out out the house, die etc.
+- [x] People should marry, have babies, get promoted, move out out the house, die etc.
 - [x] Yearly budget - once a year, we show users government income vs expenditure and store these values for recall
 - [x] Calculate realistic government expenses - e.g. laying down roads and building houses should cost the govt money
 - [ ] Pension fund with employee + employer + government contributions

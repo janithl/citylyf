@@ -26,6 +26,7 @@ func CreateRandomPerson(minAge int, maxAge int) *entities.Person {
 	var salary float64
 	if careerLevel != entities.Unemployed {
 		job, salary = economy.GetIndustryJob(education, careerLevel)
+		salary *= entities.Sim.Houses.GetCostOfLivingFactor() // adjust salary for cost of living factor
 	}
 
 	savings := salary * rand.Float64() * 0.5 * math.Max(float64(ageY-25), 1)

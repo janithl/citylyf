@@ -78,20 +78,21 @@ func (c Companies) RemoveEmployeeFromTheirCompany(person *Person) {
 
 // Company represents a business entity with jobs
 type Company struct {
-	ID              int
-	Name            string
-	Industry        Industry
-	CompanySize     CompanySize
-	Location        *Point
-	RoadDirection   Direction
-	FoundingDate    time.Time
-	JobOpenings     map[CareerLevel]int // Available job positions at each level
-	Employees       []int               // Employee IDs
-	RetailSales     float64
-	CorpTaxPayable  float64
-	SalesTaxPayable float64
-	FixedCosts      float64
-	Payroll         float64
+	ID               int
+	Name             string
+	Industry         Industry
+	CompanySize      CompanySize
+	Location         *Point
+	RoadDirection    Direction
+	FoundingDate     time.Time
+	NextWageRevision time.Time
+	JobOpenings      map[CareerLevel]int // Available job positions at each level
+	Employees        []int               // Employee IDs
+	RetailSales      float64
+	CorpTaxPayable   float64
+	SalesTaxPayable  float64
+	FixedCosts       float64
+	Payroll          float64
 
 	// Historical
 	LastRevenue, LastExpenses, LastProfit float64
@@ -239,6 +240,24 @@ func (c *Company) DetermineJobOpenings() {
 			adjustedJobs = 1 // Prevent zero or negative jobs
 		}
 		c.JobOpenings[level] = adjustedJobs
+	}
+}
+
+// ReviseWages calculates jobs available based on economic factors
+func (c *Company) ReviseWages() {
+	if Sim.Date.Before(c.NextWageRevision) { // run yearly
+		return
+	}
+	c.NextWageRevision = Sim.Date.AddDate(1, 0, 0)
+
+	incrementRate := Sim.Houses.GetCostOfLivingFactor() - 1.0
+	incrementRate = utils.Clamp(incrementRate, 0.01, 0.05) // increment rate between 1% and 5%
+	for _, employee := range c.GetEmployees() {
+		wageIncrease := float64(employee.AnnualIncome) * incrementRate
+		if c.LastProfit < 0 { // Adjust downward if the company is unprofitable.
+			wageIncrease = wageIncrease * 0.5
+		}
+		employee.AnnualIncome += int(wageIncrease)
 	}
 }
 

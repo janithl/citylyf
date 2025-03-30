@@ -16,16 +16,17 @@ func (c *CompanyService) GenerateRandomCompany(companySize entities.CompanySize,
 	expenses := baseRevenue * expenseRatio
 
 	company := entities.Company{
-		Name:         entities.Sim.NameService.GetCompanyName(),
-		Industry:     industry,
-		CompanySize:  companySize,
-		FoundingDate: entities.Sim.Date,
-		JobOpenings:  make(map[entities.CareerLevel]int),
-		LastRevenue:  baseRevenue,
-		LastExpenses: expenses,
-		FixedCosts:   expenses,
-		Payroll:      0,
-		LastProfit:   baseRevenue - expenses,
+		Name:             entities.Sim.NameService.GetCompanyName(),
+		Industry:         industry,
+		CompanySize:      companySize,
+		FoundingDate:     entities.Sim.Date,
+		NextWageRevision: entities.Sim.Date.AddDate(1, 0, 0),
+		JobOpenings:      make(map[entities.CareerLevel]int),
+		LastRevenue:      baseRevenue,
+		LastExpenses:     expenses,
+		FixedCosts:       expenses,
+		Payroll:          0,
+		LastProfit:       baseRevenue - expenses,
 	}
 
 	company.CalculateProfit(31)

@@ -2,6 +2,7 @@ package entities
 
 import (
 	"maps"
+	"math"
 	"math/rand/v2"
 	"slices"
 	"time"
@@ -66,6 +67,14 @@ func (h Housing) GetFreeHouses() int {
 	return freeCount
 }
 
+func (h Housing) GetBaselineMonthlyRent(bedrooms int) int {
+	if bedrooms < 2 {
+		return 1200
+	}
+
+	return 1200 + 200*(bedrooms-1)
+}
+
 func (h Housing) GetAverageMonthlyRent() float64 {
 	if len(h) == 0 {
 		return 0.0
@@ -76,6 +85,12 @@ func (h Housing) GetAverageMonthlyRent() float64 {
 		rent += float64(house.MonthlyRent)
 	}
 	return rent / float64(len(h))
+}
+
+// GetCostOfLivingFactor returns a multiplier based on the change in average rent
+func (h Housing) GetCostOfLivingFactor() float64 {
+	costOfLivingFactor := h.GetAverageMonthlyRent() / float64(h.GetBaselineMonthlyRent(3))
+	return math.Max(1.0, costOfLivingFactor) // has to be 1.0 or more
 }
 
 func (h Housing) VacancyRate() float64 {
@@ -146,7 +161,7 @@ func (h Housing) PlaceHousing() {
 		ID:               houseID,
 		HouseholdID:      0,
 		Bedrooms:         bedrooms,
-		MonthlyRent:      1200 + 200*(bedrooms-1),
+		MonthlyRent:      int(h.GetCostOfLivingFactor() * float64(h.GetBaselineMonthlyRent(bedrooms))),
 		HouseType:        houseType,
 		Location:         site,
 		RoadDirection:    Sim.Geography.getAccessRoad(site.X, site.Y),
