@@ -17,6 +17,7 @@ const ( // Constants for economic behavior
 	RecessionThreshold    = -2.0 // Growth below this triggers a recession
 	BoomThreshold         = 5.0  // Growth above this triggers a boom
 	InflationTarget       = 2.0
+	SevereUnemployment    = 10.0 // 10% unemployment is considered severe
 )
 
 type MarketHistory struct { // tracking last 12 months data

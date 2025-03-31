@@ -173,7 +173,7 @@ func (p *People) AverageMonthlyDisposableIncome() int {
 
 // AverageWage returns the average annual wage per (employed) person
 func (p *People) AverageWage() float64 {
-	if len(p.People) == 0 {
+	if len(p.People) == 0 || p.LabourForce == 0 {
 		return 0 // Avoid division by zero
 	}
 
@@ -201,5 +201,5 @@ func (p *People) AverageWageGrowthRate() float64 {
 		return 0.0
 	}
 
-	return 100.0*p.AverageWage() - lastAverageWageValue/lastAverageWageValue
+	return 100.0 * (p.AverageWage() - lastAverageWageValue) / lastAverageWageValue
 }

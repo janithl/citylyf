@@ -245,20 +245,27 @@ func (c *Company) DetermineJobOpenings() {
 
 // ReviseWages calculates jobs available based on economic factors
 func (c *Company) ReviseWages() {
-	if Sim.Date.Before(c.NextWageRevision) { // run yearly
+	if c.GetNumberOfEmployees() == 0 || Sim.Date.Before(c.NextWageRevision) { // run yearly, and don't run if no employees
 		return
 	}
 	c.NextWageRevision = Sim.Date.AddDate(1, 0, 0)
 
-	incrementRate := Sim.Houses.GetCostOfLivingFactor() - 1.0
-	incrementRate = utils.Clamp(incrementRate, 0.01, 0.05) // increment rate between 1% and 5%
+	incrementRate := 2 * Sim.Market.InflationRate() / 100   // start at a base of 2x the inflation rate
+	if Sim.People.UnemploymentRate() > SevereUnemployment { // Adjust downward if there is severe unemployment
+		incrementRate *= 0.5 * (Sim.People.UnemploymentRate() - SevereUnemployment) / 100
+	}
+	if c.LastProfit < 0 { // Adjust downward if the company is unprofitable.
+		incrementRate *= 0.5
+	}
+
+	incrementRate = utils.Clamp(incrementRate, 0.005, 0.05) // increment rate clamped between 0.5% and 5%
+
 	for _, employee := range c.GetEmployees() {
 		wageIncrease := float64(employee.AnnualIncome) * incrementRate
-		if c.LastProfit < 0 { // Adjust downward if the company is unprofitable.
-			wageIncrease = wageIncrease * 0.5
-		}
 		employee.AnnualIncome += int(wageIncrease)
 	}
+
+	fmt.Printf("[ Wage ] %s has increased the wages of its %d employees by %.2f%%\n", c.Name, c.GetNumberOfEmployees(), incrementRate*100)
 }
 
 func (c *Company) CompanyAge() int {
