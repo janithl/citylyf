@@ -129,6 +129,20 @@ func (h Housing) ReviseRents() {
 	Sim.Market.History.AverageRent = utils.AddFifo(Sim.Market.History.AverageRent, h.GetAverageMonthlyRent(), 20)
 }
 
+// AverageRentGrowthRate returns the percentage growth rate of the AverageMonthlyRent
+func (h Housing) AverageRentGrowthRate() float64 {
+	if len(Sim.Market.History.AverageRent) == 0 {
+		return 0.0
+	}
+
+	lastAverageRentValue := utils.GetLastValue(Sim.Market.History.AverageRent)
+	if lastAverageRentValue == 0 {
+		return 0.0
+	}
+
+	return 100.0 * (h.GetAverageMonthlyRent() - lastAverageRentValue) / lastAverageRentValue
+}
+
 func (h Housing) GetLocationHouse(x, y int) *House {
 	for _, house := range h {
 		if house.Location != nil && house.Location.X == x && house.Location.Y == y {

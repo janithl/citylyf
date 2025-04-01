@@ -196,7 +196,7 @@ func (p *People) AverageWageGrowthRate() float64 {
 		return 0.0
 	}
 
-	lastAverageWageValue := p.AverageWageValues[len(p.AverageWageValues)-1]
+	lastAverageWageValue := utils.GetLastValue(p.AverageWageValues)
 	if lastAverageWageValue == 0 {
 		return 0.0
 	}

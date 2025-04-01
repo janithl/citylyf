@@ -71,18 +71,27 @@ func (m *Market) MoneySupplyGrowth() float64 {
 	inflationImpact := -math.Pow((m.InflationRate()-2)/4, 2)       // High inflation slows supply
 	spendingImpact := Sim.Government.GetGovernmentSpending() * 0.5 // More spending increases supply
 	confidenceImpact := m.MarketSentiment() * 0.3                  // Market sentiment effect
-	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact
+
+	// Wage and rent growth impacts to money supply
+	wageGrowth := Sim.People.AverageWageGrowthRate() / 100
+	rentGrowth := Sim.Houses.AverageRentGrowthRate() / 100
+	wageImpact := math.Min(0.3*wageGrowth, 2.0)                // Higher wages increase money supply
+	rentImpact := math.Min(-0.2*(rentGrowth-wageGrowth), -2.0) // If rents grow faster than wages, money supply contracts
+
+	totalGrowth := BaseMoneySupplyGrowth + interestImpact + inflationImpact + spendingImpact + confidenceImpact + wageImpact + rentImpact
 
 	return utils.Clamp(totalGrowth, 0, 15) // Cap contraction at 0% and  expansion at 15%
 }
 
 // CalculateInflation calculates inflation considering money supply, interest rates, and supply shocks
 func (m *Market) CalculateInflation(populationGrowth float64) {
-	moneyImpact := math.Log(m.MoneySupplyGrowth()+1) * 1.5 // More money = higher inflation
-	interestImpact := -math.Pow(m.InterestRate()/3, 1.5)   // Higher rates reduce inflation
-	demandImpact := math.Max(populationGrowth*0.5, 0.0)    // Higher demand pushes inflation up
-	supplyImpact := m.SupplyShock() * 1.2                  // Supply disruptions worsen inflation
-	totalInflation := BaseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact
+	moneyImpact := math.Log(m.MoneySupplyGrowth()+1) * 1.5                  // More money = higher inflation
+	interestImpact := -math.Pow(m.InterestRate()/3, 1.5)                    // Higher rates reduce inflation
+	demandImpact := math.Max(populationGrowth*0.5, 0.0)                     // Higher demand pushes inflation up
+	supplyImpact := m.SupplyShock() * 1.2                                   // Supply disruptions worsen inflation
+	wageImpact := math.Min(0.4*Sim.People.AverageWageGrowthRate()/100, 2.5) // Wages rising faster than productivity = inflation
+	rentImpact := math.Min(0.3*Sim.Houses.AverageRentGrowthRate()/100, 2.0) // Rising rents increase CPI, especially housing costs)
+	totalInflation := BaseInflation + moneyImpact + interestImpact + demandImpact + supplyImpact + wageImpact + rentImpact
 
 	totalInflation = utils.Clamp(totalInflation, -1, 15) // Cap deflation at -1% and hyperinflation at 15%
 	m.History.InflationRate = utils.AddFifo(m.History.InflationRate, totalInflation, 20)
