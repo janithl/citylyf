@@ -25,11 +25,9 @@ func (c *CompanyService) GenerateRandomCompany(companySize entities.CompanySize,
 		LastRevenue:      baseRevenue,
 		LastExpenses:     expenses,
 		FixedCosts:       expenses,
-		Payroll:          0,
-		LastProfit:       baseRevenue - expenses,
+		Payroll:          0.0,
+		LastProfit:       0.0,
 	}
-
-	company.CalculateProfit(31)
 	company.DetermineJobOpenings()
 	return &company
 }

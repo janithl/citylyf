@@ -271,3 +271,43 @@ func (m *Market) CalculateHousingAndRetailDemand(totalHouses, vacantHouses int) 
 	m.RetailDemand = utils.Clamp(retailDemand, 0, 1)
 	fmt.Printf("[ Econ ] Housing demand is at %.2f and Retail demand is at %.2f\n", m.HousingDemand, m.RetailDemand)
 }
+
+// CalculateGDP computes total GDP from wages, business profits, and government spending.
+func (m *Market) CalculateGDP() float64 {
+	totalPersonalIncome := 0.0
+	for _, person := range Sim.People.People {
+		totalPersonalIncome += float64(person.CurrentIncome())
+	}
+
+	totalProfits := 0.0
+	for _, company := range Sim.Companies {
+		totalProfits += company.LastProfit
+	}
+
+	// get government spending (in millions) and multiply by a million
+	totalGovernmentSpending := Sim.Government.GetGovernmentSpending() * 1e6
+
+	gdp := totalPersonalIncome + totalProfits + totalGovernmentSpending
+	return gdp
+}
+
+// CalculatePerCapitaGDP computes GDP per person.
+func (m *Market) CalculatePerCapitaGDP() float64 {
+	population := float64(len(Sim.People.People))
+	if population == 0 {
+		return 0 // Prevent division by zero
+	}
+
+	return m.CalculateGDP() / population
+}
+
+// CalculateTaxToGDPRatio computes tax revenue as a percentage of GDP.
+func (m *Market) CalculateTaxToGDPRatio() float64 {
+	gdp := m.CalculateGDP()
+	if gdp == 0 {
+		return 0 // Prevent division by zero
+	}
+
+	totalTaxes := float64(utils.GetLastValue(Sim.Government.IncomeValues))
+	return (totalTaxes / gdp) * 100
+}

@@ -100,7 +100,11 @@ type Company struct {
 
 // CalculateProfit computes monthly net profit
 func (c *Company) CalculateProfit(monthLength float64) float64 {
-	lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
+	// if there are no employees, stop calculation and return 0 profits (because the company is inactive)
+	if c.GetNumberOfEmployees() == 0 {
+		c.LastProfit = 0
+		return c.LastProfit
+	}
 
 	// **Monthly Expense Growth**: Inflation applied proportionally
 	inflationMultiplier := 1.0 + (Sim.Market.InflationRate() / 2400) // Divided by 2400 for smoother monthly change
@@ -120,6 +124,7 @@ func (c *Company) CalculateProfit(monthLength float64) float64 {
 		c.SalesTaxPayable += taxedAmount
 	} else {
 		// **Monthly Revenue Growth**: Adjusts based on market conditions for non-retail
+		lastMarketGrowthRate := utils.GetLastValue(Sim.Market.History.MarketGrowthRate)
 		revenueMultiplier := 1.0 + (lastMarketGrowthRate / 1200) // Gradual revenue increase
 		if c.LastProfit > 0 {
 			revenueMultiplier += 0.002 // Small bonus growth for profitable companies

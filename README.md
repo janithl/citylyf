@@ -18,8 +18,7 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [ ] Pension fund with employee + employer + government contributions
 - [ ] Companies should be tied to office space/industrial space availability
 - [x] Retail companies + shops
-- [ ] Shops/offices should be like houses, built and kept unoccupied until a company moves in + companies can own multiple shops
-- [ ] Companies with no employees for a year should shut down
+- [x] Companies with no employees should be inactive
 - [x] Tie productivity to employee count
 - [x] Land use type to track tile land use instead of the current booleans
 - [x] Regions to track population and simulate traffic between them
