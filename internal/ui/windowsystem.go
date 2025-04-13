@@ -101,6 +101,10 @@ func (ws *WindowSystem) onWindowItemClick(title string, index int) {
 	}
 }
 
+func (ws *WindowSystem) Layout(width, height int) {
+	ws.bottomBar.Layout(width, height)
+}
+
 func NewWindowSystem() *WindowSystem {
 	ws := &WindowSystem{
 		windowsVisible: false,

@@ -137,6 +137,13 @@ func (wr *WorldRenderer) Draw(screen *ebiten.Image) {
 	wr.tooltip.Draw(screen)
 }
 
+func (wr *WorldRenderer) Layout(width, height int) {
+	wr.width = width
+	wr.height = height
+	wr.offsetX = float64(width / 2)
+	wr.offsetY = float64(height / 4)
+}
+
 func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
 	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")

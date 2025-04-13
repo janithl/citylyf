@@ -41,7 +41,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	g.worldRenderer.Layout(outsideWidth, outsideHeight)
+	g.windowSystem.Layout(outsideWidth, outsideHeight)
+	g.mapControl.SetOffset(outsideWidth-240, outsideHeight-140)
+	return outsideWidth, outsideHeight
 }
 
 func (g *Game) EndRegenMode() {
@@ -53,6 +56,7 @@ func (g *Game) EndRegenMode() {
 
 func RunGame() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
 	gameTitle := "citylyf"
 	if entities.Sim.SavePath != "" {

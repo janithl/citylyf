@@ -59,6 +59,13 @@ func (b *BottomBar) Update() error {
 	return nil
 }
 
+func (b *BottomBar) Layout(width, height int) {
+	b.screenWidth = width
+	b.screenHeight = height
+	b.bottomButtons[0].SetOffset(0, height-buttonHeight)
+	b.bottomButtons[1].SetOffset(width-buttonWidth, height-buttonHeight)
+}
+
 func NewBottomBar(screenHeight, screenWidth int, toggleWindows func()) *BottomBar {
 	bar := &BottomBar{
 		WindowsVisible: false,
