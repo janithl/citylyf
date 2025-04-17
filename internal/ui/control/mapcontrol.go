@@ -9,47 +9,21 @@ import (
 type MapControl struct {
 	x, y, width, height            int
 	peakPerc, rangePerc, cliffPerc int
-	stepperLabels                  []*Label
-	steppers                       []*Stepper
-	buttons                        []*Button
+	layoutGrid                     *Grid
 }
 
 func (mc *MapControl) Update() {
-	for i := range mc.stepperLabels {
-		mc.stepperLabels[i].Update()
-	}
-	for i := range mc.steppers {
-		mc.steppers[i].Update()
-	}
-	for i := range mc.buttons {
-		mc.buttons[i].Update()
-	}
+	mc.layoutGrid.Update()
 }
 
 func (mc *MapControl) Draw(screen *ebiten.Image) {
-	for i := range mc.stepperLabels {
-		mc.stepperLabels[i].Draw(screen)
-	}
-	for i := range mc.steppers {
-		mc.steppers[i].Draw(screen)
-	}
-	for i := range mc.buttons {
-		mc.buttons[i].Draw(screen)
-	}
+	mc.layoutGrid.Draw(screen)
 }
 
 func (mc *MapControl) SetOffset(x, y int) {
 	mc.x = x
 	mc.y = y
-	for i, stepperLabel := range mc.stepperLabels {
-		stepperLabel.SetOffset(x, y+(i*buttonHeight))
-	}
-	for i, stepper := range mc.steppers {
-		stepper.SetOffset(x+mc.width/2, y+(i*buttonHeight))
-	}
-	for i, btn := range mc.buttons {
-		btn.SetOffset(x+i*(mc.width/3), y+(4*buttonHeight))
-	}
+	mc.layoutGrid.SetOffset(x, y)
 }
 
 func (mc *MapControl) setPerc(perc string, value int) {
@@ -68,9 +42,9 @@ func (mc *MapControl) resetValues() {
 	mc.peakPerc = 30
 	mc.rangePerc = 10
 	mc.cliffPerc = 10
-	mc.steppers[0].SetCurrentNumber(mc.peakPerc)
-	mc.steppers[1].SetCurrentNumber(mc.rangePerc)
-	mc.steppers[2].SetCurrentNumber(mc.cliffPerc)
+	mc.layoutGrid.Children[0][3].(*Stepper).SetCurrentNumber(mc.peakPerc)
+	mc.layoutGrid.Children[1][3].(*Stepper).SetCurrentNumber(mc.rangePerc)
+	mc.layoutGrid.Children[2][3].(*Stepper).SetCurrentNumber(mc.cliffPerc)
 	mc.regenerateMap()
 }
 
@@ -85,32 +59,28 @@ func (mc *MapControl) regenerateMap() {
 
 func NewMapControl(x, y, width, height int, closeFunc func()) *MapControl {
 	mc := &MapControl{
-		x:         x,
-		y:         y,
-		width:     width,
-		height:    height,
-		peakPerc:  30,
-		rangePerc: 10,
-		cliffPerc: 10,
+		x:          x,
+		y:          y,
+		width:      width,
+		height:     height,
+		peakPerc:   30,
+		rangePerc:  10,
+		cliffPerc:  10,
+		layoutGrid: NewGrid(x, y, width, height, 6, 6),
 	}
 
-	mc.stepperLabels = []*Label{
-		{X: 0, Y: 0, Padding: 4, Text: "Mountain Peaks"},
-		{X: 0, Y: 0, Padding: 4, Text: "Mountain Ranges"},
-		{X: 0, Y: 0, Padding: 4, Text: "Cliffs"},
-	}
+	mc.layoutGrid.Children[0][0] = &Label{X: 0, Y: 0, Padding: 4, Text: "Mountain Peaks"}
+	mc.layoutGrid.Children[0][3] = NewStepper(0, 0, mc.peakPerc, 90, PercentageStepper, func(i int) { mc.setPerc("peak", i) })
 
-	mc.steppers = []*Stepper{
-		NewStepper(0, 0, mc.peakPerc, 90, PercentageStepper, func(i int) { mc.setPerc("peak", i) }),
-		NewStepper(0, 0, mc.rangePerc, 90, PercentageStepper, func(i int) { mc.setPerc("range", i) }),
-		NewStepper(0, 0, mc.cliffPerc, 90, PercentageStepper, func(i int) { mc.setPerc("cliff", i) }),
-	}
+	mc.layoutGrid.Children[1][0] = &Label{X: 0, Y: 0, Padding: 4, Text: "Mountain Ranges"}
+	mc.layoutGrid.Children[1][3] = NewStepper(0, 0, mc.rangePerc, 90, PercentageStepper, func(i int) { mc.setPerc("range", i) })
 
-	mc.buttons = []*Button{
-		{Label: "  Regen", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkCyan, OnClick: mc.regenerateMap},
-		{Label: "  Reset", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkMagenta, OnClick: mc.resetValues},
-		{Label: "  Done", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.Red, OnClick: closeFunc},
-	}
+	mc.layoutGrid.Children[2][0] = &Label{X: 0, Y: 0, Padding: 4, Text: "Cliffs"}
+	mc.layoutGrid.Children[2][3] = NewStepper(0, 0, mc.cliffPerc, 90, PercentageStepper, func(i int) { mc.setPerc("cliff", i) })
+
+	mc.layoutGrid.Children[4][0] = &Button{Label: "  Regen", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkCyan, OnClick: mc.regenerateMap}
+	mc.layoutGrid.Children[4][2] = &Button{Label: "  Reset", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkMagenta, OnClick: mc.resetValues}
+	mc.layoutGrid.Children[4][4] = &Button{Label: "  Done", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.Red, OnClick: closeFunc}
 
 	return mc
 }

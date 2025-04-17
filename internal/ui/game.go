@@ -13,6 +13,8 @@ import (
 const (
 	screenWidth  = 1280
 	screenHeight = 720
+	mcWidth      = 256
+	mcHeight     = 160
 )
 
 type Game struct {
@@ -43,7 +45,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	g.worldRenderer.Layout(outsideWidth, outsideHeight)
 	g.windowSystem.Layout(outsideWidth, outsideHeight)
-	g.mapControl.SetOffset(outsideWidth-240, outsideHeight-140)
+	g.mapControl.SetOffset(outsideWidth-mcWidth, outsideHeight-mcHeight)
 	return outsideWidth, outsideHeight
 }
 
@@ -69,8 +71,8 @@ func RunGame() {
 		windowSystem:  NewWindowSystem(),
 		mapRegenMode:  entities.Sim.SavePath == "",
 	}
-	game.mapControl = control.NewMapControl(0, 0, 240, 140, game.EndRegenMode)
-	game.mapControl.SetOffset(screenWidth-240, screenHeight-140)
+	game.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, game.EndRegenMode)
+	game.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
