@@ -21,14 +21,10 @@ func (g *Grid) Draw(screen *ebiten.Image) {
 }
 
 func (g *Grid) Update() {
-	rowHeight := g.height / g.rows
-	colWidth := g.width / g.columns
-
-	// position and update child controls
-	for rowNum, rowCells := range g.Children {
-		for colNum, cell := range rowCells {
+	// update child controls
+	for _, rowCells := range g.Children {
+		for _, cell := range rowCells {
 			if cell != nil {
-				cell.SetOffset(g.x+colWidth*colNum, g.y+rowHeight*rowNum)
 				cell.Update()
 			}
 		}
@@ -38,6 +34,17 @@ func (g *Grid) Update() {
 func (g *Grid) SetOffset(x, y int) {
 	g.x = x
 	g.y = y
+
+	// position child controls
+	rowHeight := g.height / g.rows
+	colWidth := g.width / g.columns
+	for rowNum, rowCells := range g.Children {
+		for colNum, cell := range rowCells {
+			if cell != nil {
+				cell.SetOffset(g.x+colWidth*colNum, g.y+rowHeight*rowNum)
+			}
+		}
+	}
 }
 
 func NewGrid(x, y, width, height, columns, rows int) *Grid {

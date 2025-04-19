@@ -92,6 +92,7 @@ func (r Regions) CalculateRegionalStats() {
 		}
 	}
 	r.CalculateRegionalTraffic()
+	r.CalculateRegionalSales()
 }
 
 func (r Regions) CalculateRegionalTraffic() {

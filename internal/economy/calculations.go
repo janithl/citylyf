@@ -79,5 +79,4 @@ func (cs *CalculationService) CalculateEconomy() {
 	entities.Sim.People.UpdateAverageWageValues()
 	entities.Sim.Houses.ReviseRents()
 	entities.Sim.Geography.Regions.CalculateRegionalStats()
-	entities.Sim.Geography.Regions.CalculateRegionalSales()
 }
