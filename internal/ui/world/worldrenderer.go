@@ -34,6 +34,7 @@ type WorldRenderer struct {
 	placingUse                         entities.LandUse
 	animations                         []*animation.Animation
 	tooltip                            *control.Tooltip
+	toggleMenuMode                     func()
 }
 
 func (wr *WorldRenderer) Update(mapRegenMode bool) error {
@@ -144,7 +145,7 @@ func (wr *WorldRenderer) Layout(width, height int) {
 	wr.offsetY = float64(height / 4)
 }
 
-func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
+func NewWorldRenderer(screenWidth, screenHeight int, toggleMenuMode func()) *WorldRenderer {
 	assets.LoadVariableSpritesheet("", "spritesheet-geo.png", "spriteinfo-geo.json")
 	assets.LoadVariableSpritesheet("house", "spritesheet-house.png", "spriteinfo-house.json")
 	assets.LoadVariableSpritesheet("industry", "spritesheet-industry.png", "spriteinfo-industry.json")
@@ -158,17 +159,18 @@ func NewWorldRenderer(screenWidth, screenHeight int) *WorldRenderer {
 
 	mapSize := entities.Sim.Geography.Size
 	return &WorldRenderer{
-		playerX:      float64(mapSize / 3),
-		playerY:      float64(mapSize / 3),
-		cameraX:      float64(mapSize / 2),
-		cameraY:      float64(mapSize / 2),
-		zoomFactor:   0.25,
-		width:        screenWidth,
-		height:       screenHeight,
-		offsetX:      float64(screenWidth) / 2,
-		offsetY:      float64(screenHeight) / 4,
-		animations:   animations,
-		frameCounter: 300,
+		playerX:        float64(mapSize / 3),
+		playerY:        float64(mapSize / 3),
+		cameraX:        float64(mapSize / 2),
+		cameraY:        float64(mapSize / 2),
+		zoomFactor:     0.25,
+		width:          screenWidth,
+		height:         screenHeight,
+		offsetX:        float64(screenWidth) / 2,
+		offsetY:        float64(screenHeight) / 4,
+		animations:     animations,
+		frameCounter:   300,
+		toggleMenuMode: toggleMenuMode,
 		tooltip: &control.Tooltip{
 			Height:  72,
 			Width:   210,

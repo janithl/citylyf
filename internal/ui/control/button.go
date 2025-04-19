@@ -11,6 +11,7 @@ import (
 type Button struct {
 	Label               string
 	X, Y, Width, Height int
+	Scale               float64
 	Color               color.RGBA
 	OnClick             func() // Callback function
 
@@ -25,8 +26,20 @@ func (b *Button) Draw(screen *ebiten.Image) {
 		btnColor = b.HoverColor
 	}
 
-	vector.DrawFilledRect(screen, float32(b.X), float32(b.Y), float32(b.Width), float32(b.Height), btnColor, false)
-	ebitenutil.DebugPrintAt(screen, b.Label, b.X+10, b.Y+4)
+	if b.Scale > 1 {
+		image := ebiten.NewImage(b.Width, b.Height)
+		vector.DrawFilledRect(image, 0, 0, float32(b.Width), float32(b.Height), btnColor, false)
+		ebitenutil.DebugPrintAt(image, b.Label, 10, 4)
+
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(b.Scale, b.Scale)
+		op.GeoM.Translate(float64(b.X), float64(b.Y))
+		screen.DrawImage(image, op)
+
+	} else {
+		vector.DrawFilledRect(screen, float32(b.X), float32(b.Y), float32(b.Width), float32(b.Height), btnColor, false)
+		ebitenutil.DebugPrintAt(screen, b.Label, b.X+10, b.Y+4)
+	}
 }
 
 func (b *Button) Update() {
@@ -34,7 +47,13 @@ func (b *Button) Update() {
 	isPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
 
 	// Check if mouse is over the button
-	b.isHovered = mouseX > b.X && mouseX < b.X+b.Width && mouseY > b.Y && mouseY < b.Y+b.Height
+	if b.Scale > 1 {
+		height := int(float64(b.Height) * b.Scale)
+		width := int(float64(b.Width) * b.Scale)
+		b.isHovered = mouseX > b.X && mouseX < b.X+width && mouseY > b.Y && mouseY < b.Y+height
+	} else {
+		b.isHovered = mouseX > b.X && mouseX < b.X+b.Width && mouseY > b.Y && mouseY < b.Y+b.Height
+	}
 
 	// Only trigger OnClick when mouse is released after a press
 	if b.isHovered && !isPressed && b.wasPressed {

@@ -102,8 +102,12 @@ func (wr *WorldRenderer) getUserInput() {
 
 	// cancel road/zone placing
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		wr.placingRoad = entities.NoRoad
-		wr.placingUse = entities.NoUse
+		if wr.placingRoad != entities.NoRoad || wr.placingUse != entities.NoUse {
+			wr.placingRoad = entities.NoRoad
+			wr.placingUse = entities.NoUse
+		} else {
+			wr.toggleMenuMode()
+		}
 	}
 
 	// toggle roundabout
