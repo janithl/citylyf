@@ -80,6 +80,13 @@ func (g *Game) ToggleMenuMode() {
 	g.menuMode = !g.menuMode
 }
 
+func (g *Game) StartNewGame() {
+	entities.StartNewSim()
+	g.mapRegenMode = true
+	g.menuMode = false
+	g.worldRenderer = world.NewWorldRenderer(screenWidth, screenHeight, g.ToggleMenuMode)
+}
+
 func RunGame() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -95,7 +102,7 @@ func RunGame() {
 		mapRegenMode: entities.Sim.SavePath == "",
 	}
 	game.worldRenderer = world.NewWorldRenderer(screenWidth, screenHeight, game.ToggleMenuMode)
-	game.mainMenu = control.NewMainMenu(192, 288, game.ToggleMenuMode, game.EndGame)
+	game.mainMenu = control.NewMainMenu(192, 288, game.ToggleMenuMode, game.StartNewGame, game.EndGame)
 	game.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, game.EndRegenMode)
 	game.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
 

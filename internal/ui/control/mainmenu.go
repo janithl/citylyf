@@ -28,7 +28,7 @@ func (m *MainMenu) Layout(width, height int) {
 	m.layoutGrid.SetOffset(m.x, m.y)
 }
 
-func NewMainMenu(width, height int, toggleMenuMode, endGame func()) *MainMenu {
+func NewMainMenu(width, height int, toggleMenuMode, startNewGame, endGame func()) *MainMenu {
 	menu := &MainMenu{
 		x:          0,
 		y:          0,
@@ -38,7 +38,7 @@ func NewMainMenu(width, height int, toggleMenuMode, endGame func()) *MainMenu {
 	}
 
 	menu.layoutGrid.Children[0][0] = &Button{Label: "Resume Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: toggleMenuMode}
-	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() {}}
+	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: startNewGame}
 	menu.layoutGrid.Children[2][0] = &Button{Label: "Load Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() {}}
 	menu.layoutGrid.Children[3][0] = &Button{Label: "Exit", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
 

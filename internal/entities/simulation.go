@@ -132,3 +132,8 @@ func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [
 	Sim.Geography.roads = roads
 	SimStats = make(chan string, 1)
 }
+
+func StartNewSim() {
+	Sim = NewSimulation(2020, 1000000)
+	Sim.SendStats()
+}

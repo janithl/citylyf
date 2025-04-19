@@ -19,7 +19,7 @@ func main() {
 	if *savePathPtr != "" && checkFileExists(*savePathPtr) { // load sim from savegame file
 		loadGame(*savePathPtr)
 	} else { // create a new simulation
-		entities.Sim = entities.NewSimulation(2020, 1000000)
+		entities.StartNewSim()
 	}
 
 	employment := economy.Employment{CompanyService: &economy.CompanyService{}}
