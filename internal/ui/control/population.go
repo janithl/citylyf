@@ -22,7 +22,7 @@ func (pp *PopulationPyramid) Draw(screen *ebiten.Image) {
 	maxWidth := float32(pp.Width) / 2                            // Half width for each side
 
 	for i, group := range pp.ageGroups {
-		y := float32(pp.Y) + float32(i/entities.AgeGroupSize)*barHeight
+		y := float32(pp.Y) + float32(pp.Height) - barHeight - float32(i/entities.AgeGroupSize)*barHeight
 		maleWidth := maxWidth * (float32(group.Male) / float32(pp.maxPopPerGroup))
 		femaleWidth := maxWidth * (float32(group.Female) / float32(pp.maxPopPerGroup))
 		otherWidth := maxWidth * (float32(group.Other) / float32(pp.maxPopPerGroup))

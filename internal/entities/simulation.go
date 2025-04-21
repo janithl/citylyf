@@ -117,7 +117,7 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 		Geography:   NewGeography(64, 8, 8, 3, 7, 0.0015, 0.005, 0.01),
 		NameService: NewNameService(),
 	}
-	sim.lastID.Add(10000)           // start IDs at 10000
+	sim.lastID.Store(10000)         // start IDs at 10000
 	SimStats = make(chan string, 1) // create the stats channel
 
 	return sim
@@ -125,7 +125,7 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 
 func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [][]Tile, roads []*Road) {
 	Sim = sim
-	Sim.lastID.Add(lastID)
+	Sim.lastID.Store(lastID)
 	Sim.SavePath = path
 
 	Sim.Geography.tiles = tiles
