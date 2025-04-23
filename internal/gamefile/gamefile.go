@@ -1,4 +1,4 @@
-package main
+package gamefile
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ type SaveGame struct {
 	Roads  []*entities.Road
 }
 
-func saveGame(path string) {
+func Save(path string) {
 	var f *os.File
 	var err error
 	var saveGameJSON []byte
@@ -45,7 +45,7 @@ func saveGame(path string) {
 	}
 }
 
-func loadGame(path string) {
+func Load(path string) {
 	var fileData []byte
 	var err error
 	if fileData, err = os.ReadFile(path); err != nil {
@@ -60,7 +60,7 @@ func loadGame(path string) {
 	entities.LoadSimulationFromSave(path, saveGame.Sim, uint32(saveGame.LastID), saveGame.Tiles, saveGame.Roads)
 }
 
-func checkFileExists(path string) bool {
+func CheckExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
