@@ -37,11 +37,7 @@ type WorldRenderer struct {
 	toggleMenuMode                     func()
 }
 
-func (wr *WorldRenderer) Update(mapRegenMode bool) error {
-	if mapRegenMode {
-		return nil
-	}
-
+func (wr *WorldRenderer) Update() error {
 	wr.frameCounter++
 	if wr.frameCounter >= 300 { // update every 5 seconds
 		wr.frameCounter = 0

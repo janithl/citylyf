@@ -5,10 +5,20 @@ import (
 	"github.com/janithl/citylyf/internal/ui"
 )
 
-func main() {
-	simRunner := internal.SimRunner{}
+var simRunner *internal.SimRunner
+
+func startGame() {
+	if simRunner != nil { // if a game is already running, end it
+		simRunner.EndGame()
+	}
+	simRunner = &internal.SimRunner{}
 	simRunner.NewGame(nil)
-	go simRunner.RunGameLoop()
-	ui.RunGame()
-	simRunner.EndGame()
+	go simRunner.RunGameLoop() // start the game loop in a separate goroutine
+}
+
+func main() {
+	ui.RunGame(startGame)
+	if simRunner != nil { // if a game is running, end it
+		simRunner.EndGame()
+	}
 }

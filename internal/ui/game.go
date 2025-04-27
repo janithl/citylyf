@@ -22,8 +22,9 @@ type Game struct {
 	windowSystem  *WindowSystem
 	mainMenu      *control.MainMenu
 	mapControl    *control.MapControl
+	startGame     func()
 
-	mapRegenMode, menuMode, terminate bool
+	terminate bool
 }
 
 func (g *Game) Update() error {
@@ -31,45 +32,64 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	if g.menuMode {
+	if g.mainMenu != nil {
 		g.mainMenu.Update()
 		return nil
 	}
 
-	g.worldRenderer.Update(g.mapRegenMode)
-	g.windowSystem.Update()
-	g.mapControl.Update()
+	if g.mapControl != nil {
+		g.mapControl.Update()
+	} else {
+		g.worldRenderer.Update()
+		g.windowSystem.Update()
+	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	if g.mainMenu != nil {
+		screen.Fill(colour.Black)
+		g.mainMenu.Draw(screen)
+		return
+	}
+
 	screen.Fill(colour.Gray)
-	g.worldRenderer.Draw(screen)
-	if g.mapRegenMode {
+	if g.worldRenderer != nil {
+		g.worldRenderer.Draw(screen)
+	}
+	if g.mapControl != nil {
 		g.mapControl.Draw(screen)
 	} else {
 		g.windowSystem.Draw(screen)
 	}
-
-	if g.menuMode {
-		g.mainMenu.Draw(screen)
-	}
-
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	g.worldRenderer.Layout(outsideWidth, outsideHeight)
-	g.windowSystem.Layout(outsideWidth, outsideHeight)
-	g.mainMenu.Layout(outsideWidth, outsideHeight)
-	g.mapControl.SetOffset(outsideWidth-mcWidth, outsideHeight-mcHeight)
+	if g.worldRenderer != nil {
+		g.worldRenderer.Layout(outsideWidth, outsideHeight)
+	}
+	if g.windowSystem != nil {
+		g.windowSystem.Layout(outsideWidth, outsideHeight)
+	}
+	if g.mainMenu != nil {
+		g.mainMenu.Layout(outsideWidth, outsideHeight)
+	}
+	if g.mapControl != nil {
+		g.mapControl.SetOffset(outsideWidth-mcWidth, outsideHeight-mcHeight)
+	}
+
 	return outsideWidth, outsideHeight
 }
 
 func (g *Game) EndRegenMode() {
-	g.mapRegenMode = false
+	g.mapControl = nil
+
 	entities.Sim.Mutex.Lock()
 	entities.Sim.ChangeSimulationSpeed()
 	entities.Sim.Mutex.Unlock()
+
+	g.windowSystem = NewWindowSystem()
 }
 
 func (g *Game) EndGame() {
@@ -77,34 +97,28 @@ func (g *Game) EndGame() {
 }
 
 func (g *Game) ToggleMenuMode() {
-	g.menuMode = !g.menuMode
+	if g.mainMenu != nil {
+		g.mainMenu = nil
+	} else {
+		g.mainMenu = control.NewMainMenu(192, 288, true, g.ToggleMenuMode, g.StartNewGame, g.EndGame)
+	}
 }
 
 func (g *Game) StartNewGame() {
-	entities.StartNewSim()
-	g.mapRegenMode = true
-	g.menuMode = false
+	g.startGame()
+	g.mainMenu = nil
+	g.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, g.EndRegenMode)
+	g.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
 	g.worldRenderer = world.NewWorldRenderer(screenWidth, screenHeight, g.ToggleMenuMode)
 }
 
-func RunGame() {
+func RunGame(startGame func()) {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.SetWindowTitle("citylyf")
 
-	gameTitle := "citylyf"
-	if entities.Sim.SavePath != "" {
-		gameTitle = entities.Sim.SavePath + " — " + gameTitle
-	}
-	ebiten.SetWindowTitle(gameTitle)
-
-	game := &Game{
-		windowSystem: NewWindowSystem(),
-		mapRegenMode: entities.Sim.SavePath == "",
-	}
-	game.worldRenderer = world.NewWorldRenderer(screenWidth, screenHeight, game.ToggleMenuMode)
-	game.mainMenu = control.NewMainMenu(192, 288, game.ToggleMenuMode, game.StartNewGame, game.EndGame)
-	game.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, game.EndRegenMode)
-	game.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
+	game := &Game{startGame: startGame}
+	game.mainMenu = control.NewMainMenu(192, 288, false, game.ToggleMenuMode, game.StartNewGame, game.EndGame)
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
