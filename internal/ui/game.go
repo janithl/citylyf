@@ -22,7 +22,7 @@ type Game struct {
 	windowSystem  *WindowSystem
 	mainMenu      *control.MainMenu
 	mapControl    *control.MapControl
-	startGame     func()
+	startGame     func(*string)
 
 	terminate bool
 }
@@ -96,29 +96,43 @@ func (g *Game) EndGame() {
 	g.terminate = true
 }
 
+func (g *Game) ShowMainMenu() {
+	g.mainMenu = control.NewMainMenu(192, 288, g.worldRenderer != nil, g.ToggleMenuMode, g.ShowLoadGameMenu, g.EndGame, g.StartNewGame)
+}
+
+func (g *Game) ShowLoadGameMenu() {
+	g.mainMenu = control.NewLoadGameMenu(192, 432, g.ShowMainMenu, g.StartNewGame)
+}
+
 func (g *Game) ToggleMenuMode() {
 	if g.mainMenu != nil {
 		g.mainMenu = nil
 	} else {
-		g.mainMenu = control.NewMainMenu(192, 288, true, g.ToggleMenuMode, g.StartNewGame, g.EndGame)
+		g.ShowMainMenu()
 	}
 }
 
-func (g *Game) StartNewGame() {
-	g.startGame()
+func (g *Game) StartNewGame(gamePath *string) {
+	g.startGame(gamePath)
 	g.mainMenu = nil
-	g.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, g.EndRegenMode)
-	g.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
+
+	if gamePath == nil {
+		g.mapControl = control.NewMapControl(0, 0, mcWidth, mcHeight, g.EndRegenMode)
+		g.mapControl.SetOffset(screenWidth-mcWidth, screenHeight-mcHeight)
+	} else {
+		g.windowSystem = NewWindowSystem()
+	}
+
 	g.worldRenderer = world.NewWorldRenderer(screenWidth, screenHeight, g.ToggleMenuMode)
 }
 
-func RunGame(startGame func()) {
+func RunGame(startGame func(*string)) {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("citylyf")
 
 	game := &Game{startGame: startGame}
-	game.mainMenu = control.NewMainMenu(192, 288, false, game.ToggleMenuMode, game.StartNewGame, game.EndGame)
+	game.ShowMainMenu()
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)

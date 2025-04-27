@@ -7,12 +7,12 @@ import (
 
 var simRunner *internal.SimRunner
 
-func startGame() {
+func startGame(gamePath *string) {
 	if simRunner != nil { // if a game is already running, end it
 		simRunner.EndGame()
 	}
 	simRunner = &internal.SimRunner{}
-	simRunner.NewGame(nil)
+	simRunner.NewGame(gamePath)
 	go simRunner.RunGameLoop() // start the game loop in a separate goroutine
 }
 
