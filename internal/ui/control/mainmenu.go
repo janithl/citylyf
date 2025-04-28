@@ -2,14 +2,17 @@ package control
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/janithl/citylyf/internal/ui/colour"
 	"github.com/janithl/citylyf/internal/utils"
 )
 
 type MainMenu struct {
-	x, y, width, height, screenWidth, screenHeight int
-	layoutGrid                                     *Grid
+	x, y, width, height, screenWidth, screenHeight, startIndex int
+	entries                                                    []string
+	layoutGrid                                                 *Grid
+	onEntryClick                                               func(*string)
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {
@@ -18,7 +21,31 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 }
 
 func (m *MainMenu) Update() {
+	// Mouse wheel zoom
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) && m.startIndex < len(m.entries)-(m.layoutGrid.rows-2) {
+		m.startIndex += 1 // Scroll down
+		m.updateEntries()
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) && m.startIndex > 0 {
+		m.startIndex -= 1 // Scroll up
+		m.updateEntries()
+	}
+
 	m.layoutGrid.Update()
+}
+
+func (m *MainMenu) updateEntries() {
+	savedir := utils.GetSaveDir()
+	for i, entry := range m.entries[m.startIndex:] {
+		if i >= m.layoutGrid.rows-2 {
+			break
+		}
+
+		path := savedir + "/" + entry
+		if m.layoutGrid.Children[i+2][0] != nil {
+			m.layoutGrid.Children[i+2][0].(*Button).Label = entry
+			m.layoutGrid.Children[i+2][0].(*Button).OnClick = func() { m.onEntryClick(&path) }
+		}
+	}
 }
 
 func (m *MainMenu) Layout(width, height int) {
@@ -29,42 +56,45 @@ func (m *MainMenu) Layout(width, height int) {
 	m.layoutGrid.SetOffset(m.x, m.y)
 }
 
-func NewMainMenu(width, height int, resumable bool, toggleMenuMode, loadGame, endGame func(), startNewGame func(*string)) *MainMenu {
+func NewMainMenu(width, maxEntries int, resumable bool, toggleMenuMode, loadGame, endGame func(), startNewGame func(*string)) *MainMenu {
 	menu := &MainMenu{
 		x:          0,
 		y:          0,
 		width:      width,
-		height:     height,
-		layoutGrid: NewGrid(0, 0, width, height, 1, 4),
+		height:     maxEntries * menuEntryHeight,
+		layoutGrid: NewGrid(0, 0, width, maxEntries*menuEntryHeight, 1, maxEntries),
 	}
 
 	if resumable {
-		menu.layoutGrid.Children[0][0] = &Button{Label: "Resume Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: toggleMenuMode}
+		menu.layoutGrid.Children[0][0] = &Button{Label: "Resume Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: toggleMenuMode}
 	}
-	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { startNewGame(nil) }}
-	menu.layoutGrid.Children[2][0] = &Button{Label: "Load Game", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadGame}
-	menu.layoutGrid.Children[3][0] = &Button{Label: "Exit", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
+	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { startNewGame(nil) }}
+	menu.layoutGrid.Children[2][0] = &Button{Label: "Load Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadGame}
+	menu.layoutGrid.Children[3][0] = &Button{Label: "Exit", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
 
 	return menu
 }
 
-func NewLoadGameMenu(width, height int, loadMainMenu func(), startNewGame func(*string)) *MainMenu {
+func NewLoadGameMenu(width, maxEntries int, loadMainMenu func(), startNewGame func(*string)) *MainMenu {
 	menu := &MainMenu{
-		x:          0,
-		y:          0,
-		width:      width,
-		height:     height,
-		layoutGrid: NewGrid(0, 0, width, height, 1, 6),
+		x:            0,
+		y:            0,
+		width:        width,
+		height:       maxEntries * menuEntryHeight,
+		layoutGrid:   NewGrid(0, 0, width, maxEntries*menuEntryHeight, 1, maxEntries),
+		onEntryClick: startNewGame,
 	}
 
-	menu.layoutGrid.Children[0][0] = &Button{Label: "<- Back", X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadMainMenu}
+	menu.layoutGrid.Children[0][0] = &Button{Label: "<- Back", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadMainMenu}
+
+	for i := 2; i < maxEntries; i++ {
+		menu.layoutGrid.Children[i][0] = &Button{Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red}
+	}
+
 	if savedir := utils.GetSaveDir(); savedir != "" {
 		if files, err := utils.GetDirFiles(savedir); err == nil {
-			for i, file := range files {
-				if i < 4 {
-					menu.layoutGrid.Children[i+2][0] = &Button{Label: file, X: 0, Y: 0, Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { filePath := savedir + "/" + file; startNewGame(&filePath) }}
-				}
-			}
+			menu.entries = files
+			menu.updateEntries()
 		}
 	}
 

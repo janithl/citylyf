@@ -1,9 +1,10 @@
 package control
 
 const (
-	buttonHeight   = 24
-	buttonWidth    = 36
-	titleBarHeight = 24
+	buttonHeight    = 24
+	buttonWidth     = 36
+	titleBarHeight  = 24
+	menuEntryHeight = 72
 )
 
 type GraphType int

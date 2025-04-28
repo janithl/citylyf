@@ -57,6 +57,10 @@ func (s *Simulation) ChangeSimulationSpeed() {
 	}
 }
 
+func (s *Simulation) PauseSimulation() {
+	s.SimulationSpeed = Pause
+}
+
 func (s *Simulation) GetStats() string {
 	return fmt.Sprintf("%s | Reserves: %s | Population: %d (%+06.2f%%) | Houses: %d (%d Free) | "+
 		"Unemployment: %05.2f%% | Companies: %d | Market Value: %.2f (%+06.2f%%) | Inflation: %05.2f%% | IntRate: %05.2f%%",

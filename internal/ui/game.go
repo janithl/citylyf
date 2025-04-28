@@ -97,19 +97,23 @@ func (g *Game) EndGame() {
 }
 
 func (g *Game) ShowMainMenu() {
-	g.mainMenu = control.NewMainMenu(192, 288, g.worldRenderer != nil, g.ToggleMenuMode, g.ShowLoadGameMenu, g.EndGame, g.StartNewGame)
+	g.mainMenu = control.NewMainMenu(192, 4, g.worldRenderer != nil, g.ToggleMenuMode, g.ShowLoadGameMenu, g.EndGame, g.StartNewGame)
 }
 
 func (g *Game) ShowLoadGameMenu() {
-	g.mainMenu = control.NewLoadGameMenu(192, 432, g.ShowMainMenu, g.StartNewGame)
+	g.mainMenu = control.NewLoadGameMenu(192, 8, g.ShowMainMenu, g.StartNewGame)
 }
 
 func (g *Game) ToggleMenuMode() {
+	entities.Sim.Mutex.Lock()
 	if g.mainMenu != nil {
 		g.mainMenu = nil
+		entities.Sim.ChangeSimulationSpeed()
 	} else {
 		g.ShowMainMenu()
+		entities.Sim.PauseSimulation()
 	}
+	entities.Sim.Mutex.Unlock()
 }
 
 func (g *Game) StartNewGame(gamePath *string) {
