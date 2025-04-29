@@ -2,7 +2,7 @@ package gamefile
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -16,13 +16,14 @@ type SaveGame struct {
 	Roads  []*entities.Road
 }
 
+// Save saves the current game state to a file at the specified path
 func Save(path string) {
 	var f *os.File
 	var err error
 	var saveGameJSON []byte
 
 	if f, err = os.Create(path); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer f.Close()
@@ -35,21 +36,23 @@ func Save(path string) {
 	}
 
 	if saveGameJSON, err = json.Marshal(saveGame); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	if _, err := f.Write(saveGameJSON); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 }
 
+// Load loads the game state from a file at the specified path
+// and initializes the simulation with the loaded data
 func Load(path string) {
 	var fileData []byte
 	var err error
 	if fileData, err = os.ReadFile(path); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
@@ -63,4 +66,39 @@ func Load(path string) {
 func CheckExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// GetSavesDir returns the directory where the game saves are stored.
+func GetSavesDir() string {
+	savesdir := ""
+	if homedir, err := os.UserHomeDir(); err == nil {
+		savesdir = homedir + "/.citylyf/saves"
+		if err := os.MkdirAll(savesdir, os.ModePerm); err != nil {
+			// creating the saves directory failed
+			log.Println(err)
+			savesdir = ""
+		}
+	} else {
+		log.Println(err)
+	}
+
+	return savesdir
+}
+
+// GetDirFiles returns a list of files in the specified directory.
+func GetDirFiles(dir string) []string {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		log.Println(err)
+		return []string{}
+	}
+
+	var fileNames []string
+	for _, file := range files {
+		if !file.IsDir() {
+			fileNames = append(fileNames, file.Name())
+		}
+	}
+
+	return fileNames
 }

@@ -97,7 +97,7 @@ func (g *Game) EndGame() {
 }
 
 func (g *Game) ShowMainMenu() {
-	g.mainMenu = control.NewMainMenu(192, 4, g.worldRenderer != nil, g.ToggleMenuMode, g.ShowLoadGameMenu, g.EndGame, g.StartNewGame)
+	g.mainMenu = control.NewMainMenu(192, 5, g.worldRenderer != nil, g.ToggleMenuMode, g.ShowLoadGameMenu, g.EndGame, g.StartNewGame)
 }
 
 func (g *Game) ShowLoadGameMenu() {

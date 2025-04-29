@@ -4,8 +4,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/janithl/citylyf/internal/entities"
+	"github.com/janithl/citylyf/internal/gamefile"
 	"github.com/janithl/citylyf/internal/ui/colour"
-	"github.com/janithl/citylyf/internal/utils"
 )
 
 type MainMenu struct {
@@ -21,12 +22,15 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 }
 
 func (m *MainMenu) Update() {
-	// Mouse wheel zoom
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) && m.startIndex < len(m.entries)-(m.layoutGrid.rows-2) {
-		m.startIndex += 1 // Scroll down
+	_, scrollY := ebiten.Wheel() // Mouse wheel scroll
+	scrollUp := inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) || inpututil.IsKeyJustPressed(ebiten.KeyW) || scrollY < 0
+	scrollDown := inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) || inpututil.IsKeyJustPressed(ebiten.KeyS) || scrollY > 0
+
+	if scrollDown && m.startIndex < len(m.entries)-(m.layoutGrid.rows-2) {
+		m.startIndex += 1
 		m.updateEntries()
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) && m.startIndex > 0 {
-		m.startIndex -= 1 // Scroll up
+	} else if scrollUp && m.startIndex > 0 {
+		m.startIndex -= 1
 		m.updateEntries()
 	}
 
@@ -34,7 +38,7 @@ func (m *MainMenu) Update() {
 }
 
 func (m *MainMenu) updateEntries() {
-	savedir := utils.GetSaveDir()
+	savedir := gamefile.GetSavesDir()
 	for i, entry := range m.entries[m.startIndex:] {
 		if i >= m.layoutGrid.rows-2 {
 			break
@@ -70,7 +74,13 @@ func NewMainMenu(width, maxEntries int, resumable bool, toggleMenuMode, loadGame
 	}
 	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { startNewGame(nil) }}
 	menu.layoutGrid.Children[2][0] = &Button{Label: "Load Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadGame}
-	menu.layoutGrid.Children[3][0] = &Button{Label: "Exit", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
+	exitBtn := &Button{Label: "Exit", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
+	if entities.Sim != nil && entities.Sim.SavePath != "" {
+		menu.layoutGrid.Children[3][0] = &Button{Label: "Save Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { gamefile.Save(entities.Sim.SavePath); toggleMenuMode() }}
+		menu.layoutGrid.Children[4][0] = exitBtn
+	} else {
+		menu.layoutGrid.Children[3][0] = exitBtn
+	}
 
 	return menu
 }
@@ -91,11 +101,9 @@ func NewLoadGameMenu(width, maxEntries int, loadMainMenu func(), startNewGame fu
 		menu.layoutGrid.Children[i][0] = &Button{Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red}
 	}
 
-	if savedir := utils.GetSaveDir(); savedir != "" {
-		if files, err := utils.GetDirFiles(savedir); err == nil {
-			menu.entries = files
-			menu.updateEntries()
-		}
+	if savesdir := gamefile.GetSavesDir(); savesdir != "" {
+		menu.entries = gamefile.GetDirFiles(savesdir)
+		menu.updateEntries()
 	}
 
 	return menu
