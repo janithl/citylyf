@@ -43,6 +43,16 @@ func (sr *SimRunner) NewGame(gamePath *string) {
 	sr.done = make(chan bool)                          // channel to send kill signal to goroutine
 }
 
+func (sr *SimRunner) GameTick() {
+	entities.Sim.Houses.PlaceHousing()
+	people.Immigrate()
+	sr.employment.AssignJobs()
+	people.Emigrate()
+	people.SimulateLifecycle()
+	entities.Sim.Market.ReviseInterestRate()
+	sr.calculationService.CalculateEconomy()
+}
+
 func (sr *SimRunner) RunGameLoop() {
 	for {
 		select {
@@ -51,15 +61,7 @@ func (sr *SimRunner) RunGameLoop() {
 		case <-sr.ticker.C:
 			entities.Sim.Mutex.Lock()
 			if entities.Sim.SimulationSpeed != entities.Pause {
-				entities.Sim.Tick(func() {
-					entities.Sim.Houses.PlaceHousing()
-					people.Immigrate()
-					sr.employment.AssignJobs()
-					people.Emigrate()
-					people.SimulateLifecycle()
-					entities.Sim.Market.ReviseInterestRate()
-					sr.calculationService.CalculateEconomy()
-				})
+				entities.Sim.Tick(sr.GameTick)
 				entities.Sim.SendStats()
 			}
 			entities.Sim.Mutex.Unlock()
