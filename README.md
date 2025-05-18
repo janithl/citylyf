@@ -30,3 +30,4 @@ get jobs. They pay taxes and rent. The interest rate is set by the Central Bank 
 - [ ] Build animation
 - [x] Break sprites into multiple files
 - [x] Save and load games
+- [ ] Name cities at start, and allow saves even if no previous saves are there
