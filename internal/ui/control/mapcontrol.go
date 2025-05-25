@@ -57,6 +57,14 @@ func (mc *MapControl) regenerateMap() {
 	entities.Sim.Mutex.Unlock()
 }
 
+func (mc *MapControl) saveCityName() {
+	if mc.layoutGrid.Children[0][2].(*TextInput).Text != "" {
+		entities.Sim.CityName = mc.layoutGrid.Children[0][2].(*TextInput).Text
+	} else {
+		entities.Sim.CityName = "UnnamedCity"
+	}
+}
+
 func NewMapControl(x, y, width, height int, closeFunc func()) *MapControl {
 	mc := &MapControl{
 		x:          x,
@@ -70,7 +78,7 @@ func NewMapControl(x, y, width, height int, closeFunc func()) *MapControl {
 	}
 
 	mc.layoutGrid.Children[0][0] = &Label{X: 0, Y: 0, Padding: 4, Text: "City Name"}
-	mc.layoutGrid.Children[0][2] = &TextInput{X: 0, Y: 0, Padding: 4, Width: 2 * width / 3, Height: buttonHeight}
+	mc.layoutGrid.Children[0][2] = &TextInput{X: 0, Y: 0, Padding: 4, Width: 2 * width / 3, Height: buttonHeight, Focused: true}
 
 	mc.layoutGrid.Children[2][0] = &Label{X: 0, Y: 0, Padding: 4, Text: "Mountain Peaks"}
 	mc.layoutGrid.Children[2][3] = NewStepper(0, 0, mc.peakPerc, 90, PercentageStepper, func(i int) { mc.setPerc("peak", i) })
@@ -83,7 +91,7 @@ func NewMapControl(x, y, width, height int, closeFunc func()) *MapControl {
 
 	mc.layoutGrid.Children[6][0] = &Button{Label: "  Regen", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkCyan, OnClick: mc.regenerateMap}
 	mc.layoutGrid.Children[6][2] = &Button{Label: "  Reset", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.DarkMagenta, OnClick: mc.resetValues}
-	mc.layoutGrid.Children[6][4] = &Button{Label: "  Done", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.Red, OnClick: closeFunc}
+	mc.layoutGrid.Children[6][4] = &Button{Label: "  Done", X: 0, Y: 0, Width: width / 3, Height: buttonHeight, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { mc.saveCityName(); closeFunc() }}
 
 	return mc
 }

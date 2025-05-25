@@ -17,11 +17,12 @@ type SaveGame struct {
 }
 
 // Save saves the current game state to a file at the specified path
-func Save(path string) {
+func Save() {
 	var f *os.File
 	var err error
 	var saveGameJSON []byte
 
+	path := GetSavesDir() + "/" + strings.ToLower(entities.Sim.CityName) + ".json"
 	if f, err = os.Create(path); err != nil {
 		log.Println(err)
 		return
@@ -60,7 +61,7 @@ func Load(path string) {
 	saveGame := &SaveGame{}
 	jsonDecoder.Decode(saveGame)
 
-	entities.LoadSimulationFromSave(path, saveGame.Sim, uint32(saveGame.LastID), saveGame.Tiles, saveGame.Roads)
+	entities.LoadSimulationFromSave(saveGame.Sim, uint32(saveGame.LastID), saveGame.Tiles, saveGame.Roads)
 }
 
 func CheckExists(path string) bool {

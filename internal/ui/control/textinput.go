@@ -20,7 +20,7 @@ type TextInput struct {
 func (ti *TextInput) Draw(screen *ebiten.Image) {
 	cursor := ""
 	if ti.Focused {
-		cursor = "|"
+		cursor = "_"
 	}
 
 	vector.StrokeRect(screen, float32(ti.X), float32(ti.Y), float32(ti.Width), float32(ti.Height), 1, colour.White, false)

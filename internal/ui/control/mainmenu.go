@@ -75,8 +75,8 @@ func NewMainMenu(width, maxEntries int, resumable bool, toggleMenuMode, loadGame
 	menu.layoutGrid.Children[1][0] = &Button{Label: "New Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { startNewGame(nil) }}
 	menu.layoutGrid.Children[2][0] = &Button{Label: "Load Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: loadGame}
 	exitBtn := &Button{Label: "Exit", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: endGame}
-	if entities.Sim != nil && entities.Sim.SavePath != "" {
-		menu.layoutGrid.Children[3][0] = &Button{Label: "Save Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { gamefile.Save(entities.Sim.SavePath); toggleMenuMode() }}
+	if entities.Sim != nil && entities.Sim.CityName != "" {
+		menu.layoutGrid.Children[3][0] = &Button{Label: "Save Game", Width: width, Height: buttonHeight, Scale: 3, Color: colour.Transparent, HoverColor: colour.Red, OnClick: func() { gamefile.Save(); toggleMenuMode() }}
 		menu.layoutGrid.Children[4][0] = exitBtn
 	} else {
 		menu.layoutGrid.Children[3][0] = exitBtn

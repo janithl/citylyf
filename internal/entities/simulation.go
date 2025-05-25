@@ -31,7 +31,7 @@ type Simulation struct {
 	Geography       *Geography
 	tickNumber      int
 	lastID          atomic.Uint32
-	SavePath        string
+	CityName        string
 	NameService     *NameService
 }
 
@@ -127,10 +127,9 @@ func NewSimulation(startYear, governmentReserves int) *Simulation {
 	return sim
 }
 
-func LoadSimulationFromSave(path string, sim *Simulation, lastID uint32, tiles [][]Tile, roads []*Road) {
+func LoadSimulationFromSave(sim *Simulation, lastID uint32, tiles [][]Tile, roads []*Road) {
 	Sim = sim
 	Sim.lastID.Store(lastID)
-	Sim.SavePath = path
 
 	Sim.Geography.tiles = tiles
 	Sim.Geography.roads = roads

@@ -77,9 +77,3 @@ func (sr *SimRunner) EndGame() {
 		sr.done <- true
 	}
 }
-
-func (sr *SimRunner) SaveGame(gamePath *string) {
-	if gamePath != nil {
-		gamefile.Save(*gamePath)
-	}
-}
